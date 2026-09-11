@@ -2,6 +2,8 @@ import React from 'react';
 import Inicio from './paginas/inicio';
 import Registro from './paginas/registro';
 import { BrowserRouter, Route, Routes }  from 'react-router-dom';
+import bootstrap from 'bootstrap/dist/css/bootstrap.min.css';
+import bootstrapjs from 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
 function App() {
   return (
