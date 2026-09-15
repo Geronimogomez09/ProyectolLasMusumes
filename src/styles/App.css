@@ -1,0 +1,16 @@
+.min-vh-100 {
+  min-height: 100vh;
+}
+
+.flex-grow-1 {
+  flex: 1;
+}
+
+main {
+  padding-top: 20px;
+  padding-bottom: 40px;
+}
+
+footer {
+  margin-top: auto;
+}
