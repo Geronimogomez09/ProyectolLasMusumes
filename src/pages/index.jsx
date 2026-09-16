@@ -1,5 +1,9 @@
+import Header from '../components/header';
 export default function Inicio() {
   return (
+    <>
+      <Header />
+    
     <div className="container my-5">
       <div className="jumbotron bg-light p-5 rounded-lg">
         <h1 className="display-4">Bienvenido a WikiCraft</h1>
@@ -38,5 +42,6 @@ export default function Inicio() {
         </div>
       </div>
     </div>
+    </>
   )
 }

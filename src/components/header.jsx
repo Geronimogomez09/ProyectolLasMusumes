@@ -1,11 +1,11 @@
 import { Link } from 'react-router-dom';
 
-export default function Navbar() {
+export default function Header() {
   return (
     <nav className="navbar navbar-expand-lg navbar-light bg-light">
       <div className="container-fluid">
         <Link className="navbar-brand" to="/">
-          🎮 WikiCraft
+          WikiCraft
         </Link>
         <button 
           className="navbar-toggler" 
@@ -39,7 +39,12 @@ export default function Navbar() {
             </li>
             <li className="nav-item">
               <Link className="nav-link" to="/registro">
-                Registro
+                sign up
+              </Link>
+            </li>
+              <li className="nav-item">
+              <Link className="nav-link" to="/login">
+                login
               </Link>
             </li>
           </ul>
