@@ -27,6 +27,16 @@ export default function Header() {
                 Historia
               </Link>
             </li>
+                        <li className="nav-item">
+              <Link className="nav-link" to="/versiones">
+                Versiones
+              </Link>
+            </li>
+                        <li className="nav-item">
+              <Link className="nav-link" to="/musica">
+                Musica
+              </Link>
+            </li>
             <li className="nav-item">
               <Link className="nav-link" to="/comunidad">
                 Comunidad
