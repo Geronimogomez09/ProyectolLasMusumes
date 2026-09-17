@@ -6,6 +6,10 @@ import Inicio from './pages/index';
 import Registro from './pages/signup';
 import Tienda from './pages/tienda';
 import Login from './pages/login';
+import Comunidad from './pages/comunidad'
+import Versiones from './pages/versiones';
+import Historia from './pages/historia';
+import Musica from './pages/musica';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
@@ -19,6 +23,10 @@ function App() {
             <Route path="/registro" element={<Registro />} />
             <Route path="/tienda" element={<Tienda />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/comunidad" element={<Comunidad />} />
+            <Route path="/versiones" element={<Versiones />} />
+            <Route path="/historia" element={<Historia />} />
+            <Route path="/musica" element={<Musica />} />
           </Routes>
         <Footer />
     </BrowserRouter>
