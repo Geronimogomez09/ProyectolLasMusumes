@@ -28,8 +28,6 @@ function App() {
             <Route path="/historia" element={<Historia />} />
             <Route path="/musica" element={<Musica />} />
           </Routes>
-          
-        <Footer />
     </BrowserRouter>
   )
 }

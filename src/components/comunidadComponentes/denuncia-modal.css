@@ -1,0 +1,98 @@
+.denuncia-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 1rem;
+}
+
+.denuncia-modal {
+  background: #fff;
+  border-radius: 14px;
+  padding: 1.5rem;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.25);
+}
+
+.denuncia-modal h3 {
+  margin: 0 0 0.35rem;
+  font-size: 1.15rem;
+}
+
+.denuncia-modal__ayuda {
+  margin: 0 0 1rem;
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.denuncia-modal__motivos {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.denuncia-modal__motivos label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.denuncia-modal__detalle {
+  width: 100%;
+  resize: none;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 0.6rem;
+  font-family: inherit;
+  font-size: 0.87rem;
+  box-sizing: border-box;
+}
+
+.denuncia-modal__detalle:focus {
+  outline: 2px solid #e6c458;
+}
+
+.denuncia-modal__error {
+  color: #c62828;
+  font-size: 0.82rem;
+  margin: 0.5rem 0 0;
+}
+
+.denuncia-modal__acciones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  margin-top: 1.1rem;
+}
+
+.btn-cancelar-denuncia {
+  background: #eee;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.btn-enviar-denuncia {
+  background: #c62828;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 1.1rem;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.btn-enviar-denuncia:hover {
+  filter: brightness(1.1);
+}
