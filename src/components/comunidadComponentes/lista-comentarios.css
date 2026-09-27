@@ -1,0 +1,55 @@
+.lista-comentarios {
+  border-top: 1px solid #ececec;
+  padding-top: 0.75rem;
+  margin-top: 0.4rem;
+}
+
+.lista-comentarios__vacio {
+  color: #888;
+  font-size: 0.85rem;
+  margin: 0 0 0.5rem;
+}
+
+.comentario {
+  display: flex;
+  gap: 0.6rem;
+  margin-bottom: 0.6rem;
+}
+
+/* Fallback por si este componente se usa fuera de Comunidad.css,
+   que ya define .avatar como círculo con iniciales */
+.avatar {
+  flex-shrink: 0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 700;
+}
+
+.avatar--comentario {
+  width: 32px;
+  height: 32px;
+  font-size: 0.85rem;
+}
+
+.comentario__cuerpo {
+  background: #f4f4f2;
+  border-radius: 10px;
+  padding: 0.4rem 0.7rem;
+  flex: 1;
+}
+
+.comentario__usuario {
+  display: block;
+  font-weight: 700;
+  font-size: 0.82rem;
+  color: #2f8f5b;
+}
+
+.comentario__texto {
+  margin: 0.15rem 0 0;
+  font-size: 0.86rem;
+  line-height: 1.4;
+}

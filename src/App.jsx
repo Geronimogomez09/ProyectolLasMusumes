@@ -36,7 +36,6 @@ function App() {
             <Route path="/musica/album/:id" element={<Album />} />
             <Route path="/musica/compositor/:id" element={<Compositor />} />
           </Routes>
-        <Footer />
     </BrowserRouter>
   );
 }

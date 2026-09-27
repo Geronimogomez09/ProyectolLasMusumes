@@ -1,6 +1,13 @@
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 export default function Header() {
+  const location = useLocation();
+  const rutasSinNavbar = ['/login', '/registro', '/tienda', '/versiones', '/historia', '/musica'];
+
+  if (rutasSinNavbar.includes(location.pathname)) {
+    return null;
+  }
+
   return (
     <nav className="navbar navbar-expand-lg navbar-light bg-light">
       <div className="container-fluid">
@@ -27,12 +34,12 @@ export default function Header() {
                 Historia
               </Link>
             </li>
-                        <li className="nav-item">
+            <li className="nav-item">
               <Link className="nav-link" to="/versiones">
                 Versiones
               </Link>
             </li>
-                        <li className="nav-item">
+            <li className="nav-item">
               <Link className="nav-link" to="/musica">
                 Musica
               </Link>
@@ -52,7 +59,7 @@ export default function Header() {
                 sign up
               </Link>
             </li>
-              <li className="nav-item">
+            <li className="nav-item">
               <Link className="nav-link" to="/login">
                 login
               </Link>
