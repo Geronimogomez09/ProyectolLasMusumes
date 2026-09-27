@@ -2,56 +2,71 @@ export const songs = [
   {
     id: 1,
     title: "Sweden",
-    composer: "C418",
+    composerId: 1,
     duration: "3:35",
     audio: "/music/sweden.mp3",
     cover: "/music/covers/sweden.jpg",
-    album: "Minecraft - Volume Alpha",
+    albumId: 1,
   },
+
   {
     id: 2,
     title: "Wet Hands",
-    composer: "C418",
+    composerId: 1,
     duration: "1:30",
     audio: "/music/wet-hands.mp3",
     cover: "/music/covers/wet-hands.jpg",
-    album: "Minecraft - Volume Alpha",
+    albumId: 1,
   },
+
   {
     id: 3,
     title: "Mice on Venus",
-    composer: "C418",
+    composerId: 1,
     duration: "4:41",
     audio: "/music/mice-on-venus.mp3",
     cover: "/music/covers/mice-on-venus.jpg",
-    album: "Minecraft - Volume Alpha",
+    albumId: 1,
   },
+
   {
     id: 4,
     title: "Haggstrom",
-    composer: "C418",
+    composerId: 1,
     duration: "3:18",
     audio: "/music/haggstrom.mp3",
     cover: "/music/covers/haggstrom.jpg",
-    album: "Minecraft - Volume Alpha",
+    albumId: 1,
   },
+
   {
     id: 5,
     title: "Minecraft",
-    composer: "C418",
+    composerId: 1,
     duration: "4:14",
     audio: "/music/minecraft.mp3",
     cover: "/music/covers/minecraft.jpg",
-    album: "Minecraft - Volume Alpha",
+    albumId: 1,
   },
+
   {
     id: 6,
     title: "Subwoofer Lullaby",
-    composer: "C418",
+    composerId: 1,
     duration: "3:28",
     audio: "/music/subwoofer-lullaby.mp3",
     cover: "/music/covers/subwoofer-lullaby.jpg",
-    album: "Minecraft - Volume Alpha",
+    albumId: 1,
+  },
+];
+
+export const albums = [
+  {
+    id: 1,
+    title: "Minecraft - Volume Alpha",
+    composerId: 1,
+    cover: "/music/covers/sweden.jpg",
+    songs: [1, 2, 3, 4, 5, 6],
   },
 ];
 
@@ -61,18 +76,26 @@ export const playlists = [
     name: "Favoritos",
     description: "Tus canciones favoritas",
     cover: "/music/playlists/favoritos.jpg",
+    system: true,
+    songs: [],
   },
+
   {
     id: 2,
     name: "Exploración",
     description: "Música para explorar",
     cover: "/music/playlists/exploracion.jpg",
+    system: false,
+    songs: [1, 3, 4, 5],
   },
+
   {
     id: 3,
     name: "Relajación",
     description: "Una selección tranquila",
     cover: "/music/playlists/relajacion.jpg",
+    system: false,
+    songs: [2, 6],
   },
 ];
 
@@ -84,5 +107,6 @@ export const composers = [
       "Daniel Rosenfeld, conocido como C418, es un compositor y productor musical reconocido principalmente por crear gran parte de la música original de Minecraft.",
     image: "/music/composers/c418.jpg",
     songs: [1, 2, 3, 4, 5, 6],
+    albums: [1],
   },
 ];
