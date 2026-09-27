@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import Header from "../components/header";
-
+import Footer from "../components/Footer";
 import {
   songs,
   composers,
@@ -415,8 +415,8 @@ export default function Musica() {
               `/musica/compositor/${composer.id}`
             )
           }
-        />
 
+        />
       </main>
 
       {/* REPRODUCTOR FIJO */}
@@ -425,6 +425,7 @@ export default function Musica() {
         onNext={playNext}
         onPrevious={playPrevious}
       />
+      <Footer/>
     </>
   );
 }
