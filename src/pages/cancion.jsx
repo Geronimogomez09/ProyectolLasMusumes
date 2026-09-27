@@ -1,8 +1,5 @@
 import React from "react";
-import {
-  useNavigate,
-  useParams,
-} from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 import {
   songs,
@@ -22,7 +19,15 @@ function Cancion() {
 
   if (!song) {
     return (
-      <main>
+      <main className="song-page">
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          className="back-button"
+        >
+          ← Volver
+        </button>
+
         <h1>Canción no encontrada</h1>
       </main>
     );
@@ -40,6 +45,7 @@ function Cancion() {
     <main className="song-page">
 
       <button
+        type="button"
         onClick={() => navigate(-1)}
         className="back-button"
       >
@@ -50,23 +56,29 @@ function Cancion() {
 
         <img
           src={song.cover}
-          alt={song.title}
+          alt={`Portada de ${song.title}`}
         />
 
         <div>
 
           <span>CANCIÓN</span>
 
-          <h1>{song.title}</h1>
+          <h1>
+            {song.title}
+          </h1>
 
-          <button
-            onClick={() =>
-              navigate(
-                `/musica/compositor/${composer.id}`
-              )
-          >
-            {composer?.name}
-          </button>
+          {composer && (
+            <button
+              type="button"
+              onClick={() =>
+                navigate(
+                  `/musica/compositor/${composer.id}`
+                )
+              }
+            >
+              {composer.name}
+            </button>
+          )}
 
           <p>
             Duración: {song.duration}
@@ -74,6 +86,7 @@ function Cancion() {
 
           {album && (
             <button
+              type="button"
               onClick={() =>
                 navigate(
                   `/musica/album/${album.id}`
@@ -84,14 +97,20 @@ function Cancion() {
             </button>
           )}
 
-          <div>
-            <button>
+          <div className="song-actions">
+
+            <button
+              type="button"
+            >
               ▶ Reproducir
             </button>
 
-            <button>
+            <button
+              type="button"
+            >
               ♡ Favorito
             </button>
+
           </div>
 
         </div>
