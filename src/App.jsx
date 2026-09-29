@@ -10,6 +10,10 @@ import Comunidad from './pages/comunidad'
 import Versiones from './pages/versiones';
 import Historia from './pages/historia';
 import Musica from './pages/musica';
+import Cancion from './pages/cancion';
+import Playlist from './pages/playlist';
+import Album from './pages/album';
+import Compositor from './pages/compositor';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
@@ -27,9 +31,13 @@ function App() {
             <Route path="/versiones" element={<Versiones />} />
             <Route path="/historia" element={<Historia />} />
             <Route path="/musica" element={<Musica />} />
+            <Route path="/musica/cancion/:id" element={<Cancion />} />
+            <Route path="/musica/playlist/:id" element={<Playlist />} />
+            <Route path="/musica/album/:id" element={<Album />} />
+            <Route path="/musica/compositor/:id" element={<Compositor />} />
           </Routes>
     </BrowserRouter>
-  )
+  );
 }
 
 export default App
