@@ -4,6 +4,40 @@
    con un fallback propio para que la página funcione aunque global.css
    todavía no las defina.
    ========================================================================== */
+
+/* Animación de cascada: cada elemento aparece con fade + slide-up, con un
+   animation-delay distinto por elemento (se define inline en el JSX porque
+   varía dinámicamente según la cantidad de posts). */
+   
+@keyframes cascada-aparecer {
+  from {
+    opacity: 0;
+    transform: translateY(34px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.cascada-item {
+  margin-top: 0.75rem;
+  opacity: 0;
+  animation: cascada-aparecer 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* Fuente estilo Minecraft. Si la ponés en global.css en vez de acá, queda
+   disponible para toda la app y no hace falta repetir el @font-face por
+   página. El archivo va en public/fonts/, no en src/assets/. */
+@font-face {
+  font-family: 'MinecraftSeven';
+  src: url('/fonts/Minecraft.ttf') format('woff2'),
+       url('/fonts/Minecraft.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap; /* muestra el fallback mientras carga, evita texto invisible */
+}
+
 .comunidad-page {
   --oro: var(--color-oro, #e6c458);
   --verde-publicar: var(--color-overworld-green, #4caf50);
@@ -29,11 +63,10 @@
 
   /* Placeholder: reemplazar por el asset final del proyecto,
      por ejemplo import fondo from '../assets/comunidad-bg.jpg' */
-  background-image: url('/src/assets/fondos/fondo1.jpg');
+  background-image: url('../public/fondos/fondo1.jpg');
   background-size: cover;
   background-position: center 35%;
 }
-
 .comunidad-hero__overlay {
   position: absolute;
   inset: 0;
@@ -52,8 +85,10 @@
 }
 
 .comunidad-hero__contenido h1 {
+  font-family: 'MinecraftSeven', 'Segoe UI', sans-serif;
   font-size: 3rem;
-  font-weight: 800;
+  font-weight: 400; /* las fuentes pixel-art no suelen traer variante bold */
+  letter-spacing: 1px;
   margin: 0 0 0.5rem;
   text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
 }
@@ -208,10 +243,14 @@
 
 .etiqueta-selector {
   position: relative;
+  display: flex;
+  gap: 0.5rem;
+  justify-content: space-between;
 }
 
 .etiqueta-menu {
   position: absolute;
+  display: flex;
   top: 115%;
   left: 0;
   background: #fff;
@@ -222,7 +261,7 @@
   padding: 0.35rem;
   margin: 0;
   min-width: 150px;
-  z-index: 10;
+  z-index: 100;
 }
 
 .etiqueta-menu li button {
@@ -378,11 +417,58 @@
   cursor: default;
 }
 
-.reaccion-emoji__icono {
-  width: 18px;
-  height: 18px;
-  object-fit: contain;
-  image-rendering: pixelated;
+.reacciones-emoji-grupo {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.reaccion-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: #f0f0ee;
+  border: 1px solid #e2e2e2;
+  border-radius: 999px;
+  padding: 0.15rem 0.55rem;
+  font-size: 0.82rem;
+  cursor: pointer;
+  color: #444;
+}
+
+.reaccion-pill:hover {
+  border-color: var(--oro);
+}
+
+.reaccion-pill--activa {
+  background: #fdf6e0;
+  border-color: var(--oro);
+  color: #3a2e05;
+  font-weight: 700;
+}
+
+.reaccion-pill__fallback {
+  display: none;
+  font-size: 0.72rem;
+}
+
+.reaccion-pill__conteo {
+  font-size: 0.8rem;
+}
+
+.btn-agregar-reaccion {
+  background: #f0f0ee;
+  border: 1px solid #e2e2e2;
+  border-radius: 999px;
+  padding: 0.15rem 0.5rem;
+  font-size: 0.78rem;
+  cursor: pointer;
+  color: #666;
+}
+
+.btn-agregar-reaccion:hover {
+  border-color: var(--oro);
 }
 
 .reaccion-emoji-selector {
@@ -391,7 +477,7 @@
 
 .reaccion-emoji-picker {
   position: absolute;
-  bottom: 130%;
+  bottom: 100%;
   left: 0;
   background: #fff;
   border: 1px solid var(--borde-suave);
@@ -455,12 +541,17 @@
   }
 
   .nuevo-post__acciones {
-    flex-direction: column;
-    align-items: stretch;
+    display: flex;
     gap: 0.7rem;
+    margin-bottom: 6rem;
   }
 
   .nuevo-post__acciones-izquierda {
+    width: 100%;
     justify-content: space-between;
+  }
+
+  .nuevo-post btn-publicar {
+    width: 100%;
   }
 }
