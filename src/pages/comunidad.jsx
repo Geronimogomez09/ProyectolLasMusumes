@@ -6,7 +6,7 @@ import NuevoPost from '../components/comunidadComponentes/nuevo-post';
 import { EMOJIS_MINECRAFT } from '../components/comunidadComponentes/emojis-minecraft';
 import Footer from '../components/Footer';
 import Header from '../components/header';
-import './Comunidad.css';
+import '../styles/comunidad.css';
 
 // ---------------------------------------------------------------------------
 // DATOS MOCKEADOS (posts)
