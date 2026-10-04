@@ -1,7 +1,8 @@
 // comunidad.jsx
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import ListaComentarios from '../components/comunidadComponentes/lista-comentarios';
 import DenunciaModal from '../components/comunidadComponentes/denuncia-modal';
+import NuevoPost from '../components/comunidadComponentes/nuevo-post';
 import { EMOJIS_MINECRAFT } from '../components/comunidadComponentes/emojis-minecraft';
 import Footer from '../components/Footer';
 import Header from '../components/header';
@@ -128,14 +129,6 @@ function Comunidad({ posts: postsProp }) {
   const [posts, setPosts] = useState(postsProp || postsIniciales);
   const [filtroActivo, setFiltroActivo] = useState('Todas');
 
-  // Estado del formulario "nuevo post"
-  const [textoNuevoPost, setTextoNuevoPost] = useState('');
-  const [etiquetaSeleccionada, setEtiquetaSeleccionada] = useState('');
-  const [mostrarSelectorEtiqueta, setMostrarSelectorEtiqueta] = useState(false);
-  const [imagenPreview, setImagenPreview] = useState(null);
-  const [errorPublicacion, setErrorPublicacion] = useState('');
-  const inputImagenRef = useRef(null);
-
   // Likes del usuario actual: { [postId]: true }
   const [likesUsuario, setLikesUsuario] = useState({});
 
@@ -157,44 +150,25 @@ function Comunidad({ posts: postsProp }) {
   const postsFiltrados =
     filtroActivo === 'Todas' ? posts : posts.filter((p) => p.categoria === filtroActivo);
 
-  function handleImagenSeleccionada(e) {
-    const archivo = e.target.files[0];
-    if (archivo) setImagenPreview(URL.createObjectURL(archivo));
-  }
-
-  function handlePublicar() {
-    if (!textoNuevoPost.trim()) {
-      setErrorPublicacion('Escribí algo antes de publicar.');
-      return;
-    }
-    if (!etiquetaSeleccionada) {
-      setErrorPublicacion('Elegí una etiqueta para tu publicación.');
-      return;
-    }
-
+  // Recibe los datos ya validados desde <NuevoPost /> y arma el post completo.
+  function handlePublicar({ contenido, categoria, imagen }) {
     const nuevoPost = {
       id: Date.now(),
       ...USUARIO_ACTUAL,
       tiempo: 'Ahora',
       contexto: 'Tu partida',
-      categoria: etiquetaSeleccionada,
-      contenido: textoNuevoPost.trim(),
+      categoria,
+      contenido,
       likes: 0,
       reacciones: [],
       comentarios: [],
-      imagen: imagenPreview,
+      imagen,
     };
 
     setPosts((prev) => [nuevoPost, ...prev]);
 
     // TODO (sistema de logros): disparar acá el logro "Primera publicación"
     // cuando se implemente el sistema de logros global.
-
-    setTextoNuevoPost('');
-    setEtiquetaSeleccionada('');
-    setImagenPreview(null);
-    setMostrarSelectorEtiqueta(false);
-    setErrorPublicacion('');
   }
 
   function toggleLike(postId) {
@@ -297,81 +271,11 @@ function Comunidad({ posts: postsProp }) {
           </nav>
 
           {/* ---------- FORMULARIO NUEVO POST ---------- */}
-          <section className="nuevo-post cascada-item">
-            <div className="nuevo-post__fila">
-              <div className="avatar avatar--propio">{USUARIO_ACTUAL.inicial}</div>
-              <textarea
-                className="nuevo-post__texto"
-                placeholder="¿Que vas a escribir hoy?"
-                value={textoNuevoPost}
-                onChange={(e) => setTextoNuevoPost(e.target.value)}
-                rows={2}
-              />
-            </div>
-
-            {imagenPreview && (
-              <div className="nuevo-post__preview">
-                <img src={imagenPreview} alt="Vista previa de la imagen a publicar" />
-                <button
-                  className="nuevo-post__quitar-imagen"
-                  onClick={() => setImagenPreview(null)}
-                  aria-label="Quitar imagen"
-                >
-                  ×
-                </button>
-              </div>
-            )}
-
-            {errorPublicacion && <p className="nuevo-post__error">{errorPublicacion}</p>}
-
-            <div className="nuevo-post__acciones">
-              <div className="nuevo-post__acciones-izquierda">
-                <div className="etiqueta-selector">
-                  <button
-                    className="btn-etiqueta"
-                    onClick={() => setMostrarSelectorEtiqueta((v) => !v)}
-                  >
-                    {etiquetaSeleccionada || 'Etiqueta'}
-                  </button>
-                  {mostrarSelectorEtiqueta && (
-                    <ul className="etiqueta-menu">
-                      {CATEGORIAS_ETIQUETA.map((cat) => (
-                        <li key={cat}>
-                          <button
-                            onClick={() => {
-                              setEtiquetaSeleccionada(cat);
-                              setMostrarSelectorEtiqueta(false);
-                            }}
-                          >
-                            {cat}
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-
-                <button
-                  className="btn-imagen"
-                  onClick={() => inputImagenRef.current.click()}
-                  aria-label="Adjuntar imagen"
-                >
-                  🖼
-                </button>
-                <input
-                  type="file"
-                  accept="image/*"
-                  ref={inputImagenRef}
-                  onChange={handleImagenSeleccionada}
-                  hidden
-                />
-              </div>
-
-              <button className="btn-publicar" onClick={handlePublicar}>
-                Publicar
-              </button>
-            </div>
-          </section>
+          <NuevoPost
+            usuario={USUARIO_ACTUAL}
+            categorias={CATEGORIAS_ETIQUETA}
+            onPublicar={handlePublicar}
+          />
 
           {/* ---------- LISTA DE POSTS ---------- */}
           <section className="lista-posts">
