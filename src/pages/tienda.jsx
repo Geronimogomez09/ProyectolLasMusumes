@@ -35,6 +35,7 @@ function cargarProductos() {
 
 export default function Tienda() {
 
+
     const [productos, setProductos] =
         useState(cargarProductos);
 

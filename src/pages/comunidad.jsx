@@ -1,8 +1,10 @@
-import { useState, useRef, useEffect } from 'react';
+// comunidad.jsx
+import { useState } from 'react';
 import ListaComentarios from '../components/comunidadComponentes/lista-comentarios';
 import DenunciaModal from '../components/comunidadComponentes/denuncia-modal';
+import NuevoPost from '../components/comunidadComponentes/nuevo-post';
 import { EMOJIS_MINECRAFT } from '../components/comunidadComponentes/emojis-minecraft';
-import Footer from '../components/footer';
+import Footer from '../components/Footer';
 import Header from '../components/header';
 import './Comunidad.css';
 
@@ -10,8 +12,8 @@ import './Comunidad.css';
 // DATOS MOCKEADOS (posts)
 // Cuando exista backend, este array se va a reemplazar por props:
 // function Comunidad({ posts }) { ... }
-// Cada post ahora trae su propio array de comentarios (en vez de un número
-// suelto), para poder listarlos y agregar nuevos de verdad.
+// Cada post trae su propio array de comentarios (en vez de un número suelto),
+// para poder listarlos y agregar nuevos de verdad.
 // ---------------------------------------------------------------------------
 const postsIniciales = [
   {
@@ -104,33 +106,40 @@ const postsIniciales = [
   },
 ];
 
-const CATEGORIAS_FILTRO = ['Todas', 'construcciones', 'Mods', 'Anuncios', 'pvps'];
 const CATEGORIAS_ETIQUETA = ['construcciones', 'Mods', 'Anuncios', 'pvps'];
+const CATEGORIAS_FILTRO = ['Todas', ...CATEGORIAS_ETIQUETA];
+
+// Datos del usuario actual (se reutilizan al crear posts y comentarios).
+const USUARIO_ACTUAL = { usuario: 'Vos', inicial: 'V', colorAvatar: '#3d9970' };
+
+// Índice de emojis por id: evita hacer .find() en cada render.
+const EMOJIS_POR_ID = Object.fromEntries(EMOJIS_MINECRAFT.map((e) => [e.id, e]));
+
+// Ícono de emoji con fallback: si la imagen falla, muestra el nombre en texto.
+// Reemplaza la manipulación directa del DOM (e.target.style...) por estado de React.
+function EmojiIcono({ emoji, claseFallback }) {
+  const [fallo, setFallo] = useState(false);
+
+  if (fallo) return <span className={claseFallback}>{emoji?.nombre}</span>;
+
+  return <img src={emoji?.src} alt={emoji?.nombre} onError={() => setFallo(true)} />;
+}
 
 function Comunidad({ posts: postsProp }) {
-
   const [posts, setPosts] = useState(postsProp || postsIniciales);
   const [filtroActivo, setFiltroActivo] = useState('Todas');
 
-  // Estado del formulario "nuevo post"
-  const [textoNuevoPost, setTextoNuevoPost] = useState('');
-  const [etiquetaSeleccionada, setEtiquetaSeleccionada] = useState('');
-  const [mostrarSelectorEtiqueta, setMostrarSelectorEtiqueta] = useState(false);
-  const [imagenPreview, setImagenPreview] = useState(null);
-  const [errorPublicacion, setErrorPublicacion] = useState('');
-  const inputImagenRef = useRef(null);
+  // Likes del usuario actual: { [postId]: true }
+  const [likesUsuario, setLikesUsuario] = useState({});
 
-  // Estado de reacciones por post
-  const [reacciones, setReacciones] = useState({}); // { [postId]: { like: bool } }
-
-  // Reacciones con emoji estilo Discord/WhatsApp: cada emoji acumula su
-  // propio contador. Acá solo guardamos CUÁLES tiene activas el usuario
-  // actual; el conteo "de base" (de otros usuarios) vive en post.reacciones.
+  // Reacciones con emoji estilo Discord/WhatsApp: cada emoji acumula su propio
+  // contador. Acá solo guardamos CUÁLES tiene activas el usuario actual; el
+  // conteo "de base" (de otros usuarios) vive en post.reacciones.
   // Forma: { [postId]: { [emojiId]: true } }
   const [reaccionesUsuario, setReaccionesUsuario] = useState({});
   const [pickerReaccionAbierto, setPickerReaccionAbierto] = useState(null); // postId con el picker abierto
 
-  // Comentarios: qué post tiene la sección de comentarios abierta
+  // Comentarios: qué posts tienen la sección de comentarios abierta
   const [comentariosAbiertos, setComentariosAbiertos] = useState({});
 
   // Denuncias: qué post tiene el modal abierto, y el registro de las enviadas
@@ -139,106 +148,58 @@ function Comunidad({ posts: postsProp }) {
   const [denunciasEnviadas, setDenunciasEnviadas] = useState([]);
 
   const postsFiltrados =
-    filtroActivo === 'Todas'
-      ? posts
-      : posts.filter((p) => p.categoria === filtroActivo);
-      
-  function handleImagenSeleccionada(e) {
-    const archivo = e.target.files[0];
-    if (archivo) {
-      setImagenPreview(URL.createObjectURL(archivo));
-    }
-  }
+    filtroActivo === 'Todas' ? posts : posts.filter((p) => p.categoria === filtroActivo);
 
-  function handlePublicar() {
-    if (!textoNuevoPost.trim()) {
-      setErrorPublicacion('Escribí algo antes de publicar.');
-      return;
-    }
-    if (!etiquetaSeleccionada) {
-      setErrorPublicacion('Elegí una etiqueta para tu publicación.');
-      return;
-    }
-
+  // Recibe los datos ya validados desde <NuevoPost /> y arma el post completo.
+  function handlePublicar({ contenido, categoria, imagen }) {
     const nuevoPost = {
       id: Date.now(),
-      usuario: 'Vos',
-      inicial: 'V',
-      colorAvatar: '#3d9970',
+      ...USUARIO_ACTUAL,
       tiempo: 'Ahora',
       contexto: 'Tu partida',
-      categoria: etiquetaSeleccionada,
-      contenido: textoNuevoPost.trim(),
+      categoria,
+      contenido,
       likes: 0,
       reacciones: [],
       comentarios: [],
-      imagen: imagenPreview,
+      imagen,
     };
 
-    setPosts([nuevoPost, ...posts]);
+    setPosts((prev) => [nuevoPost, ...prev]);
 
     // TODO (sistema de logros): disparar acá el logro "Primera publicación"
     // cuando se implemente el sistema de logros global.
-
-    setTextoNuevoPost('');
-    setEtiquetaSeleccionada('');
-    setImagenPreview(null);
-    setMostrarSelectorEtiqueta(false);
-    setErrorPublicacion('');
   }
 
-  function toggleReaccion(postId) {
-    setReacciones((prev) => {
-      const actual = prev[postId] || { like: false };
-      return {
-        ...prev,
-        [postId]: { ...actual, like: !actual.like },
-      };
-    });
+  function toggleLike(postId) {
+    setLikesUsuario((prev) => ({ ...prev, [postId]: !prev[postId] }));
   }
 
   function contarLikes(post) {
-    const activo = reacciones[post.id]?.like;
-    return activo ? post.likes + 1 : post.likes;
-  }
-
-  function obtenerEmoji(id) {
-    return EMOJIS_MINECRAFT.find((e) => e.id === id);
+    return post.likes + (likesUsuario[post.id] ? 1 : 0);
   }
 
   // Toggle de UN emoji puntual en UN post: si ya lo tenías puesto, lo saca;
-  // si no, lo suma. Cada emoji es independiente del resto (como en Discord:
-  // podés tener 👍 y 🎉 juntos en el mismo mensaje, cada uno con su cuenta).
+  // si no, lo suma. Cada emoji es independiente del resto.
   function toggleEmojiReaccion(postId, emojiId) {
     setReaccionesUsuario((prev) => {
-      const actuales = prev[postId] || {};
-      const yaActiva = Boolean(actuales[emojiId]);
-      const nuevasDelPost = { ...actuales };
-
-      if (yaActiva) {
-        delete nuevasDelPost[emojiId];
-      } else {
-        nuevasDelPost[emojiId] = true;
-      }
-
-      return { ...prev, [postId]: nuevasDelPost };
+      const { [emojiId]: yaActiva, ...resto } = prev[postId] || {};
+      return { ...prev, [postId]: yaActiva ? resto : { ...resto, [emojiId]: true } };
     });
   }
 
   // Combina las reacciones "de base" del post (mock, simulan otros usuarios)
   // con las que el usuario actual fue activando, incluso si eligió un emoji
-  // que el post todavía no tenía. Oculta las que queden en 0 (por ejemplo,
-  // si sacás tu única reacción de un tipo que nadie más usó).
+  // que el post todavía no tenía. Oculta las que queden en 0.
   function obtenerReaccionesVisibles(post) {
     const propias = reaccionesUsuario[post.id] || {};
-    const mapa = new Map();
+    const conteos = new Map(post.reacciones.map((r) => [r.emojiId, r.conteo]));
 
-    post.reacciones.forEach((r) => mapa.set(r.emojiId, r.conteo));
     Object.keys(propias).forEach((emojiId) => {
-      if (!mapa.has(emojiId)) mapa.set(emojiId, 0);
+      if (!conteos.has(emojiId)) conteos.set(emojiId, 0);
     });
 
-    return Array.from(mapa.entries())
+    return [...conteos]
       .map(([emojiId, base]) => ({
         emojiId,
         total: base + (propias[emojiId] ? 1 : 0),
@@ -259,13 +220,7 @@ function Comunidad({ posts: postsProp }) {
               ...p,
               comentarios: [
                 ...p.comentarios,
-                {
-                  id: Date.now(),
-                  usuario: 'Vos',
-                  inicial: 'V',
-                  colorAvatar: '#3d9970',
-                  texto: comentario.texto,
-                },
+                { id: Date.now(), ...USUARIO_ACTUAL, texto: comentario.texto },
               ],
             }
           : p
@@ -290,8 +245,7 @@ function Comunidad({ posts: postsProp }) {
       <Header />
       <div className="comunidad-page">
         {/* ---------- HERO / ENCABEZADO ---------- */}
-        {/* cascada-item: primero en aparecer (delay 0s) */}
-        <header className="comunidad-hero cascada-item" style={{ animationDelay: '0s' }}>
+        <header className="comunidad-hero cascada-item">
           <div className="comunidad-hero__overlay" />
           <div className="comunidad-hero__contenido">
             <h1>Comunidad</h1>
@@ -301,10 +255,8 @@ function Comunidad({ posts: postsProp }) {
 
         <main className="comunidad-main">
           {/* ---------- FILTROS ---------- */}
-          {/* cascada-item: segundo en aparecer (delay 0.1s) */}
           <nav
             className="comunidad-filtros cascada-item"
-            style={{ animationDelay: '0.15s' }}
             aria-label="Filtrar publicaciones por categoría"
           >
             {CATEGORIAS_FILTRO.map((cat) => (
@@ -319,84 +271,11 @@ function Comunidad({ posts: postsProp }) {
           </nav>
 
           {/* ---------- FORMULARIO NUEVO POST ---------- */}
-          {/* cascada-item: tercero en aparecer (delay 0.2s) */}
-          <section className="nuevo-post cascada-item" style={{ animationDelay: '0.3s' }}>
-            <div className="nuevo-post__fila">
-              <div className="avatar avatar--propio">V</div>
-              <textarea
-                className="nuevo-post__texto"
-                placeholder="¿Que vas a escribir hoy?"
-                value={textoNuevoPost}
-                onChange={(e) => setTextoNuevoPost(e.target.value)}
-                rows={2}
-              />
-            </div>
-
-            {imagenPreview && (
-              <div className="nuevo-post__preview">
-                <img src={imagenPreview} alt="Vista previa de la imagen a publicar" />
-                <button
-                  className="nuevo-post__quitar-imagen"
-                  onClick={() => setImagenPreview(null)}
-                  aria-label="Quitar imagen"
-                >
-                  ×
-                </button>
-              </div>
-            )}
-
-            {errorPublicacion && <p className="nuevo-post__error">{errorPublicacion}</p>}
-
-            <div className="nuevo-post__acciones">
-              <div className="nuevo-post__acciones-izquierda">
-                <div className="etiqueta-selector">
-                  <div className="etiqueta-2">
-                  <button
-                    className="btn-etiqueta"
-                    onClick={() => setMostrarSelectorEtiqueta((v) => !v)}
-                  >
-                    {etiquetaSeleccionada ? etiquetaSeleccionada : 'Etiqueta'}
-                  </button>
-                  {mostrarSelectorEtiqueta && (
-                    <ul className="etiqueta-menu">
-                      {CATEGORIAS_ETIQUETA.map((cat) => (
-                        <li key={cat}>
-                          <button
-                            onClick={() => {
-                              setEtiquetaSeleccionada(cat);
-                              setMostrarSelectorEtiqueta(false);
-                            }}
-                          >
-                            {cat}
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-
-                <button
-                  className="btn-imagen"
-                  onClick={() => inputImagenRef.current.click()}
-                  aria-label="Adjuntar imagen"
-                >
-                  🖼
-                </button>
-                <input
-                  type="file"
-                  accept="image/*"
-                  ref={inputImagenRef}
-                  onChange={handleImagenSeleccionada}
-                  hidden
-                />
-                </div>
-
-              </div>
-              <button className="btn-publicar" onClick={handlePublicar}>
-                Publicar
-              </button>
-            </div>
-          </section>
+          <NuevoPost
+            usuario={USUARIO_ACTUAL}
+            categorias={CATEGORIAS_ETIQUETA}
+            onPublicar={handlePublicar}
+          />
 
           {/* ---------- LISTA DE POSTS ---------- */}
           <section className="lista-posts">
@@ -404,17 +283,17 @@ function Comunidad({ posts: postsProp }) {
               <p className="lista-posts__vacio">No hay publicaciones en esta categoría todavía.</p>
             )}
 
-            {/* cascada-item: cada post aparece con más delay según su índice
-                (0.3s, 0.38s, 0.46s...), generando el efecto de cascada bajando
-                por el feed. Math.min(index, 8) evita que el delay crezca sin
-                límite si hay muchísimos posts. */}
+            {/* --delay: cada post aparece con más delay según su índice, generando
+                el efecto de cascada. Math.min(index, 8) evita que el delay crezca
+                sin límite si hay muchísimos posts. Es lo único que queda inline
+                porque depende del índice. */}
             {postsFiltrados.map((post, index) => (
               <article
                 key={post.id}
                 className={`post-card cascada-item ${
                   reportados[post.id] ? 'post-card--reportado' : ''
                 }`}
-                style={{ animationDelay: `${0.45 + Math.min(index, 8) * 0.15}s` }}
+                style={{ '--delay': `${0.45 + Math.min(index, 8) * 0.15}s` }}
               >
                 <div className="post-card__encabezado">
                   <div className="avatar" style={{ backgroundColor: post.colorAvatar }}>
@@ -453,87 +332,32 @@ function Comunidad({ posts: postsProp }) {
                       />
                     )}
 
-                    <div
-                      className="post-card__reacciones"
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        flexWrap: 'wrap',
-                        gap: '8px',
-                      }}
-                    >
+                    <div className="post-card__reacciones">
                       <button
-                        className={`reaccion ${
-                          reacciones[post.id]?.like ? 'reaccion--activa' : ''
-                        }`}
-                        onClick={() => toggleReaccion(post.id)}
-                        style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '6px',
-                          height: '30px',
-                          padding: '0 8px',
-                          border: 'none',
-                          background: 'transparent',
-                        }}
+                        className={`reaccion ${likesUsuario[post.id] ? 'reaccion--activa' : ''}`}
+                        onClick={() => toggleLike(post.id)}
                       >
                         <span>❤️</span>
                         <span>{contarLikes(post)}</span>
                       </button>
 
-                      <div
-                        className="reacciones-emoji-grupo"
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          flexWrap: 'wrap',
-                          gap: '6px',
-                        }}
-                      >
+                      <div className="reacciones-emoji-grupo">
                         {obtenerReaccionesVisibles(post).map((r) => {
-                          const emoji = obtenerEmoji(r.emojiId);
+                          const emoji = EMOJIS_POR_ID[r.emojiId];
                           return (
                             <button
                               key={r.emojiId}
-                              className={`reaccion-pill ${
-                                r.activa ? 'reaccion-pill--activa' : ''
-                              }`}
+                              className={`reaccion-pill ${r.activa ? 'reaccion-pill--activa' : ''}`}
                               title={emoji?.nombre}
                               onClick={() => toggleEmojiReaccion(post.id, r.emojiId)}
-                              style={{
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '5px',
-                                height: '28px',
-                                boxSizing: 'border-box',
-                                background: r.activa ? '#fdf6e0' : '#f4f4f2',
-                                border: `1px solid ${r.activa ? '#e6c458' : '#e2e2e2'}`,
-                                borderRadius: '999px',
-                                padding: '0 10px',
-                                fontSize: '0.8rem',
-                                lineHeight: 1,
-                                cursor: 'pointer',
-                              }}
                             >
-                              <img
-                                src={emoji?.src}
-                                alt={emoji?.nombre}
-                                style={{ width: '15px', height: '15px', objectFit: 'contain' }}
-                                onError={(e) => {
-                                  e.target.style.display = 'none';
-                                  e.target.nextElementSibling.style.display = 'inline';
-                                }}
-                              />
-                              {/* Oculto por defecto inline: solo aparece si la imagen falla */}
-                              <span style={{ display: 'none', fontSize: '0.72rem' }}>
-                                {emoji?.nombre}
-                              </span>
-                              <span style={{ fontWeight: r.activa ? 700 : 500 }}>{r.total}</span>
+                              <EmojiIcono emoji={emoji} claseFallback="reaccion-pill__fallback" />
+                              <span className="reaccion-pill__conteo">{r.total}</span>
                             </button>
                           );
                         })}
 
-                        <div className="reaccion-emoji-selector" style={{ position: 'relative' }}>
+                        <div className="reaccion-emoji-selector">
                           <button
                             className="btn-agregar-reaccion"
                             aria-label="Agregar reacción"
@@ -542,74 +366,27 @@ function Comunidad({ posts: postsProp }) {
                                 pickerReaccionAbierto === post.id ? null : post.id
                               )
                             }
-                            style={{
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              height: '28px',
-                              width: '32px',
-                              boxSizing: 'border-box',
-                              background: '#f4f4f2',
-                              border: '1px solid #e2e2e2',
-                              borderRadius: '999px',
-                              fontSize: '0.85rem',
-                              cursor: 'pointer',
-                            }}
                           >
                             🙂
                           </button>
 
                           {pickerReaccionAbierto === post.id && (
-                            <div
-                              className="reaccion-emoji-picker"
-                              style={{
-                                position: 'absolute',
-                                bottom: '130%',
-                                left: 0,
-                                background: '#fff',
-                                border: '1px solid #dcdcdc',
-                                borderRadius: '10px',
-                                boxShadow: '0 8px 22px rgba(0,0,0,0.15)',
-                                padding: '8px',
-                                zIndex: 20,
-                                display: 'grid',
-                                gridTemplateColumns: 'repeat(4, 44px)',
-                                gap: '6px',
-                              }}
-                            >
+                            <div className="reaccion-emoji-picker">
                               {EMOJIS_MINECRAFT.map((emoji) => (
                                 <button
                                   key={emoji.id}
                                   type="button"
                                   className="reaccion-emoji-picker__item"
                                   title={emoji.nombre}
-                                  style={{
-                                    width: '44px',
-                                    height: '44px',
-                                    overflow: 'hidden',
-                                    padding: '2px',
-                                  }}
                                   onClick={() => {
                                     toggleEmojiReaccion(post.id, emoji.id);
                                     setPickerReaccionAbierto(null);
                                   }}
                                 >
-                                  <img
-                                    src={emoji.src}
-                                    alt={emoji.nombre}
-                                    style={{
-                                      width: '26px',
-                                      height: '26px',
-                                      objectFit: 'contain',
-                                    }}
-                                    onError={(e) => {
-                                      e.target.style.display = 'none';
-                                      e.target.nextElementSibling.style.display = 'inline';
-                                    }}
+                                  <EmojiIcono
+                                    emoji={emoji}
+                                    claseFallback="reaccion-emoji-picker__fallback"
                                   />
-                                  <span style={{ display: 'none', fontSize: '0.55rem' }}>
-                                    {emoji.nombre}
-                                  </span>
                                 </button>
                               ))}
                             </div>
@@ -617,19 +394,7 @@ function Comunidad({ posts: postsProp }) {
                         </div>
                       </div>
 
-                      <button
-                        className="reaccion"
-                        onClick={() => toggleComentarios(post.id)}
-                        style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '6px',
-                          height: '30px',
-                          padding: '0 8px',
-                          border: 'none',
-                          background: 'transparent',
-                        }}
-                      >
+                      <button className="reaccion" onClick={() => toggleComentarios(post.id)}>
                         <span>💬</span>
                         <span>{post.comentarios.length}</span>
                       </button>
