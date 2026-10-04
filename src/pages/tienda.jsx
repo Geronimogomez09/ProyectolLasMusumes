@@ -3,99 +3,140 @@ export default function Tienda() {
   return (
     <>
     <Header />
-    {/* Banner Promocional */}
-  <section className="bg-primary text-white text-center py-5 shadow-sm">
-    <div className="container">
-      <h1 className="display-5 fw-bold">Ofertas de la Semana</h1>
-      <p className="lead">Descuentos de hasta el 40% en artículos seleccionados con envío gratis.</p>
-      <a href="#productos" className="btn btn-light btn-lg fw-semibold mt-2">Ver Catálogo</a>
+  
+
+ <main>
+
+  <div id="myCarousel" className="carousel slide" data-bs-ride="carousel">
+    <div className="carousel-indicators">
+      <button type="button" data-bs-target="#myCarousel" data-bs-slide-to="0" className="active" aria-current="true" aria-label="Slide 1"></button>
+      <button type="button" data-bs-target="#myCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
+      <button type="button" data-bs-target="#myCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
     </div>
-  </section>
+    <div className="carousel-inner">
+      <div className="carousel-item active">
+        <svg className="bd-placeholder-img" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" preserveAspectRatio="xMidYMid slice" focusable="false"><rect width="100%" height="100%" fill="#777"/></svg>
 
-  {/* Catálogo de Productos */}
-  <main className="flex-grow-1 py-5" id="productos">
-    <div className="container">
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2 className="h3 fw-bold mb-0">Productos Destacados</h2>
-        <span className="text-muted">Mostrando 4 de 12 productos</span>
+        <div className="container">
+          <div className="carousel-caption text-start">
+            <h1>Example headline.</h1>
+            <p>Some representative placeholder content for the first slide of the carousel.</p>
+            <p><a className="btn btn-lg btn-primary" href="#">Sign up today</a></p>
+          </div>
+        </div>
       </div>
+      <div className="carousel-item">
+        <svg className="bd-placeholder-img" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" preserveAspectRatio="xMidYMid slice" focusable="false"><rect width="100%" height="100%" fill="#777"/></svg>
 
-      <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
-
-        {/* Producto 1 */}
-        <div className="col">
-          <div className="card h-100 border-0 shadow-sm rounded-3">
-            <span className="badge bg-danger position-absolute top-0 end-0 m-3">-20%</span>
-            <img src="https://via.placeholder.com/300x200" className="card-img-top rounded-top-3" alt="Producto 1"/>
-            <div className="card-body d-flex flex-column">
-              <span className="text-muted small mb-1">Tecnología</span>
-              <h5 className="card-title h6 fw-bold">Auriculares Inalámbricos</h5>
-              <div className="mt-auto pt-2">
-                <div className="d-flex align-items-center mb-2">
-                  <span className="h5 fw-bold mb-0 me-2">$39.99</span>
-                  <span className="text-decoration-line-through text-muted small">$49.99</span>
-                </div>
-                <button className="btn btn-outline-primary w-100 btn-sm"><i className="bi bi-cart-plus me-1"></i> Añadir</button>
-              </div>
-            </div>
+        <div className="container">
+          <div className="carousel-caption">
+            <h1>Another example headline.</h1>
+            <p>Some representative placeholder content for the second slide of the carousel.</p>
+            <p><a className="btn btn-lg btn-primary" href="#">Learn more</a></p>
           </div>
         </div>
+      </div>
+      <div className="carousel-item">
+        <svg className="bd-placeholder-img" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" preserveAspectRatio="xMidYMid slice" focusable="false"><rect width="100%" height="100%" fill="#777"/></svg>
 
-        {/* Producto 2 */}
-        <div className="col">
-          <div className="card h-100 border-0 shadow-sm rounded-3">
-            <img src="https://via.placeholder.com/300x200" className="card-img-top rounded-top-3" alt="Producto 2"/>
-            <div className="card-body d-flex flex-column">
-              <span className="text-muted small mb-1">Calzado</span>
-              <h5 className="card-title h6 fw-bold">Zapatillas Deportivas</h5>
-              <div className="mt-auto pt-2">
-                <div className="mb-2">
-                  <span className="h5 fw-bold mb-0">$75.00</span>
-                </div>
-                <button className="btn btn-outline-primary w-100 btn-sm"><i className="bi bi-cart-plus me-1"></i> Añadir</button>
-              </div>
-            </div>
+        <div className="container">
+          <div className="carousel-caption text-end">
+            <h1>One more for good measure.</h1>
+            <p>Some representative placeholder content for the third slide of this carousel.</p>
+            <p><a className="btn btn-lg btn-primary" href="#">Browse gallery</a></p>
           </div>
         </div>
-
-        {/* Producto 3 */}
-        <div className="col">
-          <div className="card h-100 border-0 shadow-sm rounded-3">
-            <span className="badge bg-success position-absolute top-0 end-0 m-3">Nuevo</span>
-            <img src="https://via.placeholder.com/300x200" className="card-img-top rounded-top-3" alt="Producto 3"/>
-            <div className="card-body d-flex flex-column">
-              <span className="text-muted small mb-1">Accesorios</span>
-              <h5 className="card-title h6 fw-bold">Reloj Inteligente Fit</h5>
-              <div className="mt-auto pt-2">
-                <div className="mb-2">
-                  <span className="h5 fw-bold mb-0">$120.00</span>
-                </div>
-                <button className="btn btn-outline-primary w-100 btn-sm"><i className="bi bi-cart-plus me-1"></i> Añadir</button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Producto 4 */}
-        <div className="col">
-          <div className="card h-100 border-0 shadow-sm rounded-3">
-            <img src="https://via.placeholder.com/300x200" className="card-img-top rounded-top-3" alt="Producto 4"/>
-            <div className="card-body d-flex flex-column">
-              <span className="text-muted small mb-1">Hogar</span>
-              <h5 className="card-title h6 fw-bold">Mochila Impermeable</h5>
-              <div className="mt-auto pt-2">
-                <div className="mb-2">
-                  <span className="h5 fw-bold mb-0">$29.90</span>
-                </div>
-                <button className="btn btn-outline-primary w-100 btn-sm"><i className="bi bi-cart-plus me-1"></i> Añadir</button>
-              </div>
-            </div>
-          </div>
-        </div>
-
       </div>
     </div>
-  </main>
+    <button className="carousel-control-prev" type="button" data-bs-target="#myCarousel" data-bs-slide="prev">
+      <span className="carousel-control-prev-icon" aria-hidden="true"></span>
+      <span className="visually-hidden">Previous</span>
+    </button>
+    <button className="carousel-control-next" type="button" data-bs-target="#myCarousel" data-bs-slide="next">
+      <span className="carousel-control-next-icon" aria-hidden="true"></span>
+      <span className="visually-hidden">Next</span>
+    </button>
+  </div>
+
+
+  <div className="container marketing">
+
+  
+    <div className="row">
+      <div className="col-lg-4">
+        <svg className="bd-placeholder-img rounded-circle" width="140" height="140" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder: 140x140" preserveAspectRatio="xMidYMid slice" focusable="false"><title>Placeholder</title><rect width="100%" height="100%" fill="#777"/><text x="50%" y="50%" fill="#777" dy=".3em">140x140</text></svg>
+
+        <h2>Heading</h2>
+        <p>Some representative placeholder content for the three columns of text below the carousel. This is the first column.</p>
+        <p><a className="btn btn-secondary" href="#">View details &raquo;</a></p>
+      </div>
+      <div className="col-lg-4">
+        <svg className="bd-placeholder-img rounded-circle" width="140" height="140" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder: 140x140" preserveAspectRatio="xMidYMid slice" focusable="false"><title>Placeholder</title><rect width="100%" height="100%" fill="#777"/><text x="50%" y="50%" fill="#777" dy=".3em">140x140</text></svg>
+
+        <h2>Heading</h2>
+        <p>Another exciting bit of representative placeholder content. This time, we've moved on to the second column.</p>
+        <p><a className="btn btn-secondary" href="#">View details &raquo;</a></p>
+      </div>
+      <div className="col-lg-4">
+        <svg className="bd-placeholder-img rounded-circle" width="140" height="140" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder: 140x140" preserveAspectRatio="xMidYMid slice" focusable="false"><title>Placeholder</title><rect width="100%" height="100%" fill="#777"/><text x="50%" y="50%" fill="#777" dy=".3em">140x140</text></svg>
+
+        <h2>Heading</h2>
+        <p>And lastly this, the third column of representative placeholder content.</p>
+        <p><a className="btn btn-secondary" href="#">View details &raquo;</a></p>
+      </div>
+    </div>
+
+
+  
+
+    <hr className="featurette-divider"/>
+
+    <div className="row featurette">
+      <div className="col-md-7">
+        <h2 className="featurette-heading">First featurette heading. <span className="text-muted">It’ll blow your mind.</span></h2>
+        <p className="lead">Some great placeholder content for the first featurette here. Imagine some exciting prose here.</p>
+      </div>
+      <div className="col-md-5">
+        <svg className="bd-placeholder-img bd-placeholder-img-lg featurette-image img-fluid mx-auto" width="500" height="500" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder: 500x500" preserveAspectRatio="xMidYMid slice" focusable="false"><title>Placeholder</title><rect width="100%" height="100%" fill="#eee"/><text x="50%" y="50%" fill="#aaa" dy=".3em">500x500</text></svg>
+
+      </div>
+    </div>
+
+    <hr className="featurette-divider"/>
+
+    <div className="row featurette">
+      <div className="col-md-7 order-md-2">
+        <h2 className="featurette-heading">Oh yeah, it’s that good. <span className="text-muted">See for yourself.</span></h2>
+        <p className="lead">Another featurette? Of course. More placeholder content here to give you an idea of how this layout would work with some actual real-world content in place.</p>
+      </div>
+      <div className="col-md-5 order-md-1">
+        <svg className="bd-placeholder-img bd-placeholder-img-lg featurette-image img-fluid mx-auto" width="500" height="500" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder: 500x500" preserveAspectRatio="xMidYMid slice" focusable="false"><title>Placeholder</title><rect width="100%" height="100%" fill="#eee"/><text x="50%" y="50%" fill="#aaa" dy=".3em">500x500</text></svg>
+
+      </div>
+    </div>
+
+    <hr className="featurette-divider"/>
+
+    <div className="row featurette">
+      <div className="col-md-7">
+        <h2 className="featurette-heading">And lastly, this one. <span className="text-muted">Checkmate.</span></h2>
+        <p className="lead">And yes, this is the last block of representative placeholder content. Again, not really intended to be actually read, simply here to give you a better view of what this would look like with some actual content. Your content.</p>
+      </div>
+      <div className="col-md-5">
+        <svg className="bd-placeholder-img bd-placeholder-img-lg featurette-image img-fluid mx-auto" width="500" height="500" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder: 500x500" preserveAspectRatio="xMidYMid slice" focusable="false"><title>Placeholder</title><rect width="100%" height="100%" fill="#eee"/><text x="50%" y="50%" fill="#aaa" dy=".3em">500x500</text></svg>
+
+      </div>
+    </div>
+
+    <hr className="featurette-divider"/>
+
+
+
+  </div>
+
+
+
+</main>
     </>
   )
 }
