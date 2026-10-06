@@ -1,4 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
+import "../styles/Header.css";
 
 export default function Header() {
   const location = useLocation();
@@ -28,9 +29,13 @@ export default function Header() {
     <header className="header">
       <nav className="navbar navbar-expand-lg">
         <div className="container-fluid header-container">
-          <Link className="navbar-brand header-logo" to="/">
+          <Link
+            className="navbar-brand header-logo"
+            to="/"
+            style={{ color: "#1db53c" }}
+          >
             WIKI<span className="header-logo-separator">-</span>
-            <span>CRAFT</span>
+            <span className="h1-craft">CRAFT</span>
           </Link>
 
           <button
@@ -49,13 +54,22 @@ export default function Header() {
             <div className="header-search">
               <form className="d-flex" role="search">
                 <input
-                  className="form-control"
+                  className=" form-input"
                   type="search"
                   placeholder="Buscar algo nuevo..."
                   aria-label="Buscar"
                 />
-                <button className="btn header-search-button" type="submit">
-                  Buscar
+                <button className="btn-search" type="submit">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    fill="currentColor"
+                    class="bi bi-search"
+                    viewBox="0 0 16 16"
+                  >
+                    <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0" />
+                  </svg>
                 </button>
               </form>
             </div>
@@ -123,7 +137,10 @@ export default function Header() {
                   <hr className="dropdown-divider" />
                 </li>
                 <li>
-                  <button className="dropdown-item profile-logout" type="button">
+                  <button
+                    className="dropdown-item profile-logout"
+                    type="button"
+                  >
                     Cerrar sesión
                   </button>
                 </li>
