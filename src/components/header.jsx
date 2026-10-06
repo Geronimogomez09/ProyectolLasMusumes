@@ -2,7 +2,7 @@ import { Link, useLocation } from 'react-router-dom';
 
 export default function Header() {
   const location = useLocation();
-  const rutasSinNavbar = ['/login', '/registro', '/versiones', '/historia'];
+  const rutasSinNavbar = ['/login', '/registro', '/historia'];
 
   if (rutasSinNavbar.includes(location.pathname)) {
     return null;
