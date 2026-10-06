@@ -7,7 +7,6 @@ import { EMOJIS_MINECRAFT } from '../components/comunidadComponentes/emojis-mine
 import Footer from '../components/Footer';
 import Header from '../components/header';
 import '../styles/Comunidad.css';
-
 // ---------------------------------------------------------------------------
 // DATOS MOCKEADOS (posts)
 // Cuando exista backend, este array se va a reemplazar por props:
