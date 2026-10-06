@@ -29,11 +29,7 @@ export default function Header() {
     <header className="header">
       <nav className="navbar navbar-expand-lg">
         <div className="container-fluid header-container">
-          <Link
-            className="navbar-brand header-logo"
-            to="/"
-            style={{ color: "#1db53c" }}
-          >
+          <Link className="navbar-brand header-logo" to="/">
             WIKI<span className="header-logo-separator">-</span>
             <span className="h1-craft">CRAFT</span>
           </Link>
@@ -54,18 +50,18 @@ export default function Header() {
             <div className="header-search">
               <form className="d-flex" role="search">
                 <input
-                  className=" form-input"
+                  className="form-input"
                   type="search"
                   placeholder="Buscar algo nuevo..."
                   aria-label="Buscar"
                 />
-                <button className="btn-search" type="submit">
+                <button className="btn-search" type="submit" aria-label="Buscar">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="16"
                     height="16"
                     fill="currentColor"
-                    class="bi bi-search"
+                    className="bi bi-search"
                     viewBox="0 0 16 16"
                   >
                     <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0" />
@@ -96,7 +92,7 @@ export default function Header() {
 
             <div className="dropdown header-profile">
               <button
-                className="btn profile-button dropdown-toggle"
+                className=" profile-button dropdown-toggle"
                 type="button"
                 id="navbarDropdownUser"
                 data-bs-toggle="dropdown"
