@@ -66,7 +66,7 @@ function Header() {
 
     // El header se compacta al hacer scroll, excepto cuando el cursor está
     // encima o alguno de los menús permanece abierto.
-    const headerCompacto = encogido && !hoverActivo && !menuAbierto && !perfilAbierto;
+    const headerCompacto = encogido && !menuAbierto && !perfilAbierto;
 
     // Cierra el menú de navegación cuando se selecciona un enlace.
     const cerrarMenu = () => {
@@ -76,8 +76,6 @@ function Header() {
     return (
         <header
             className={`header ${headerCompacto ? "shrink" : ""} ${menuAbierto ? "menu-open" : ""}`}
-            onMouseEnter={() => setHoverActivo(true)}
-            onMouseLeave={() => setHoverActivo(false)}
         >
             <nav className="navbar navbar-expand-lg">
                 <div className="container-fluid header-container">
