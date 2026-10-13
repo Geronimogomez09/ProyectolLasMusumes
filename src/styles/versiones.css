@@ -36,8 +36,9 @@
 
 /* ---------- HERO ---------- */
 .versiones-hero {
+  margin-top: 0;
   position: relative;
-  min-height: 220px;
+  min-height: 375px;
   display: flex;
   align-items: center;
   padding: 0 3rem;
@@ -45,7 +46,7 @@
 
   /* Igual que en comunidad.css: bajá tu propia captura y ponela en
      public/images/versiones-bg.jpg. Mientras tanto se ve el color de fondo. */
-  background-image: url('/images/versiones-bg.jpg');
+  background-image: url('../public/fondos/fondo2.png');
   background-color: #2b2b2b;
   background-size: cover;
   background-position: center 40%;
