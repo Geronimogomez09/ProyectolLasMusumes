@@ -30,3 +30,44 @@
     padding-top: 62px;
     padding-bottom: 50px;
 }
+
+/* MARCA: bloque de identidad y acceso a la comunidad. */
+.footer-brand {
+    max-width: 420px;
+}
+
+.footer-logo {
+    display: inline-flex;
+    align-items: center;
+    margin-bottom: 17px;
+    color: var(--blanco);
+    font-size: 29px;
+    font-weight: 850;
+    letter-spacing: -.7px;
+    line-height: 1;
+    text-decoration: none;
+    transition: transform .2s ease;
+}
+
+.footer-logo span {
+    color: var(--blanco);
+}
+
+.footer-logo i,
+.footer-logo strong {
+    color: #81e28e;
+    font-style: normal;
+}
+
+.footer-logo:hover {
+    color: var(--blanco);
+    transform: translateY(-2px);
+}
+
+.footer-brand p {
+    max-width: 390px;
+    margin: 0 0 19px;
+    color: rgba(255, 253, 249, .78);
+    font-size: .92rem;
+    line-height: 1.75;
+}
