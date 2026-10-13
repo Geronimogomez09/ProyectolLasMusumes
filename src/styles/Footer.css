@@ -160,3 +160,31 @@
     color: #fff;
     transform: translateY(-2px);
 }
+
+
+@media (max-width: 991.98px) {
+    .footer-main {
+        padding-top: 48px;
+        padding-bottom: 38px;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .footer-main {
+        padding-top: 40px;
+        padding-bottom: 32px;
+    }
+
+    .footer-logo {
+        font-size: 26px;
+    }
+
+    .footer-bottom {
+        align-items: flex-start;
+        flex-direction: column;
+        justify-content: center;
+        gap: 9px;
+        padding-top: 19px;
+        padding-bottom: 19px;
+    }
+}
