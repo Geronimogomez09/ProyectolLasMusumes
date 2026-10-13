@@ -124,7 +124,53 @@
 
 .btn-search:hover {
   background: #00a521;
-  color: #ffffff;
+  color: #00ff0d3b;
   transform: scaleX(1.01);
-  box-shadow: 0 0 0 0.2rem rgba(29, 181, 60, 0.18);
+}
+
+/* Links que se muestran en la navegación principal. */
+.header-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0;
+}
+
+.header-nav .nav-link {
+  position: relative;
+  padding: 8px 12px !important;
+  border-radius: 7px;
+  color: #111111;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: color 0.2s ease, background 0.2s ease;
+}
+
+.header-nav .nav-link::after {
+  content: "";
+  position: absolute;
+  right: 12px;
+  bottom: 5px;
+  left: 12px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--verde);
+  transform: scaleX(0);
+  transition: transform 0.2s ease;
+}
+
+.header-nav .nav-link:hover {
+  background: #dcefdc;
+  color: #1db53c;
+}
+
+.header-nav .nav-link:hover::after,
+.header-nav .nav-link.active::after {
+  transform: scaleX(1);
+}
+
+.header-nav .nav-link.active {
+  background: #dcefdc;
+  color: #1db53c;
 }
