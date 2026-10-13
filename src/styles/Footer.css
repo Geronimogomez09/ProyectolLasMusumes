@@ -1,0 +1,190 @@
+/* FOOTER: cierre visual del sitio con el marrón y verde de la paleta. */
+.site-footer {
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
+    color: var(--blanco);
+    background: linear-gradient(130deg, var(--marron) 0%, #68482f 100%);
+    border-top: 4px solid var(--verde);
+}
+
+.site-footer::before {
+    position: absolute;
+    top: -110px;
+    right: -75px;
+    width: 300px;
+    height: 300px;
+    content: "";
+    border: 1px solid rgba(220, 239, 220, .13);
+    border-radius: 50%;
+    box-shadow: 0 0 0 28px rgba(220, 239, 220, .035), 0 0 0 58px rgba(220, 239, 220, .025);
+    pointer-events: none;
+}
+
+.footer-container {
+    position: relative;
+    z-index: 1;
+}
+
+.footer-main {
+    padding-top: 62px;
+    padding-bottom: 50px;
+}
+
+/* MARCA: bloque de identidad y acceso a la comunidad. */
+.footer-brand {
+    max-width: 420px;
+}
+
+.footer-logo {
+    display: inline-flex;
+    align-items: center;
+    margin-bottom: 17px;
+    color: var(--blanco);
+    font-size: 29px;
+    font-weight: 850;
+    letter-spacing: -.7px;
+    line-height: 1;
+    text-decoration: none;
+    transition: transform .2s ease;
+}
+
+.footer-logo span {
+    color: var(--blanco);
+}
+
+.footer-logo i,
+.footer-logo strong {
+    color: #81e28e;
+    font-style: normal;
+}
+
+.footer-logo:hover {
+    color: var(--blanco);
+    transform: translateY(-2px);
+}
+
+.footer-brand p {
+    max-width: 390px;
+    margin: 0 0 19px;
+    color: rgba(255, 253, 249, .78);
+    font-size: .92rem;
+    line-height: 1.75;
+}
+
+
+/* COLUMNAS: agrupa los enlaces del pie. */
+.footer-column {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 11px;
+    height: 100%;
+}
+
+.footer-column h2 {
+    margin: 3px 0 8px;
+    color: var(--blanco);
+    font-size: .92rem;
+    font-weight: 800;
+    letter-spacing: .2px;
+}
+
+.footer-column h2::after {
+    display: block;
+    width: 30px;
+    height: 3px;
+    margin-top: 11px;
+    content: "";
+    background: var(--verde);
+    border-radius: 4px;
+}
+
+.footer-column > a:not(.footer-help-link) {
+    width: fit-content;
+    color: rgba(255, 253, 249, .76);
+    font-size: .87rem;
+    text-decoration: none;
+    transition: color .2s ease, transform .2s ease;
+}
+
+.footer-column > a:not(.footer-help-link):hover {
+    color: #a6f0ae;
+    transform: translateX(3px);
+}
+
+.footer-help p {
+    max-width: 250px;
+    margin: -1px 0 4px;
+    color: rgba(255, 253, 249, .76);
+    font-size: .87rem;
+    line-height: 1.7;
+}
+
+.footer-divider {
+    height: 1px;
+    background: rgba(255, 253, 249, .18);
+}
+
+/* PIE INFERIOR: derechos reservados y acceso rápido. */
+.footer-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    min-height: 76px;
+}
+
+.footer-bottom p {
+    margin: 0;
+    color: rgba(255, 253, 249, .7);
+    font-size: .81rem;
+}
+
+.footer-bottom strong {
+    color: var(--blanco);
+}
+
+.footer-back-top {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #a6f0ae;
+    font-size: .82rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: color .2s ease, transform .2s ease;
+}
+
+.footer-back-top:hover {
+    color: #fff;
+    transform: translateY(-2px);
+}
+
+
+@media (max-width: 991.98px) {
+    .footer-main {
+        padding-top: 48px;
+        padding-bottom: 38px;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .footer-main {
+        padding-top: 40px;
+        padding-bottom: 32px;
+    }
+
+    .footer-logo {
+        font-size: 26px;
+    }
+
+    .footer-bottom {
+        align-items: flex-start;
+        flex-direction: column;
+        justify-content: center;
+        gap: 9px;
+        padding-top: 19px;
+        padding-bottom: 19px;
+    }
+}
