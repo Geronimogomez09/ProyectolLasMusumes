@@ -11,7 +11,6 @@ const RUTAS_SIN_NAVBAR = [
     "/login",
     "/registro",
     "/tienda",
-    "/versiones",
     "/historia",
 ];
 

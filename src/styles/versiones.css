@@ -14,7 +14,22 @@
   background: #f4f4f2;
   padding-bottom: 3rem;
 }
-
+/* Fuente estilo Minecraft. Si la ponés en global.css en vez de acá, queda
+   disponible para toda la app y no hace falta repetir el @font-face por
+   página. El archivo va en public/fonts/, no en src/assets/. */
+@font-face {
+  font-family: 'MinecraftSeven';
+  src: url('/fonts/Minecraft.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap; /* muestra el fallback mientras carga, evita texto invisible */
+}
+@font-face {
+  font-family: 'Minecrafttitulo';
+  src: url('/fonts/MinecraftV.ttf') format('truetype');
+  font-style: normal;
+  font-display: swap;
+}
 /* Animación de cascada: la misma que en Comunidad. Si ya la tenés
    declarada en un CSS global, esto queda duplicado pero no rompe nada
    porque el nombre del keyframe y la clase son iguales. */
@@ -70,6 +85,7 @@
 }
 
 .versiones-hero__contenido h1 {
+  font-family: 'Minecrafttitulo', 'Segoe UI', sans-serif;
   font-size: 2.6rem;
   font-weight: 800;
   margin: 0 0 0.5rem;
@@ -77,6 +93,7 @@
 }
 
 .versiones-hero__contenido p {
+  font-family: 'MinecraftSeven', Roboto, sans-serif;
   font-size: 1rem;
   margin: 0;
   color: #e9e9e9;
