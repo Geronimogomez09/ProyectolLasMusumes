@@ -2,6 +2,7 @@ import { useState } from 'react';
 import Header from '../components/header';
 import Footer from '../components/Footer';
 import TarjetaVersion from '../components/versionesComponentes/tarjeta-version';
+import AgregarVersion from '../components/versionesComponentes/agregar-version';
 import '../styles/versiones.css';
 
 // ---------------------------------------------------------------------------
@@ -196,6 +197,14 @@ function Versiones({ versiones: versionesProp }) {
     );
   }
 
+  // Recibe la versión armada por el formulario y le asigna el id.
+  function handleAgregarVersion(nuevaVersion) {
+    setVersiones((prev) => {
+      const id = Math.max(0, ...prev.map((v) => v.id)) + 1;
+      return [...prev, { ...nuevaVersion, id, comentarios: [] }];
+    });
+  }
+
   const textoBusqueda = busqueda.trim().toLowerCase();
 
   // Búsqueda por palabra clave + filtro de edición + filtro de rango de
@@ -238,6 +247,9 @@ function Versiones({ versiones: versionesProp }) {
         </header>
 
         <main className="versiones-main">
+          {/* ---------- AGREGAR VERSIÓN ---------- */}
+          <AgregarVersion onAgregar={handleAgregarVersion} />
+
           {/* ---------- BÚSQUEDA + FILTROS ---------- */}
           <section
             className="versiones-controles cascada-item"
