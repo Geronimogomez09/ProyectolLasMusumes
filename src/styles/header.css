@@ -1,0 +1,595 @@
+/* Header principal: permanece fijo en la parte superior y cambia de tamaño al desplazarse.
+   Controla el fondo, los bordes, la sombra y las transiciones de todo el encabezado. */
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 90px;
+  z-index: 1050;
+  color: var(--texto);
+  background: rgba(233, 233, 233, 0.97);
+  border-bottom: 2px solid rgba(29, 181, 60, 0.7);
+  box-shadow: 0 5px 20px rgba(75, 54, 36, 0.08);
+  backdrop-filter: blur(12px);
+  transition:
+    height 0.35s ease,
+    width 0.35s ease,
+    left 0.35s ease,
+    border-radius 0.35s ease,
+    box-shadow 0.35s ease,
+    background-color 0.25s ease;
+}
+
+/* La barra de navegación ocupa toda la altura del header.
+   Se elimina el padding para controlar el espacio desde el contenedor principal. */
+.header .navbar {
+  height: 100%;
+  padding: 0;
+}
+
+/* Contenedor de los elementos del header.
+   Flex permite alinearlos horizontalmente y los paddings se adaptan al ancho de pantalla. */
+.header-container {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  height: 100%;
+  padding-right: clamp(18px, 3vw, 48px);
+  padding-left: clamp(18px, 3vw, 48px);
+}
+
+/* Permite que el logo y el botón del menú compartan la fila superior en móvil. */
+.header-top-row {
+  display: contents;
+}
+
+/* Logo de Wiki-Craft.
+   Mantiene sus colores, tamaño y alineación, con una transición para el header compacto. */
+.header-logo {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  margin: 0;
+  color: #111111;
+  font-size: 27px;
+  font-weight: 850;
+  letter-spacing: -0.7px;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    all 0.35s ease,
+    transform 0.2s ease;
+}
+
+.header-logo:hover {
+  transform: translateY(-2px);
+}
+
+/* Resalta la parte verde del nombre de la página. */
+.header-logo-separator,
+.h1-craft {
+  color: var(--verde);
+}
+
+/* Contenido principal del header.
+   Distribuye el buscador, los enlaces y el perfil y evita que se desborden. */
+.header-content {
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: clamp(10px, 1.2vw, 22px);
+  min-width: 0;
+}
+
+.header-search {
+  display: flex;
+  flex: 1;
+  min-width: 180px;
+}
+
+.header-search form {
+  width: 100%;
+}
+
+.form-input {
+  display: block;
+  width: 100%;
+  border: 1px solid #1db53c !important;
+  border-radius: 10px 0 0 10px;
+  padding: 6px 12px;
+  background: #f5f5f5;
+  color: #111111;
+  font-size: 14px;
+  font-weight: 700;
+  outline: 0;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+.form-input::placeholder {
+  color: var(--marron);
+}
+
+.header-search .form-input:focus {
+  border-color: #1db53c;
+  background: #ffffff;
+  box-shadow: 0 0 0 0.2rem rgba(29, 181, 60, 0.18);
+}
+
+.btn-search {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 13px;
+  border: 1px solid #1db53c;
+  border-radius: 0 10px 10px 0;
+  background: #1db53c;
+  color: #ffffff;
+  transition:
+    all 0.2s ease,
+    transform 0.2s ease;
+}
+
+.btn-search:hover {
+  background: #00a521;
+  transform: scaleX(1.01);
+}
+
+/* Links que se muestran en la navegación principal. */
+.header-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0;
+}
+
+.header-nav .nav-link {
+  position: relative;
+  padding: 8px 0.7vw !important;
+  border-radius: 7px;
+  color: #111111;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition:
+    color 0.2s ease,
+    background 0.2s ease;
+}
+
+.header-nav .nav-link::after {
+  content: "";
+  position: absolute;
+  right: 12px;
+  bottom: 5px;
+  left: 12px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--verde);
+  transform: scaleX(0);
+  transition: transform 0.2s ease;
+}
+
+.header-nav .nav-link:hover {
+  background: #dcefdc;
+  color: #1db53c;
+}
+
+.header-nav .nav-link:hover::after,
+.header-nav .nav-link.active::after {
+  transform: scaleX(1);
+}
+
+.header-nav .nav-link.active {
+  background: #dcefdc;
+  color: #1db53c;
+}
+
+/* Contenedor del perfil de usuario.
+   Se alinea a la derecha y mantiene un margen con el resto de elementos. */
+.header-profile {
+  margin-left: 4px;
+}
+
+.profile-button {
+  display: flex !important;
+  align-items: center;
+  padding: 5px 11px 5px 6px;
+  border: 1px solid #bfc8bc;
+  border-radius: 20px;
+  background: #f5f5f5;
+  color: #1db53c;
+  font-size: 13px;
+  font-weight: 600;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.profile-button:hover,
+.profile-button:focus {
+  border-color: #1db53c;
+  background: #dcf0dc;
+  color: #159b30;
+  box-shadow: 0 2px 7px rgba(29, 181, 60, 0.15);
+}
+
+.profile-button::after {
+  margin-left: 1px;
+}
+
+.profile-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 2px solid #7a573a;
+  border-radius: 50%;
+  background: #1db53c;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.profile-menu {
+  min-width: 205px;
+  margin-top: 3px !important;
+  padding: 7px;
+  border: 1px solid #cfd6cc;
+  border-radius: 10px;
+  background: #f7f7f7;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.dropdown-menu.show {
+  position: absolute;
+  top: 70%;
+  right: 0;
+  padding: 0;
+  border: 1px solid var(--verde) !important;
+  border-radius: 10px 0 0 10px;
+  text-align: center;
+}
+.profile-menu .dropdown-header {
+  padding: 6px 10px;
+  color: #7a573a;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.profile-menu .dropdown-item {
+  position: relative;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: transparent;
+  color: #222222;
+  font-size: 13px;
+  font-weight: 600 !important;
+  transition:
+    color 0.2s ease,
+    background 0.2s ease;
+}
+
+.profile-menu .dropdown-item::after {
+  content: "";
+  position: absolute;
+  right: 10px;
+  bottom: 4px;
+  left: 10px;
+  height: 2px;
+  border-radius: 2px;
+  background: #1db53c;
+  transform: scaleX(0);
+  transition: transform 0.2s ease;
+}
+
+.profile-menu .dropdown-item:hover {
+  background: #dcefdc;
+  color: #1db53c;
+}
+
+.profile-menu .dropdown-item:hover::after {
+  transform: scaleX(1);
+}
+
+.profile-menu .dropdown-divider {
+  margin: 6px 0;
+  border-color: #d6d6d6;
+}
+
+.profile-menu .profile-logout {
+  width: 100%;
+  border: 0;
+  color: #a33d3d;
+}
+
+.profile-menu .profile-logout:hover {
+  background: #f4dddd;
+  color: #a33d3d;
+}
+
+.profile-menu .profile-logout:hover::after {
+  transform: scaleX(1);
+  background: #a33d3d;
+}
+
+.header .navbar-toggler {
+  border: 1px solid #aeb7aa;
+  border-radius: 8px;
+  background: #f2f2f2;
+}
+
+.header .navbar-toggler:focus {
+  box-shadow: 0 0 0 0.2rem rgba(29, 181, 60, 0.18);
+}
+
+/* Header compacto */
+.header.shrink {
+  width: 70%;
+  left: 15%;
+  height: 65px;
+  border-radius: 0 0 15px 15px;
+  box-shadow: 0 7px 24px rgba(75, 54, 36, 0.18);
+}
+
+.header.shrink .header-container {
+  gap: 12px;
+  padding: 0 20px;
+}
+
+.header.shrink .header-logo {
+  font-size: 22px;
+}
+
+.header.shrink .header-content {
+  gap: 10px;
+}
+
+.header.shrink .header-search {
+  flex-basis: 145px;
+  min-width: 105px;
+}
+
+.header.shrink .form-input {
+  padding: 0px 0 0px 10px;
+  font-size: 13px;
+}
+
+.header.shrink .btn-search {
+  top: 2px;
+  height: 30px;
+}
+
+.header.shrink .header-nav .nav-link {
+  padding: 7px 6px;
+  font-size: 12px;
+}
+
+.header.shrink .profile-button {
+  min-height: 35px;
+  padding: 3px 8px 3px 4px;
+  font-size: 12px;
+}
+
+.header.shrink .profile-avatar {
+  width: 25px;
+  height: 25px;
+  flex-basis: 25px;
+  font-size: 11px;
+}
+
+/* Contenido principal */
+main {
+  margin-top: 90px;
+}
+
+/* Portátiles y pantallas medianas */
+@media (min-width: 992px) and (max-width: 1199.98px) {
+  .header-container {
+    gap: 13px;
+    padding-right: 18px;
+    padding-left: 18px;
+  }
+
+  .header.shrink {
+    width: 80%;
+    left: 10%;
+    border-radius: 0 0 12px 12px;
+  }
+
+  .header-logo {
+    font-size: 24px;
+  }
+
+  .header-search {
+    flex-basis: 145px;
+    min-width: 115px;
+  }
+
+  .header-nav .nav-link {
+    padding-right: 6px;
+    padding-left: 6px;
+    font-size: 13px;
+  }
+
+  .header-content {
+    gap: 9px;
+  }
+}
+
+/* Tablet y menú desplegable */
+@media (max-width: 991.98px) {
+  .header {
+    height: auto;
+  }
+
+  .dropdown-menu.show {
+    top: 90%;
+  }
+  .header .navbar {
+    min-height: 72px;
+    height: auto;
+  }
+
+  .header-container,
+  .header.shrink .header-container {
+    display: block !important;
+    padding: 0px 20px;
+  }
+
+  /* Fila superior: logo a la izquierda y menú centrado */
+  .header-top-row {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 80px;
+  }
+
+  .header-logo {
+    position: relative;
+    z-index: 2;
+  }
+
+  /* Centra el botón hamburguesa sin depender del ancho del logo */
+  .header-top-row .navbar-toggler {
+    margin: 0;
+  }
+
+  .header-content,
+  .header.shrink .header-content {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 13px;
+    padding: 12px 0 20px;
+    background-color: var(--fondo);
+  }
+
+  .header .navbar-collapse:not(.show) {
+    display: none;
+  }
+
+  .header .navbar-collapse.show {
+    display: flex;
+  }
+
+  /* Header abierto */
+  .header.menu-open,
+  .header.shrink.menu-open {
+    width: 100%;
+    left: 0;
+    height: auto;
+    border-radius: 0;
+  }
+  .header.shrink .header-top-row {
+    min-height: 64px;
+  }
+
+  .header.shrink .header-logo {
+    font-size: 22px;
+  }
+
+  /* Buscador */
+  .header-search,
+  .header.shrink .header-search {
+    flex: 1 1 auto;
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+    margin-bottom: 0;
+  }
+
+  .header-search .form-input,
+  .header.shrink .form-input {
+    height: 42px;
+    font-size: 14px;
+  }
+  .header-nav {
+    display: flex;
+    flex-direction: row !important;
+    flex-wrap: nowrap;
+    gap: 2px;
+  }
+
+  .header-nav .nav-item {
+    width: 100%;
+  }
+
+  /* Perfil */
+  .header-profile {
+    display: flex;
+    align-self: stretch;
+    justify-content: center;
+    width: 100%;
+    align-self: center;
+    margin: 2px 0 0;
+  }
+
+  .header.shrink .profile-button {
+    min-height: 42px;
+    padding: 5px 12px 5px 6px;
+    font-size: 14px;
+  }
+
+  .header.shrink .profile-avatar {
+    width: 29px;
+    height: 29px;
+    flex-basis: 29px;
+    font-size: 13px;
+  }
+
+  .profile-menu {
+    left: 0;
+    right: auto;
+    transform: none;
+  }
+
+  main {
+    margin-top: 82px;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .header-container,
+  .header.shrink .header-container {
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+  .dropdown-menu.show {
+    top: 95%;
+  }
+  .header-logo,
+  .header.shrink .header-logo {
+    font-size: 23px;
+  }
+
+  .header-nav, .header-nav .nav-item, .header-nav .nav-item .nav-link {
+        display: flex;
+        flex-direction: column !important;
+        width: 100%;
+        gap: 2px;
+        align-items: center;
+        justify-content: center;
+    }
+  .header-content {
+    gap: 11px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .header,
+  .header-logo,
+  .header-search .form-input,
+  .header-nav .nav-link,
+  .profile-button,
+  .profile-avatar,
+  .profile-menu {
+    transition: none;
+  }
+}
