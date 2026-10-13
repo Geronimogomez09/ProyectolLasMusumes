@@ -124,7 +124,7 @@ function Header() {
                             onSubmit={(event) => event.preventDefault()}
                         >
                             <input
-                                className="form-control form-input"
+                                className="form-input"
                                 type="search"
                                 placeholder="Buscar algo nuevo..."
                                 aria-label="Buscar en Wiki-Craft"

@@ -46,19 +46,18 @@
     align-items: center;
     flex-shrink: 0;
     margin: 0;
-    color: var(--marron);
+    color: #111111;
     font-size: 27px;
     font-weight: 850;
     letter-spacing: -.7px;
     line-height: 1;
     text-decoration: none;
     white-space: nowrap;
-    transition: font-size .35s ease, transform .2s ease;
+    transition: all .35s ease, transform .2s ease;
 }
 
 .header-logo:hover {
-    color: var(--marron);
-    transform: translateY(-1px);
+    transform: translateY(-2px);
 }
 
 /* Resalta la parte verde del nombre de la página. */
@@ -75,4 +74,57 @@
     justify-content: space-between;
     gap: clamp(10px, 1.2vw, 22px);
     min-width: 0;
+}
+
+.header-search {
+  display: flex;
+  flex: 1;
+  min-width: 180px;
+}
+
+.header-search form {
+  width: 100%;
+}
+
+.form-input {
+  display: block;
+  width: 100%;
+  border: 1px solid #1db53c !important;
+  border-radius: 10px 0 0 10px;
+  padding: 6px 12px;
+  background: #f5f5f5;
+  color: #111111;
+  font-size: 14px;
+  font-weight: 700;
+  outline: 0;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.form-input::placeholder {
+  color: var(--marron);
+}
+
+.header-search .form-input:focus {
+  border-color: #1db53c;
+  background: #ffffff;
+  box-shadow: 0 0 0 0.2rem rgba(29, 181, 60, 0.18);
+}
+
+.btn-search {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 13px;
+  border: 1px solid #1db53c;
+  border-radius: 0 10px 10px 0;
+  background: #1db53c;
+  color: #ffffff;
+  transition: all 0.2s ease, transform 0.2s ease;
+}
+
+.btn-search:hover {
+  background: #00a521;
+  color: #ffffff;
+  transform: scaleX(1.01);
+  box-shadow: 0 0 0 0.2rem rgba(29, 181, 60, 0.18);
 }
