@@ -71,3 +71,57 @@
     font-size: .92rem;
     line-height: 1.75;
 }
+
+
+/* COLUMNAS: agrupa los enlaces del pie. */
+.footer-column {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 11px;
+    height: 100%;
+}
+
+.footer-column h2 {
+    margin: 3px 0 8px;
+    color: var(--blanco);
+    font-size: .92rem;
+    font-weight: 800;
+    letter-spacing: .2px;
+}
+
+.footer-column h2::after {
+    display: block;
+    width: 30px;
+    height: 3px;
+    margin-top: 11px;
+    content: "";
+    background: var(--verde);
+    border-radius: 4px;
+}
+
+.footer-column > a:not(.footer-help-link) {
+    width: fit-content;
+    color: rgba(255, 253, 249, .76);
+    font-size: .87rem;
+    text-decoration: none;
+    transition: color .2s ease, transform .2s ease;
+}
+
+.footer-column > a:not(.footer-help-link):hover {
+    color: #a6f0ae;
+    transform: translateX(3px);
+}
+
+.footer-help p {
+    max-width: 250px;
+    margin: -1px 0 4px;
+    color: rgba(255, 253, 249, .76);
+    font-size: .87rem;
+    line-height: 1.7;
+}
+
+.footer-divider {
+    height: 1px;
+    background: rgba(255, 253, 249, .18);
+}
