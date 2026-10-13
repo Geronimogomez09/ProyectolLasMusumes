@@ -125,3 +125,38 @@
     height: 1px;
     background: rgba(255, 253, 249, .18);
 }
+
+/* PIE INFERIOR: derechos reservados y acceso rápido. */
+.footer-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    min-height: 76px;
+}
+
+.footer-bottom p {
+    margin: 0;
+    color: rgba(255, 253, 249, .7);
+    font-size: .81rem;
+}
+
+.footer-bottom strong {
+    color: var(--blanco);
+}
+
+.footer-back-top {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #a6f0ae;
+    font-size: .82rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: color .2s ease, transform .2s ease;
+}
+
+.footer-back-top:hover {
+    color: #fff;
+    transform: translateY(-2px);
+}
