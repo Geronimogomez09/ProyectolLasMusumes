@@ -50,9 +50,9 @@ function Footer() {
 
                 <div className="footer-bottom">
                     <p>© {anioActual} <strong>WIKI-CRAFT</strong>. Todos los derechos reservados.</p>
-                    <Link to="/" className="footer-back-top">
+                    <a className="footer-back-top" href="#top">
                         Volver al inicio <span aria-hidden="true">↑</span>
-                    </Link>
+                    </a>
                 </div>
             </div>
         </footer>
