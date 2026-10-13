@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import Header from '../components/header';
-import Footer from '../components/footer';
+import Footer from '../components/Footer';
 import TarjetaVersion from '../components/versionesComponentes/tarjeta-version';
 import '../styles/versiones.css';
 
@@ -19,7 +19,7 @@ const versionesIniciales = [
     edicion: ['Java', 'Bedrock'],
     fecha: '2022-06-07',
     fechaLegible: '7 de junio de 2022',
-    imagen: '/images/versiones/1-19-wild-update.jpg',
+    imagen: '../public/fondos/fondo2.png',
     descripcion:
       'Expande el mundo subterráneo y los pantanos, con una de las criaturas más temidas del juego: el Warden.',
     nuevasFunciones: [
@@ -41,7 +41,7 @@ const versionesIniciales = [
     edicion: ['Java', 'Bedrock'],
     fecha: '2023-06-07',
     fechaLegible: '7 de junio de 2023',
-    imagen: '/images/versiones/1-20-trails-tales.jpg',
+    imagen: '../public/fondos/fondo3.png',
     descripcion:
       'Una actualización dedicada a la exploración y la narrativa, con un nuevo sistema de arqueología.',
     nuevasFunciones: [
@@ -72,7 +72,7 @@ const versionesIniciales = [
     edicion: ['Java', 'Bedrock'],
     fecha: '2024-06-13',
     fechaLegible: '13 de junio de 2024',
-    imagen: '/images/versiones/1-21-tricky-trials.jpg',
+    imagen: '../public/fondos/fondo4.png',
     descripcion:
       'Centrada en el combate y una nueva estructura subterránea para explorar: las Cámaras de Prueba.',
     nuevasFunciones: [
@@ -110,7 +110,7 @@ const versionesIniciales = [
     edicion: ['Java', 'Bedrock'],
     fecha: '2026-03-24',
     fechaLegible: '24 de marzo de 2026',
-    imagen: '/images/versiones/26-1-tiny-takeover.jpg',
+    imagen: '../public/fondos/fondo5.png',
     descripcion:
       'El primer drop de 2026: rediseño visual completo de las crías de los animales, más mejoras técnicas.',
     nuevasFunciones: [
@@ -136,7 +136,7 @@ const versionesIniciales = [
     edicion: ['Java', 'Bedrock'],
     fecha: '2026-06-16',
     fechaLegible: '16 de junio de 2026',
-    imagen: '/images/versiones/26-2-chaos-cubed.jpg',
+    imagen: '../public/fondos/fondo6.png',
     descripcion:
       'Un nuevo bioma subterráneo tan colorido como peligroso, protagonizado por un mob con físicas propias: el Sulfur Cube.',
     nuevasFunciones: ['Lista de amigos integrada', 'Renderizador Vulkan experimental (Java)'],
@@ -157,30 +157,6 @@ const versionesIniciales = [
         texto: 'El azufre y el cinabrio combinan re bien para una build temática infernal :tnt:',
       },
     ],
-  },
-  {
-    id: 6,
-    numero: '26.32',
-    nombre: 'Hotfix',
-    edicion: ['Bedrock'],
-    fecha: '2026-06-27',
-    fechaLegible: '27 de junio de 2026',
-    imagen: '/images/versiones/26-32-hotfix.jpg',
-    descripcion: 'Hotfix puro sobre la línea 26.30: no agrega contenido nuevo, solo estabilidad.',
-    nuevasFunciones: [],
-    correcciones: [
-      'Se arregló el bloqueo de framerate a 30 FPS durante la partida',
-      'Se arregló que un Libro y Pluma de mundos previos a 26.30 congelara el juego',
-      'Se arreglaron varios crasheos durante la partida',
-    ],
-    cambios: [
-      'Los jugadores con skins restringidas para multijugador ya pueden entrar a mundos con multijugador desactivado',
-    ],
-    nuevosBloques: [],
-    nuevasCriaturas: [],
-    nuevosBiomas: [],
-    destacada: false,
-    comentarios: [],
   },
 ];
 
