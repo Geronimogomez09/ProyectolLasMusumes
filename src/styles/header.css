@@ -1,13 +1,14 @@
-/* ESTILOS GENERALES */
+/* Define variables generales. clamp() adapta la altura del encabezado al tamaño de pantalla sin que sea demasiado chico ni demasiado grande. */
 :root {
-    --header-alto: clamp(55px, 6.2vw, 80px);
+    
+    --header-alto: clamp(64px, 6vw, 80px);
 }
 
 .header {
     
     --h-borde: 2px;
     --h-ancho-compacto: 1200px;
-    --h-separacion: clamp(10px, 2.5vw, 37px); 
+    --h-separacion: clamp(12px, 2.7vw, 42px); 
     --h-pad-x: clamp(20px, 3vw, 48px);
     --h-dur: 480ms;
     --h-ease: cubic-bezier(0.22, 0.8, 0.24, 1);
@@ -29,6 +30,20 @@
     transition: padding var(--h-dur) var(--h-ease);
 }
 
+/* Cuando JavaScript agrega la clase shrink, estas variables cambian y el encabezado pasa de ocupar todo el ancho a verse como una píldora flotante. */
+
+.header.shrink {
+    --h-top: var(--h-separacion);
+    --h-lado: var(--h-separacion);
+    --h-max: var(--h-ancho-compacto);
+    --h-altura: calc(var(--header-alto) + 2px);
+    --h-radio: calc((var(--header-alto) + 8px) / 2);
+    --h-bg: rgba(240, 246, 240, 0.8);
+    --h-borde-color: var(--verde);
+    --h-sombra: 0 18px 40px -14px rgba(48, 47, 42, 0.3), 0 4px 14px -4px rgba(29, 181, 60, 0.2);
+}
+
+/* Esta es la barra visible. Toma los tamaños y colores de las variables anteriores, por eso cambia de forma cuando cambia el estado del encabezado. */
 
 .header-bar {
     box-sizing: border-box;
@@ -60,22 +75,20 @@
     padding-inline: var(--h-pad-x);
 }
 
-
 /* Alinea en una misma línea el logo y el botón del menú. La altura también se adapta al estado abierto o compacto. */
 
 .header-top-row {
     display: flex;
     align-items: center;
-    border:none;
     justify-content: space-between;
     min-height: calc(var(--h-altura) - 2 * var(--h-borde));
     transition: min-height var(--h-dur) var(--h-ease);
 }
 
-.header-logo, .h1-craft{
-    font-family: 'Minecrafttitulo', 'Segoe UI', sans;
+.header-logo, .h1-craft {
     display: inline-flex;
-    align-items: baseline;
+    font-family: 'Minecrafttitulo', 'Segoe UI', sans;
+    align-items: center;
     flex-shrink: 0;
     font-size: clamp(1.15rem, 1.9vw, 1.75rem);
     line-height: 1;
@@ -86,9 +99,7 @@
     transition: transform 300ms var(--h-ease), opacity 300ms var(--h-ease);
 }
 
-.h1-craft{
-    color: var(--verde);
-}
+/* Al pasar el cursor, el logo sube apenas y se vuelve un poco más transparente para dar una respuesta visual. */
 
 .header-logo:hover {
     transform: translateY(-1px);
@@ -125,7 +136,7 @@
     border-radius: 14px;
     background: transparent;
     cursor: pointer;
-    transition: background-color 300ms var(--h-ease), border-color 250ms var(--h-ease);
+    transition: background-color 300ms var(--h-ease), border-color 300ms var(--h-ease);
 }
 
 /* Cambia el fondo del botón al pasar el cursor para indicar que se puede pulsar. */
@@ -178,4 +189,24 @@
 .header-toggler[aria-expanded="true"] .header-toggler-icon::after {
     transform: translateY(-7px) rotate(-45deg);
 }
+
+.header-content {
+    display: grid;
+    grid-template-rows: 0fr;
+    visibility: hidden;
+    transition:
+        grid-template-rows var(--h-dur) var(--h-ease),
+        visibility 0s linear var(--h-dur);
+}
+
+/* Cuando se agrega show, la fila crece y el contenido se vuelve visible, mostrando el buscador, los enlaces y el perfil. */
+
+.header-content.show {
+    grid-template-rows: 1fr;
+    visibility: visible;
+    transition:
+        grid-template-rows var(--h-dur) var(--h-ease),
+        visibility 0s;
+}
+
 
