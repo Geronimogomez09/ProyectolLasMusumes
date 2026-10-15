@@ -66,6 +66,7 @@
 .header-top-row {
     display: flex;
     align-items: center;
+    border:none;
     justify-content: space-between;
     min-height: calc(var(--h-altura) - 2 * var(--h-borde));
     transition: min-height var(--h-dur) var(--h-ease);
@@ -106,3 +107,75 @@
   color: var(--texto);
   text-decoration: none;  
 }
+
+.header-logo-separator,
+.header-logo .h1-craft {
+    color: var(--verde);
+}
+
+/* Diseña el botón hamburguesa que abre y cierra el menú en pantallas pequeñas. */
+
+.header-toggler {
+    display: grid;
+    place-items: center;
+    width: 46px;
+    height: 46px;
+    padding: 0;
+    border: 2px solid var(--verde-claro);
+    border-radius: 14px;
+    background: transparent;
+    cursor: pointer;
+    transition: background-color 300ms var(--h-ease), border-color 250ms var(--h-ease);
+}
+
+/* Cambia el fondo del botón al pasar el cursor para indicar que se puede pulsar. */
+
+.header-toggler:hover {
+    background-color: var(--verde-claro);
+    transition: background-color 300ms var(--h-ease), border-color 300ms var(--h-ease);
+}
+
+.header-toggler-icon,
+.header-toggler-icon::before,
+.header-toggler-icon::after {
+    display: block;
+    width: 20px;
+    height: 2px;
+    border-radius: 2px;
+    background-color: var(--texto);
+}
+
+.header-toggler-icon {
+    position: relative;
+    transition: background-color 200ms var(--h-ease);
+}
+
+.header-toggler-icon::before,
+.header-toggler-icon::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    transition: transform var(--h-dur) var(--h-ease);
+}
+
+.header-toggler-icon::before { top: -7px; }
+.header-toggler-icon::after  { top: 7px; }
+
+/* Cuando el botón indica que el menú está abierto, oculta la línea del medio. */
+
+.header-toggler[aria-expanded="true"] .header-toggler-icon {
+    background-color: transparent;
+}
+
+/* Gira y mueve la línea superior para formar una de las diagonales de la X. */
+
+.header-toggler[aria-expanded="true"] .header-toggler-icon::before {
+    transform: translateY(7px) rotate(45deg);
+}
+
+/* Gira y mueve la línea inferior para completar la X. */
+
+.header-toggler[aria-expanded="true"] .header-toggler-icon::after {
+    transform: translateY(-7px) rotate(-45deg);
+}
+
