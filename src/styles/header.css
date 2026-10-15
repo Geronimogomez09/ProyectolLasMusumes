@@ -209,4 +209,38 @@
         visibility 0s;
 }
 
+/* En escritorio, alinea buscador, navegación y perfil en una fila. El desbordamiento queda visible para que el menú del perfil pueda salir por debajo de la barra. */
 
+.header-content-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    min-height: 0;
+    max-height: calc(100vh - var(--header-alto) - 16px);
+    max-height: calc(100dvh - var(--header-alto) - 16px);
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    opacity: 0;
+    transform: translateY(-8px);
+    transition:
+        opacity 300ms var(--h-ease),
+        transform var(--h-dur) var(--h-ease);
+}
+
+/* Al abrir el menú, hace que el contenido aparezca gradualmente y se desplace suavemente hasta su posición. */
+
+.header-content.show .header-content-inner {
+    opacity: 1;
+    transform: none;
+    transition-delay: 90ms;
+}
+
+.header-search {
+    position: relative;
+    display: flex;
+    align-items: center;
+    margin-top: 6px; 
+    color: color-mix(in srgb, var(--texto) 65%, transparent);
+    transition: color 250ms var(--h-ease);
+}
