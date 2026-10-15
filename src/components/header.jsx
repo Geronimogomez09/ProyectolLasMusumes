@@ -91,7 +91,7 @@ function Header() {
                             }}
                         >
                             WIKI<span className="header-logo-separator">-</span>
-                            <span className="h1-craft">CRAFT</span>
+                            <span className="h1-craft" >CRAFT</span>
                         </Link>
 
                         {/* Botón hamburguesa que abre o cierra la navegación en móvil.

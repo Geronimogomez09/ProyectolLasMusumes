@@ -1,13 +1,13 @@
 /* ESTILOS GENERALES */
 :root {
-    --header-alto: clamp(55px, 6.2vw, 70px);
+    --header-alto: clamp(55px, 6.2vw, 80px);
 }
 
 .header {
     
     --h-borde: 2px;
     --h-ancho-compacto: 1200px;
-    --h-separacion: clamp(12px, 2.7vw, 42px); 
+    --h-separacion: clamp(10px, 2.5vw, 37px); 
     --h-pad-x: clamp(20px, 3vw, 48px);
     --h-dur: 480ms;
     --h-ease: cubic-bezier(0.22, 0.8, 0.24, 1);
@@ -58,4 +58,51 @@
     display: flex;
     flex-direction: column;
     padding-inline: var(--h-pad-x);
+}
+
+
+/* Alinea en una misma línea el logo y el botón del menú. La altura también se adapta al estado abierto o compacto. */
+
+.header-top-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: calc(var(--h-altura) - 2 * var(--h-borde));
+    transition: min-height var(--h-dur) var(--h-ease);
+}
+
+.header-logo, .h1-craft{
+    font-family: 'Minecrafttitulo', 'Segoe UI', sans;
+    display: inline-flex;
+    align-items: baseline;
+    flex-shrink: 0;
+    font-size: clamp(1.15rem, 1.9vw, 1.75rem);
+    line-height: 1;
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+    color: var(--texto);
+    text-decoration: none;
+    transition: transform 300ms var(--h-ease), opacity 300ms var(--h-ease);
+}
+
+.h1-craft{
+    color: var(--verde);
+}
+
+.header-logo:hover {
+    transform: translateY(-1px);
+    opacity: 0.9;
+}
+
+.header-logo-separator{
+  background: linear-gradient(to right, var(--texto), var(--verde));
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-size: clamp(1.15rem, 1.9vw, 1.75rem);
+  font-weight: 400;
+  line-height: 0.5;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  color: var(--texto);
+  text-decoration: none;  
 }
