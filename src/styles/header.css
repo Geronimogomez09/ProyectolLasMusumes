@@ -244,3 +244,107 @@
     color: color-mix(in srgb, var(--texto) 65%, transparent);
     transition: color 250ms var(--h-ease);
 }
+
+
+.header-search {
+    position: relative;
+    display: flex;
+    align-items: center;
+    margin: 6px;
+    font-weight: 700;
+    color: color-mix(in srgb, var(--texto) 65%, transparent);
+    transition: color 250ms var(--h-ease);
+}
+
+/* Pone el detalle del buscador en verde mientras el usuario está escribiendo o tiene el campo seleccionado. */
+
+.header-search:focus-within {
+    color: var(--verde);
+}
+
+/* Define el aspecto del campo de búsqueda: ocupa el ancho disponible, deja espacio a la izquierda para el icono y elimina el contorno predeterminado del navegador. */
+
+.header-search-input {
+    box-sizing: border-box;
+    width: 100%;
+    height: 42px;
+    padding: 0 16px 0 44px;
+    border: 1.5px solid color-mix(in srgb, var(--texto) 16%, transparent);
+    border-radius: 999px;
+    background-color: rgba(255, 255, 255, 0.65);
+    font: inherit;
+    font-size: 0.94rem;
+    color: var(--texto);
+    outline: none;
+    transition:
+        border-color 250ms var(--h-ease),
+        background-color 250ms var(--h-ease),
+        box-shadow 250ms var(--h-ease);
+}
+
+/* Cambia el color del texto de ayuda que aparece dentro del campo vacío. */
+
+.header-search-input::placeholder {
+    color: color-mix(in srgb, var(--texto) 52%, transparent);
+}
+
+/* Quita el botón de borrado predeterminado de algunos navegadores basados en WebKit para mantener el diseño. */
+
+.header-search-input::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+/* Aclara el borde cuando el cursor pasa por encima del campo. */
+
+.header-search-input:hover {
+    border-color: color-mix(in srgb, var(--texto) 28%, transparent);
+}
+
+/* Cuando el campo está seleccionado, resalta el borde y agrega un halo verde para que se note dónde se escribe. */
+
+.header-search-input:focus {
+    border-color: var(--verde);
+    background-color: var(--blanco);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--verde) 16%, transparent);
+}
+
+/* Coloca el botón de búsqueda dentro del campo, a la izquierda. Se usa position:absolute para superponerlo sin empujar el texto. */
+
+.header-search-btn {
+    position: absolute;
+    left: 7px;
+    top: 50%;
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    transform: translateY(-50%);
+    transition: background-color 250ms var(--h-ease), transform 250ms var(--h-ease);
+}
+
+/* Cambia el fondo y el color del icono cuando se pasa el cursor por el botón. */
+
+.header-search-btn:hover {
+    background-color: var(--verde-claro);
+    color: var(--verde-hover);
+}
+
+/* Reduce un poco el botón mientras se pulsa, como respuesta visual al clic. */
+
+.header-search-btn:active {
+    transform: translateY(-50%) scale(0.92);
+}
+
+/* Ajusta el tamaño del icono SVG que está dentro del botón. */
+
+.header-search-btn svg {
+    width: 17px;
+    height: 17px;
+}
