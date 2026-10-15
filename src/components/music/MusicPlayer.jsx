@@ -1,3 +1,4 @@
+
 import React, {
   useEffect,
   useRef,
@@ -16,17 +17,22 @@ function MusicPlayer({
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(1);
 
+  const [isShuffle, setIsShuffle] = useState(false);
+  const [repeatMode, setRepeatMode] = useState("off");
+
+  // Cargar y reproducir la canción seleccionada
   useEffect(() => {
-    if (!currentSong || !audioRef.current) {
+    const audio = audioRef.current;
+
+    if (!currentSong || !audio) {
       return;
     }
-
-    const audio = audioRef.current;
 
     audio.src = currentSong.audio;
     audio.load();
 
     setCurrentTime(0);
+    setDuration(0);
 
     const playAudio = async () => {
       try {
@@ -40,57 +46,80 @@ function MusicPlayer({
     playAudio();
   }, [currentSong]);
 
+  // Reproducir o pausar
   const togglePlay = async () => {
-    if (!audioRef.current || !currentSong) {
+    const audio = audioRef.current;
+
+    if (!audio || !currentSong) {
       return;
     }
 
-    if (isPlaying) {
-      audioRef.current.pause();
-      setIsPlaying(false);
-      return;
-    }
-
-    try {
-      await audioRef.current.play();
-      setIsPlaying(true);
-    } catch {
+    if (audio.paused) {
+      try {
+        await audio.play();
+        setIsPlaying(true);
+      } catch {
+        setIsPlaying(false);
+      }
+    } else {
+      audio.pause();
       setIsPlaying(false);
     }
   };
 
+  // Duración de la canción
   const handleLoadedMetadata = () => {
-    if (!audioRef.current) {
-      return;
-    }
+    const audio = audioRef.current;
 
-    setDuration(audioRef.current.duration);
+    if (audio) {
+      setDuration(audio.duration);
+    }
   };
 
+  // Actualizar progreso
   const handleTimeUpdate = () => {
-    if (!audioRef.current) {
+    const audio = audioRef.current;
+
+    if (audio) {
+      setCurrentTime(audio.currentTime);
+    }
+  };
+
+  // Qué hacer cuando termina la canción
+  const handleEnded = async () => {
+    const audio = audioRef.current;
+
+    if (repeatMode === "one" && audio) {
+      audio.currentTime = 0;
+
+      try {
+        await audio.play();
+        setIsPlaying(true);
+      } catch {
+        setIsPlaying(false);
+      }
+
       return;
     }
 
-    setCurrentTime(audioRef.current.currentTime);
-  };
-
-  const handleEnded = () => {
     setIsPlaying(false);
-    onNext();
+    onNext?.();
   };
 
+  // Adelantar o retroceder en la canción
   const handleProgress = (event) => {
     const value = Number(event.target.value);
+    const audio = audioRef.current;
 
-    if (!audioRef.current) {
+    if (!audio) {
       return;
     }
 
-    audioRef.current.currentTime = value;
+    audio.currentTime = value;
     setCurrentTime(value);
   };
 
+  // Controlar volumen
   const handleVolume = (event) => {
     const value = Number(event.target.value);
 
@@ -101,6 +130,7 @@ function MusicPlayer({
     }
   };
 
+  // Formatear tiempo: minutos y segundos
   const formatTime = (seconds) => {
     if (!Number.isFinite(seconds)) {
       return "0:00";
@@ -112,6 +142,22 @@ function MusicPlayer({
     return `${minutes}:${remaining
       .toString()
       .padStart(2, "0")}`;
+  };
+
+  // Cambiar modo de repetición:
+  // desactivada -> canción -> lista -> desactivada
+  const toggleRepeat = () => {
+    setRepeatMode((previous) => {
+      if (previous === "off") {
+        return "one";
+      }
+
+      if (previous === "one") {
+        return "all";
+      }
+
+      return "off";
+    });
   };
 
   if (!currentSong) {
@@ -127,6 +173,7 @@ function MusicPlayer({
         onEnded={handleEnded}
       />
 
+      {/* Información de la canción */}
       <div className="player-song">
         <img
           src={currentSong.cover}
@@ -139,24 +186,78 @@ function MusicPlayer({
         </div>
       </div>
 
+      {/* Controles principales */}
       <div className="player-main">
         <div className="player-controls">
-          <button onClick={onPrevious}>
+          <button
+            type="button"
+            className={
+              isShuffle
+                ? "player-mode active"
+                : "player-mode"
+            }
+            onClick={() =>
+              setIsShuffle((previous) => !previous)
+            }
+            title="Aleatorio"
+            aria-label="Activar o desactivar aleatorio"
+            aria-pressed={isShuffle}
+          >
+            🔀
+          </button>
+
+          <button
+            type="button"
+            onClick={onPrevious}
+            title="Canción anterior"
+            aria-label="Canción anterior"
+          >
             ⏮
           </button>
 
           <button
+            type="button"
             className="player-play"
             onClick={togglePlay}
+            aria-label={
+              isPlaying ? "Pausar" : "Reproducir"
+            }
           >
             {isPlaying ? "❚❚" : "▶"}
           </button>
 
-          <button onClick={onNext}>
+          <button
+            type="button"
+            onClick={onNext}
+            title="Canción siguiente"
+            aria-label="Canción siguiente"
+          >
             ⏭
+          </button>
+
+          <button
+            type="button"
+            className={
+              repeatMode !== "off"
+                ? "player-mode active"
+                : "player-mode"
+            }
+            onClick={toggleRepeat}
+            title={
+              repeatMode === "off"
+                ? "Repetición desactivada"
+                : repeatMode === "one"
+                  ? "Repetir canción"
+                  : "Repetir lista"
+            }
+            aria-label="Cambiar modo de repetición"
+            aria-pressed={repeatMode !== "off"}
+          >
+            {repeatMode === "one" ? "🔂" : "🔁"}
           </button>
         </div>
 
+        {/* Barra de progreso */}
         <div className="player-progress">
           <span>{formatTime(currentTime)}</span>
 
@@ -164,14 +265,17 @@ function MusicPlayer({
             type="range"
             min="0"
             max={duration || 0}
-            value={currentTime}
+            step="0.1"
+            value={Math.min(currentTime, duration || 0)}
             onChange={handleProgress}
+            aria-label="Progreso de la canción"
           />
 
           <span>{formatTime(duration)}</span>
         </div>
       </div>
 
+      {/* Volumen */}
       <div className="player-volume">
         <span>🔊</span>
 
@@ -182,6 +286,7 @@ function MusicPlayer({
           step="0.01"
           value={volume}
           onChange={handleVolume}
+          aria-label="Volumen"
         />
       </div>
     </div>
