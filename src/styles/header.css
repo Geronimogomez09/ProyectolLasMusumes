@@ -348,3 +348,80 @@
     width: 17px;
     height: 17px;
 }
+
+
+/* En escritorio, los enlaces se colocan horizontalmente y se centran en el espacio libre. */
+
+.header-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+/* Define el aspecto de cada enlace de navegación y evita que el texto se parta en varias líneas. */
+
+.header-link {
+    position: relative;
+    display: block;
+    padding: 12px 16px;
+    border-radius: 14px;
+    font-size: 1rem;
+    font-weight: 500;
+    line-height: 1.25;
+    white-space: nowrap;
+    color: var(--texto);
+    text-decoration: none;
+    transition:
+        background-color 250ms var(--h-ease),
+        color 250ms var(--h-ease);
+}
+
+/* Crea una línea verde debajo de cada enlace. Por defecto queda oculta y se anima al pasar el cursor o al marcar el enlace como activo. */
+
+.header-link::after {
+    content: "";
+    position: absolute;
+    left: 16px;
+    right: 16px;
+    bottom: 6px;
+    height: 3px;
+    border-radius: 3px;
+    background-color: var(--verde);
+    opacity: 0;
+    transform: scaleX(0);
+    transform-origin: center;
+    transition:
+        transform 350ms var(--h-ease),
+        opacity 250ms var(--h-ease);
+}
+
+/* Resalta el enlace bajo el cursor con un fondo suave y texto verde. */
+
+.header-link:hover {
+    background-color: color-mix(in srgb, var(--verde-claro) 55%, transparent);
+    color: var(--verde-hover);
+}
+
+/* Muestra parcialmente la línea al pasar el cursor para dar una indicación visual sin competir con el enlace activo. */
+
+.header-link:hover::after {
+    opacity: 0.55;
+    transform: scaleX(1);
+}
+
+/* Marca la página actual con un fondo verde claro, texto verde y un poco más de grosor. */
+
+.header-link.active {
+    background-color: #67ff6767;
+    font-weight: 600;
+}
+
+/* Deja la línea inferior completa cuando el enlace corresponde a la página actual. */
+
+.header-link.active::after {
+    opacity: 1;
+    transform: scaleX(1);
+}
