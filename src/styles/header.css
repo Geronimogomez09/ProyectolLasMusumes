@@ -467,7 +467,7 @@
     width: 44px;
     height: 44px;
     overflow: hidden;
-    border: 2px solid var(--marron);
+    border: 2px solid mix(var(--verde), var(--blanco), 50%);
     border-radius: 50%;
     background-color: var(--verde);
     box-shadow:
@@ -547,4 +547,241 @@
         padding var(--h-dur) var(--h-ease),
         opacity 250ms var(--h-ease) 80ms,
         visibility 0s;
+}
+
+/* Da formato al título que aparece dentro del menú del perfil. */
+
+.profile-menu-title {
+    display: block;
+    padding: 8px 14px 6px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--marron);
+}
+
+/* Define el aspecto de cada opción del menú y mantiene una zona cómoda para hacer clic. */
+
+.profile-menu-item {
+    display: block;
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    color: var(--texto);
+    cursor: pointer;
+    transition:
+        background-color 200ms var(--h-ease),
+        color 200ms var(--h-ease),
+        transform 250ms var(--h-ease);
+}
+
+/* Resalta la opción bajo el cursor y la desplaza unos píxeles hacia la derecha. */
+
+.profile-menu-item:hover {
+    background-color: var(--verde-claro);
+    color: var(--verde-hover);
+    transform: translateX(3px);
+}
+
+/* Dibuja una línea fina para separar grupos de opciones del menú. */
+
+.profile-menu-divider {
+    margin: 8px 10px;
+    border: 0;
+    border: 1px solid var(--verde);
+}
+
+/* Usa el color marrón para distinguir la opción de cerrar sesión. */
+
+.profile-logout {
+    color: #ff4545;
+}
+
+/* Al pasar el cursor por cerrar sesión, cambia el fondo a un tono marrón suave. */
+
+.profile-logout:hover {
+    background-color: color-mix(in srgb, #ff4545 30%, transparent);
+    color: #ff4545;
+}
+
+.header a:focus-visible,
+.header button:focus-visible {
+    outline: 2px solid var(--verde);
+    outline-offset: 3px;
+}
+
+/* Evita dibujar un segundo contorno en el buscador, porque el propio campo ya muestra un borde y un halo al seleccionarse. */
+
+.header-search-input:focus-visible {
+    outline: none; 
+}
+
+/* Estas reglas se aplican en pantallas de escritorio de 1100 píxeles o más. El menú pasa a una sola fila y deja de comportarse como un desplegable móvil. */
+
+@media (min-width: 1100px) {
+    /* Organiza los elementos internos. En pantallas chicas los apila en una columna; más abajo, en escritorio, se cambia a una fila. */
+    .header-container {
+        flex-direction: row;
+        align-items: center;
+        gap: clamp(16px, 2vw, 32px);
+    }
+
+    /* Alinea en una misma línea el logo y el botón del menú. La altura también se adapta al estado abierto o compacto. */
+
+    .header-top-row {
+        flex-shrink: 0;
+    }
+
+    /* Diseña el botón hamburguesa que abre y cierra el menú en pantallas pequeñas. */
+
+    .header-toggler {
+        display: none;
+    }
+
+    .header-content {
+        display: flex;
+        flex: 1 1 auto;
+        min-width: 0;
+        visibility: visible;
+        transition: none;
+    }
+
+    /* En escritorio, alinea buscador, navegación y perfil en una fila. El desbordamiento queda visible para que el menú del perfil pueda salir por debajo de la barra. */
+
+    .header-content-inner {
+        flex: 1 1 auto;
+        flex-direction: row;
+        align-items: center;
+        gap: clamp(16px, 2vw, 28px);
+        min-width: 0;
+        max-height: none;
+        overflow: visible; 
+        opacity: 1;
+        transform: none;
+        transition: none;
+    }
+
+    .header-search {
+        flex: 0 1 230px;
+        min-width: 150px;
+        margin-top: 0;
+    }
+
+    /* Define el aspecto del campo de búsqueda: ocupa el ancho disponible, deja espacio a la izquierda para el icono y elimina el contorno predeterminado del navegador. */
+
+    .header-search-input {
+        height: 40px;
+    }
+
+    /* En escritorio, los enlaces se colocan horizontalmente y se centran en el espacio libre. */
+
+    .header-nav {
+        flex-direction: row;
+        gap: 4px;
+        margin-inline: auto; 
+    }
+
+    /* Define el aspecto de cada enlace de navegación y evita que el texto se parta en varias líneas. */
+
+    .header-link {
+        padding: 8px 12px;
+        font-size: 0.95rem;
+    }
+
+    /* Crea una línea verde debajo de cada enlace. Por defecto queda oculta y se anima al pasar el cursor o al marcar el enlace como activo. */
+
+    .header-link::after {
+        left: 12px;
+        right: 12px;
+        bottom: 3px;
+    }
+
+    /* Sirve como referencia de posición para el menú desplegable del perfil y separa el perfil del resto del contenido. */
+
+    .header-profile {
+        flex-shrink: 0;
+        margin-bottom: 0;
+    }
+
+    /* En escritorio, el botón del perfil se vuelve compacto y redondeado para que se vea principalmente el avatar y la flecha. */
+
+    .profile-button {
+        width: auto;
+        gap: 10px;
+        padding: 4px 6px 4px 4px;
+        border-radius: 999px;
+        background-color: transparent;
+    }
+
+    /* Aclara el fondo del botón del perfil cuando se pasa el cursor. */
+
+    .profile-button:hover {
+        background-color: transparent;
+    }
+
+    /* Oculta el texto del perfil en escritorio para ahorrar espacio; el avatar sigue visible. */
+
+    .profile-text {
+        display: none;
+    }
+
+    /* Crea el círculo del avatar, con borde verde y sombra. Si no hay imagen, también permite mostrar iniciales o un icono. */
+
+    .profile-avatar {
+        width: 48px;
+        height: 48px;
+    }
+
+    /* Ajusta la flecha del menú de perfil y la empuja hacia el extremo derecho del botón. */
+
+    .profile-chevron {
+        margin-left: 0;
+    }
+
+    /* En escritorio, el menú del perfil flota debajo del botón, con borde, fondo y sombra, en lugar de empujar los elementos de la barra. */
+
+    .profile-menu {
+        position: absolute;
+        top: calc(100% + 18px);
+        right: 0;
+        z-index: 2;
+        min-width: 250px;
+        max-height: none;
+        padding: 10px;
+        overflow: visible;
+        border: 1.5px solid var(--verde-claro);
+        border-radius: 22px;
+        background-color: var(--blanco);
+        box-shadow: 0 24px 48px -16px rgba(48, 47, 42, 0.35), 0 4px 14px -4px rgba(48, 47, 42, 0.12);
+        transform: translateY(-10px) scale(0.97);
+        transform-origin: top right;
+        transition:
+            opacity 250ms var(--h-ease),
+            transform 350ms var(--h-ease),
+            visibility 0s linear 350ms;
+    }
+
+    /* Cuando el menú se abre en escritorio, recupera su posición y tamaño normal para completar la animación de entrada. */
+
+    .profile-menu.show {
+        max-height: none;
+        padding: 10px;
+        transform: none;
+        transition:
+            opacity 250ms var(--h-ease),
+            transform 350ms var(--h-ease),
+            visibility 0s;
+    }
+}
+
+/* Si el usuario configuró el sistema para reducir animaciones, acorta las transiciones para evitar movimientos innecesarios. */
+
+@media (prefers-reduced-motion: reduce) {
+    .header,
+    .header *,
+    .header *::before,
+    .header *::after {
+        transition-duration: 0.01ms !important;
+        transition-delay: 0s !important;
+    }
 }
