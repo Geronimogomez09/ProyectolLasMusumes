@@ -9,6 +9,11 @@ function MusicPlayer({
   currentSong,
   onNext,
   onPrevious,
+  isShuffle,
+  setIsShuffle,
+  repeatMode,
+  setRepeatMode,
+  onDurationChange,
 }) {
   const audioRef = useRef(null);
 
@@ -17,22 +22,20 @@ function MusicPlayer({
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(1);
 
-  const [isShuffle, setIsShuffle] = useState(false);
-  const [repeatMode, setRepeatMode] = useState("off");
-
-  // Cargar y reproducir la canción seleccionada
+  // Cargar la canción seleccionada.
   useEffect(() => {
     const audio = audioRef.current;
 
-    if (!currentSong || !audio) {
+    if (!audio || !currentSong) {
       return;
     }
 
-    audio.src = currentSong.audio;
-    audio.load();
-
+    setIsPlaying(false);
     setCurrentTime(0);
     setDuration(0);
+
+    audio.src = currentSong.audio;
+    audio.load();
 
     const playAudio = async () => {
       try {
@@ -46,7 +49,27 @@ function MusicPlayer({
     playAudio();
   }, [currentSong]);
 
-  // Reproducir o pausar
+  // Registrar la duración real del archivo.
+  const handleLoadedMetadata = () => {
+    const audio = audioRef.current;
+
+    if (!audio || !Number.isFinite(audio.duration)) {
+      return;
+    }
+
+    const realDuration = audio.duration;
+
+    setDuration(realDuration);
+
+    if (currentSong) {
+      onDurationChange?.(
+        currentSong.id,
+        realDuration
+      );
+    }
+  };
+
+  // Reproducir o pausar.
   const togglePlay = async () => {
     const audio = audioRef.current;
 
@@ -67,16 +90,7 @@ function MusicPlayer({
     }
   };
 
-  // Duración de la canción
-  const handleLoadedMetadata = () => {
-    const audio = audioRef.current;
-
-    if (audio) {
-      setDuration(audio.duration);
-    }
-  };
-
-  // Actualizar progreso
+  // Actualizar el progreso.
   const handleTimeUpdate = () => {
     const audio = audioRef.current;
 
@@ -85,7 +99,7 @@ function MusicPlayer({
     }
   };
 
-  // Qué hacer cuando termina la canción
+  // Gestionar el final de la canción.
   const handleEnded = async () => {
     const audio = audioRef.current;
 
@@ -103,10 +117,10 @@ function MusicPlayer({
     }
 
     setIsPlaying(false);
-    onNext?.();
+    onNext?.(true);
   };
 
-  // Adelantar o retroceder en la canción
+  // Adelantar o retroceder.
   const handleProgress = (event) => {
     const value = Number(event.target.value);
     const audio = audioRef.current;
@@ -119,7 +133,7 @@ function MusicPlayer({
     setCurrentTime(value);
   };
 
-  // Controlar volumen
+  // Controlar el volumen.
   const handleVolume = (event) => {
     const value = Number(event.target.value);
 
@@ -130,9 +144,9 @@ function MusicPlayer({
     }
   };
 
-  // Formatear tiempo: minutos y segundos
+  // Mostrar minutos y segundos.
   const formatTime = (seconds) => {
-    if (!Number.isFinite(seconds)) {
+    if (!Number.isFinite(seconds) || seconds < 0) {
       return "0:00";
     }
 
@@ -144,8 +158,8 @@ function MusicPlayer({
       .padStart(2, "0")}`;
   };
 
-  // Cambiar modo de repetición:
-  // desactivada -> canción -> lista -> desactivada
+  // Cambiar entre repetición desactivada,
+  // repetir canción y repetir lista.
   const toggleRepeat = () => {
     setRepeatMode((previous) => {
       if (previous === "off") {
@@ -173,7 +187,6 @@ function MusicPlayer({
         onEnded={handleEnded}
       />
 
-      {/* Información de la canción */}
       <div className="player-song">
         <img
           src={currentSong.cover}
@@ -186,7 +199,6 @@ function MusicPlayer({
         </div>
       </div>
 
-      {/* Controles principales */}
       <div className="player-main">
         <div className="player-controls">
           <button
@@ -257,7 +269,6 @@ function MusicPlayer({
           </button>
         </div>
 
-        {/* Barra de progreso */}
         <div className="player-progress">
           <span>{formatTime(currentTime)}</span>
 
@@ -275,7 +286,6 @@ function MusicPlayer({
         </div>
       </div>
 
-      {/* Volumen */}
       <div className="player-volume">
         <span>🔊</span>
 
