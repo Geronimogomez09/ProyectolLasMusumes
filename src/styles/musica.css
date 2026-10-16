@@ -524,6 +524,35 @@
   width: 100%;
 }
 
+/* Controles de aleatorio y repetición */
+.player-mode {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  opacity: 0.65;
+  font-size: 16px;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.player-mode:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.player-mode.active {
+  opacity: 1;
+  color: #b58cff;
+  filter: drop-shadow(0 0 5px #b58cff);
+}
+
+/* Mantener alineados los controles */
+.player-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
 @media (max-width: 800px) {
   .music-hero {
     flex-direction: column;
