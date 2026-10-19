@@ -8,7 +8,7 @@
     
     --h-borde: 2px;
     --h-ancho-compacto: 1200px;
-    --h-separacion: clamp(12px, 2.7vw, 42px); 
+    --h-separacion: 10px; 
     --h-pad-x: clamp(20px, 3vw, 48px);
     --h-dur: 480ms;
     --h-ease: cubic-bezier(0.22, 0.8, 0.24, 1);
