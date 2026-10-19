@@ -145,15 +145,15 @@ const CONTENIDO_INICIAL = {
     Cada tipo define qué campos tiene el formulario y cómo se crea uno nuevo.   */
 
 const ICONOS = [
-    { valor: "bi-people-fill", nombre: "Personas" },
-    { valor: "bi-box-fill", nombre: "Cubo" },
-    { valor: "bi-music-note-beamed", nombre: "Música" },
-    { valor: "bi-tree-fill", nombre: "Árbol" },
-    { valor: "bi-compass-fill", nombre: "Brújula" },
-    { valor: "bi-book-fill", nombre: "Libro" },
-    { valor: "bi-bag-fill", nombre: "Bolsa" },
-    { valor: "bi-star-fill", nombre: "Estrella" },
-    { valor: "bi-gem", nombre: "Gema" },
+    { valor: "", nombre: "Personas" },
+    { valor: "", nombre: "Cubo" },
+    { valor: "", nombre: "Música" },
+    { valor: "", nombre: "Árbol" },
+    { valor: "", nombre: "Brújula" },
+    { valor: "", nombre: "Libro" },
+    { valor: "", nombre: "Bolsa" },
+    { valor: "", nombre: "Estrella" },
+    { valor: "", nombre: "Gema" },
 ];
 
 function fechaHoy() {
