@@ -15,6 +15,7 @@
   box-shadow: 0 0 0 2px #e6c458, 0 8px 20px rgba(230, 196, 88, 0.25);
 }
 
+/* Ribbon de destacada: le agregamos margin-right si está la cinta para no tapar botones */
 .version-card__ribbon {
   position: absolute;
   top: 12px;
@@ -26,6 +27,7 @@
   padding: 0.25rem 2.5rem;
   transform: rotate(40deg);
   z-index: 2;
+  pointer-events: none; /* Evita que bloquee clics en botones si queda cerca */
 }
 
 .version-card__imagen-wrap {
@@ -55,29 +57,42 @@
   letter-spacing: 1px;
 }
 
+/* CLAVE 1: flex: 1 y min-width: 0 para controlar el ancho contenedor del texto */
 .version-card__cuerpo {
   padding: 1rem 1.1rem 1.1rem;
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
+  flex: 1;
+  min-width: 0;
 }
 
+/* CLAVE 2: Encabezado limpio con ancho completo */
 .version-card__encabezado {
   display: flex;
-  align-items: flex-start;
   justify-content: space-between;
-  gap: 0.5rem;
+  align-items: flex-start;
+  gap: 1rem;
+  width: 100%;
+}
+
+/* CLAVE 3: Bloque de título y badges */
+.version-card__encabezado > div:first-child,
+.version-card__titulos {
+  flex: 1;
+  min-width: 0;
 }
 
 .version-card__encabezado h3 {
-  margin: 0;
+  margin: 0 0 0.3rem 0;
   font-size: 1.05rem;
+  word-break: break-word; /* Evita que palabras ridículamente largas rompan el layout */
 }
 
 .version-card__ediciones {
   display: flex;
   gap: 0.3rem;
-  flex-shrink: 0;
+  flex-wrap: wrap;
 }
 
 .edicion-badge {
@@ -95,6 +110,41 @@
 
 .edicion-badge--bedrock {
   background: #3b5fa0;
+}
+
+/* CLAVE 4: Botones fijados a la derecha */
+.version-card__acciones {
+  display: flex;
+  gap: 0.4rem;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+/* Espaciado si la tarjeta es destacada para no encimarse con la cinta ribbon */
+.version-card--destacada .version-card__acciones {
+  margin-right: 1.8rem;
+}
+
+.btn-accion {
+  background: #f0f0f0;
+  border: 1px solid #ddd;
+  padding: 0.3rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  white-space: nowrap;
+}
+
+.btn-accion--editar:hover {
+  background: #e6c458;
+  border-color: #d4b244;
+}
+
+.btn-accion--eliminar:hover {
+  background: #d9534f;
+  color: white;
+  border-color: #c9302c;
 }
 
 .version-card__fecha {
@@ -149,5 +199,9 @@
   .version-card__imagen-wrap {
     width: 100%;
     aspect-ratio: 16 / 9;
+  }
+
+  .version-card--destacada .version-card__acciones {
+    margin-right: 0;
   }
 }

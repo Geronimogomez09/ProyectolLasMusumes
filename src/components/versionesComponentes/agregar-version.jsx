@@ -1,9 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import '../../styles/agregar-version.css';
 
 const EDICIONES = ['Java', 'Bedrock'];
 
-// Misma ruta que usás en los datos de ejemplo; cambiala por tu imagen real.
 const IMAGEN_POR_DEFECTO = '../public/fondos/fondo2.png';
 
 const FORM_VACIO = {
@@ -21,7 +20,6 @@ const FORM_VACIO = {
   destacada: false,
 };
 
-// "a, b, c" -> ['a', 'b', 'c'] (descarta vacíos)
 function aLista(texto) {
   return texto
     .split(',')
@@ -29,9 +27,6 @@ function aLista(texto) {
     .filter(Boolean);
 }
 
-// "2026-06-16" -> "16 de junio de 2026".
-// Se arma con T00:00:00 para que se interprete en hora local; sin eso,
-// en Argentina (UTC-3) la fecha se corre un día para atrás.
 function formatearFecha(fechaISO) {
   return new Date(`${fechaISO}T00:00:00`).toLocaleDateString('es-AR', {
     day: 'numeric',
@@ -40,13 +35,38 @@ function formatearFecha(fechaISO) {
   });
 }
 
-function AgregarVersion({ onAgregar }) {
+function AgregarVersion({ onAgregar, versionAEditar, onActualizar, onCancelarEdicion }) {
   const [abierto, setAbierto] = useState(false);
   const [form, setForm] = useState(FORM_VACIO);
   const [vistaPrevia, setVistaPrevia] = useState('');
   const [error, setError] = useState('');
 
-  // Un solo handler para los inputs de texto, usa el atributo "name".
+  // Rellena el formulario automáticamente cuando se selecciona una versión para editar
+  useEffect(() => {
+    if (versionAEditar) {
+      setForm({
+        numero: versionAEditar.numero || '',
+        nombre: versionAEditar.nombre || '',
+        edicion: versionAEditar.edicion || ['Java', 'Bedrock'],
+        fecha: versionAEditar.fecha || '',
+        descripcion: versionAEditar.descripcion || '',
+        nuevasFunciones: (versionAEditar.nuevasFunciones || []).join(', '),
+        correcciones: (versionAEditar.correcciones || []).join(', '),
+        cambios: (versionAEditar.cambios || []).join(', '),
+        nuevosBloques: (versionAEditar.nuevosBloques || []).join(', '),
+        nuevasCriaturas: (versionAEditar.nuevasCriaturas || []).join(', '),
+        nuevosBiomas: (versionAEditar.nuevosBiomas || []).join(', '),
+        destacada: Boolean(versionAEditar.destacada),
+      });
+      setVistaPrevia(
+        versionAEditar.imagen && versionAEditar.imagen !== IMAGEN_POR_DEFECTO
+          ? versionAEditar.imagen
+          : ''
+      );
+      setAbierto(true);
+    }
+  }, [versionAEditar]);
+
   function handleChange(e) {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
@@ -77,6 +97,9 @@ function AgregarVersion({ onAgregar }) {
     setVistaPrevia('');
     setError('');
     setAbierto(false);
+    if (versionAEditar && onCancelarEdicion) {
+      onCancelarEdicion();
+    }
   }
 
   function handleSubmit(e) {
@@ -91,15 +114,13 @@ function AgregarVersion({ onAgregar }) {
       return;
     }
 
-    // El id y el array de comentarios los completa Versiones.jsx.
-    onAgregar({
+    const datosVersion = {
       numero: form.numero.trim(),
       nombre: form.nombre.trim(),
       edicion: form.edicion,
       fecha: form.fecha,
       fechaLegible: formatearFecha(form.fecha),
-      // Con backend: subir el archivo con FormData y guardar la URL devuelta.
-      imagen: vistaPrevia || IMAGEN_POR_DEFECTO,
+      imagen: vistaPrevia || versionAEditar?.imagen || IMAGEN_POR_DEFECTO,
       descripcion: form.descripcion.trim(),
       nuevasFunciones: aLista(form.nuevasFunciones),
       correcciones: aLista(form.correcciones),
@@ -108,7 +129,13 @@ function AgregarVersion({ onAgregar }) {
       nuevasCriaturas: aLista(form.nuevasCriaturas),
       nuevosBiomas: aLista(form.nuevosBiomas),
       destacada: form.destacada,
-    });
+    };
+
+    if (versionAEditar) {
+      onActualizar({ ...versionAEditar, ...datosVersion });
+    } else {
+      onAgregar(datosVersion);
+    }
 
     cerrar();
   }
@@ -125,7 +152,7 @@ function AgregarVersion({ onAgregar }) {
 
   return (
     <form className="agregar-version-form" onSubmit={handleSubmit}>
-      <h2>Nueva version</h2>
+      <h2>{versionAEditar ? `Editar versión ${versionAEditar.numero}` : 'Nueva versión'}</h2>
 
       <div className="agregar-version-fila">
         <label className="agregar-version-campo agregar-version-chico">
@@ -238,7 +265,7 @@ function AgregarVersion({ onAgregar }) {
           Cancelar
         </button>
         <button type="submit" className="agregar-version-guardar">
-          Guardar versión
+          {versionAEditar ? 'Guardar cambios' : 'Guardar versión'}
         </button>
       </div>
     </form>

@@ -9,8 +9,6 @@ import '../styles/versiones.css';
 // DATOS: versiones reales de Minecraft (Java/Bedrock), con fechas y
 // contenido verificados. `fecha` va en formato ISO (yyyy-mm-dd) para poder
 // comparar con los filtros de rango; `fechaLegible` es la que se muestra.
-// Cuando exista backend, este array se reemplaza por props, igual que en
-// Comunidad.
 // ---------------------------------------------------------------------------
 const versionesIniciales = [
   {
@@ -170,6 +168,9 @@ function Versiones({ versiones: versionesProp }) {
   const [fechaDesde, setFechaDesde] = useState('');
   const [fechaHasta, setFechaHasta] = useState('');
   const [comentariosAbiertos, setComentariosAbiertos] = useState({});
+  
+  // Estado para controlar qué versión se está editando
+  const [versionEditando, setVersionEditando] = useState(null);
 
   function toggleComentarios(id) {
     setComentariosAbiertos((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -197,7 +198,6 @@ function Versiones({ versiones: versionesProp }) {
     );
   }
 
-  // Recibe la versión armada por el formulario y le asigna el id.
   function handleAgregarVersion(nuevaVersion) {
     setVersiones((prev) => {
       const id = Math.max(0, ...prev.map((v) => v.id)) + 1;
@@ -205,11 +205,26 @@ function Versiones({ versiones: versionesProp }) {
     });
   }
 
+  // Función para actualizar una versión existente
+  function handleActualizarVersion(versionActualizada) {
+    setVersiones((prev) =>
+      prev.map((v) => (v.id === versionActualizada.id ? versionActualizada : v))
+    );
+    setVersionEditando(null); // Limpiamos el modo edición
+  }
+
+  // Función para eliminar una versión con confirmación
+  function handleEliminarVersion(id) {
+    if (window.confirm('¿Estás seguro de que querés eliminar esta versión?')) {
+      setVersiones((prev) => prev.filter((v) => v.id !== id));
+      if (versionEditando && versionEditando.id === id) {
+        setVersionEditando(null);
+      }
+    }
+  }
+
   const textoBusqueda = busqueda.trim().toLowerCase();
 
-  // Búsqueda por palabra clave + filtro de edición + filtro de rango de
-  // fechas, todo encadenado. El orden de los .filter no importa para el
-  // resultado, solo para legibilidad.
   const versionesFiltradas = versiones
     .filter((v) => edicionFiltro === 'Todas' || v.edicion.includes(edicionFiltro))
     .filter((v) => !fechaDesde || v.fecha >= fechaDesde)
@@ -220,18 +235,18 @@ function Versiones({ versiones: versionesProp }) {
         v.nombre,
         v.numero,
         v.descripcion,
-        ...v.nuevasFunciones,
-        ...v.cambios,
-        ...v.correcciones,
-        ...v.nuevosBloques,
-        ...v.nuevasCriaturas,
-        ...v.nuevosBiomas,
+        ...(v.nuevasFunciones || []),
+        ...(v.cambios || []),
+        ...(v.correcciones || []),
+        ...(v.nuevosBloques || []),
+        ...(v.nuevasCriaturas || []),
+        ...(v.nuevosBiomas || []),
       ]
         .join(' ')
         .toLowerCase();
       return bolsaDeTexto.includes(textoBusqueda);
     })
-    .sort((a, b) => (a.fecha < b.fecha ? 1 : -1)); // más reciente primero
+    .sort((a, b) => (a.fecha < b.fecha ? 1 : -1));
 
   return (
     <>
@@ -247,8 +262,13 @@ function Versiones({ versiones: versionesProp }) {
         </header>
 
         <main className="versiones-main">
-          {/* ---------- AGREGAR VERSIÓN ---------- */}
-          <AgregarVersion onAgregar={handleAgregarVersion} />
+          {/* ---------- AGREGAR / EDITAR VERSIÓN ---------- */}
+          <AgregarVersion
+            onAgregar={handleAgregarVersion}
+            versionAEditar={versionEditando}
+            onActualizar={handleActualizarVersion}
+            onCancelarEdicion={() => setVersionEditando(null)}
+          />
 
           {/* ---------- BÚSQUEDA + FILTROS ---------- */}
           <section
@@ -319,6 +339,11 @@ function Versiones({ versiones: versionesProp }) {
                 comentariosAbiertos={Boolean(comentariosAbiertos[version.id])}
                 onToggleComentarios={toggleComentarios}
                 onAgregarComentario={handleAgregarComentario}
+                onEditar={() => {
+                  setVersionEditando(version);
+                  window.scrollTo({ top: 200, behavior: 'smooth' });
+                }}
+                onEliminar={() => handleEliminarVersion(version.id)}
                 delay={0.2 + Math.min(index, 8) * 0.1}
               />
             ))}
