@@ -205,3 +205,281 @@
     margin-right: 0;
   }
 }
+/* ---------- VARIABLES DE COLOR ESTILO MINECRAFT ---------- */
+:root {
+  --mc-gold: #ffaa00;
+  --mc-gold-glow: rgba(255, 170, 0, 0.35);
+  --mc-emerald: #55ff55;
+  --mc-diamond: #55ffff;
+  --mc-redstone: #ff5555;
+  --mc-dark-bg: #1e1e1e;
+}
+
+/* ---------- TARJETA BASE CON TRANSICIÓN SUAVE ---------- */
+.version-card {
+  position: relative;
+  background: #ffffff;
+  border: 2px solid #e0e0e0;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+              box-shadow 0.3s ease,
+              border-color 0.3s ease;
+}
+
+/* Efecto Hover: La tarjeta se eleva ligeramente */
+.version-card:hover {
+  transform: translateY(-6px) scale(1.008);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+  border-color: #b0b0b0;
+}
+
+/* ---------- TARJETA DESTACADA CON BORDE BRILLANTE ANIMADO ---------- */
+.version-card--destacada {
+  border-color: var(--mc-gold);
+  box-shadow: 0 0 15px var(--mc-gold-glow);
+  animation: pulso-oro 3s infinite alternate;
+}
+
+@keyframes pulso-oro {
+  0% {
+    box-shadow: 0 0 12px rgba(255, 170, 0, 0.25);
+  }
+  100% {
+    box-shadow: 0 0 24px rgba(255, 170, 0, 0.55);
+  }
+}
+
+/* ---------- RIBBON DE ¡RECIENTE! CON ANIMACIÓN DE BRILLO ---------- */
+.version-card__ribbon {
+  position: absolute;
+  top: 14px;
+  right: -36px;
+  background: linear-gradient(135deg, #ffe066, #e6c458);
+  color: #2a2000;
+  font-size: 0.72rem;
+  font-weight: 900;
+  padding: 0.3rem 2.8rem;
+  transform: rotate(40deg);
+  z-index: 3;
+  pointer-events: none;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* ---------- IMAGEN CON ZOOM EN HOVER ---------- */
+.version-card__imagen-wrap {
+  position: relative;
+  width: 260px;
+  flex-shrink: 0;
+  background: var(--mc-dark-bg);
+  overflow: hidden;
+}
+
+.version-card__imagen {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.5s ease;
+}
+
+.version-card:hover .version-card__imagen {
+  transform: scale(1.08); /* Zoom sutil a la captura de pantalla */
+}
+
+/* ---------- CUERPO Y LAYOUT ---------- */
+.version-card__cuerpo {
+  padding: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.version-card__encabezado {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  width: 100%;
+}
+
+.version-card__encabezado > div:first-child {
+  flex: 1;
+  min-width: 0;
+}
+
+.version-card__encabezado h3 {
+  margin: 0 0 0.4rem 0;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #1a1a1a;
+  transition: color 0.2s ease;
+}
+
+.version-card:hover .version-card__encabezado h3 {
+  color: #2f8f5b; /* Cambia a verde Minecraft al pasar sobre la tarjeta */
+}
+
+/* ---------- EDICIONES BADGES ANIMADOS ---------- */
+.version-card__ediciones {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.edicion-badge {
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  color: #fff;
+  white-space: nowrap;
+  letter-spacing: 0.3px;
+  transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.edicion-badge:hover {
+  transform: scale(1.1);
+  filter: brightness(1.15);
+}
+
+.edicion-badge--java {
+  background: linear-gradient(135deg, #4a7c3f, #2d5423);
+  box-shadow: 0 2px 6px rgba(74, 124, 63, 0.3);
+}
+
+.edicion-badge--bedrock {
+  background: linear-gradient(135deg, #3b5fa0, #223f73);
+  box-shadow: 0 2px 6px rgba(59, 95, 160, 0.3);
+}
+
+/* ---------- BOTONES ACCIONES CON EFECTO PRESS & SHINE ---------- */
+.version-card__acciones {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.version-card--destacada .version-card__acciones {
+  margin-right: 2rem;
+}
+
+.btn-accion {
+  background: #f4f4f6;
+  border: 1px solid #dcdce0;
+  padding: 0.4rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #444;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-accion:active {
+  transform: scale(0.92); /* Feedback al hacer clic */
+}
+
+.btn-accion--editar:hover {
+  background: #ffe885;
+  color: #4a3b00;
+  border-color: #e6c458;
+  box-shadow: 0 4px 10px rgba(230, 196, 88, 0.35);
+  transform: translateY(-2px);
+}
+
+.btn-accion--eliminar:hover {
+  background: #ff4d4d;
+  color: white;
+  border-color: #e60000;
+  box-shadow: 0 4px 10px rgba(255, 77, 77, 0.35);
+  transform: translateY(-2px);
+}
+
+/* ---------- DETALLES Y SECCIONES ---------- */
+.version-card__fecha {
+  margin: 0;
+  font-size: 0.82rem;
+  color: #777;
+  font-weight: 600;
+}
+
+.version-card__descripcion {
+  margin: 0.3rem 0;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  color: #333;
+}
+
+.version-card__seccion {
+  margin-top: 0.4rem;
+  background: #f9f9fb;
+  padding: 0.5rem 0.8rem;
+  border-radius: 8px;
+  border-left: 3px solid #2f8f5b; /* Borde de color que le da toque visual */
+}
+
+.version-card__seccion h4 {
+  margin: 0 0 0.3rem;
+  font-size: 0.83rem;
+  font-weight: 700;
+  color: #222;
+}
+
+.version-card__seccion ul {
+  margin: 0;
+  padding-left: 1.2rem;
+  font-size: 0.86rem;
+  line-height: 1.45;
+  color: #444;
+}
+
+/* ---------- BOTÓN DE COMENTARIOS ANIMADO ---------- */
+.version-card__btn-comentarios {
+  align-self: flex-start;
+  margin-top: 0.6rem;
+  background: #f0f4f8;
+  border: 1px solid #d0dbe5;
+  color: #2b4c7e;
+  font-weight: 700;
+  font-size: 0.82rem;
+  cursor: pointer;
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+  transition: all 0.2s ease;
+}
+
+.version-card__btn-comentarios:hover {
+  background: #2b4c7e;
+  color: #fff;
+  transform: scale(1.03);
+  box-shadow: 0 3px 8px rgba(43, 76, 126, 0.25);
+}
+
+/* ---------- RESPONSIVE ---------- */
+@media (max-width: 640px) {
+  .version-card {
+    flex-direction: column;
+  }
+
+  .version-card__imagen-wrap {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+  }
+
+  .version-card--destacada .version-card__acciones {
+    margin-right: 0;
+  }
+}

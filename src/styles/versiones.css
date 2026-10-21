@@ -216,3 +216,29 @@
     grid-template-columns: 1fr;
   }
 }
+/* Botones Pills de filtro animados */
+.filtro-pill {
+  border: 2px solid var(--borde-suave);
+  background: #fff;
+  color: var(--texto-oscuro);
+  padding: 0.45rem 1.1rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.filtro-pill:hover {
+  transform: translateY(-2px);
+  border-color: var(--oro);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+}
+
+.filtro-pill--activo {
+  background: linear-gradient(135deg, #e6c458, #d4b244);
+  border-color: #d4b244;
+  color: #2a2000;
+  box-shadow: 0 4px 12px rgba(230, 196, 88, 0.4);
+  transform: scale(1.05);
+}
