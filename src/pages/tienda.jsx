@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 
-import Header from "../components/header";
+import Header from '../components/header';
 import Footer from "../components/Footer";
 import TarjetaProducto from "../components/tiendaComponentes/TarjetaProducto";
 import ControlesTienda from "../components/tiendaComponentes/ControlesTienda";
@@ -283,9 +283,9 @@ export default function Tienda() {
         );
 
 
-        alert(
+         alert(
             `${producto.nombre} fue agregado al carrito.`
-        );
+         );
 
     }
 
@@ -603,19 +603,17 @@ export default function Tienda() {
                 CARRITO
             ========================== */}
 
-            <Carrito
-                abierto={carritoAbierto}
-                cerrarCarrito={() =>
-                    setCarritoAbierto(false)
-                }
-                carrito={carrito}
-                quitarCarrito={
-                    quitarCarrito
-                }
-            />
+         <Carrito
+    abierto={carritoAbierto}
+    cerrarCarrito={() => setCarritoAbierto(false)}
+    carrito={carrito}
+    quitarCarrito={quitarCarrito}
+    vaciarCarrito={() => setCarrito([])}
+/>
 
         </div>
 
     );
+    
 
 }
