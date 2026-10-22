@@ -1658,3 +1658,640 @@ button {
     }
 
 }
+
+
+/* ==============================
+   VENTANA DE PAGO
+============================== */
+
+.pago-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    overflow-y: auto;
+    background: #f5f6f8;
+    color: #202124;
+    font-family: Arial, sans-serif;
+}
+
+.pago-pagina {
+    width: 100%;
+    min-height: 100vh;
+}
+
+.pago-header {
+    min-height: 72px;
+    padding: 16px 5%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    background: #fff;
+    border-bottom: 1px solid #e8e8e8;
+}
+
+.pago-volver {
+    background: none;
+    border: 0;
+    color: #444;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.pago-marca {
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: 2px;
+}
+
+.pago-seguro {
+    color: #39734c;
+    font-size: 13px;
+}
+
+.pago-contenido {
+    width: min(1180px, 92%);
+    margin: 42px auto;
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(300px, 0.85fr);
+    gap: 30px;
+    align-items: start;
+}
+
+.pago-principal {
+    min-width: 0;
+}
+
+.pago-titulo > span {
+    color: #777;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+}
+
+.pago-titulo h1 {
+    margin: 10px 0;
+    font-size: clamp(27px, 4vw, 36px);
+    letter-spacing: -1px;
+}
+
+.pago-titulo p,
+.pago-ayuda {
+    color: #707070;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.pago-pasos {
+    display: flex;
+    gap: 8px;
+    margin: 28px 0;
+}
+
+.pago-paso {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 6px;
+    border-bottom: 2px solid #ddd;
+    color: #777;
+    font-size: 13px;
+}
+
+.pago-paso span {
+    display: grid;
+    place-items: center;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    background: #e8e8e8;
+}
+
+.pago-paso.activo {
+    color: #111;
+    border-color: #171717;
+    font-weight: 700;
+}
+
+.pago-paso.activo span {
+    color: #fff;
+    background: #171717;
+}
+
+.pago-paso.completo span {
+    color: #fff;
+    background: #368453;
+}
+
+.pago-panel,
+.pago-resumen,
+.pago-protegido,
+.pago-medios-aceptados {
+    padding: 26px;
+    background: #fff;
+    border: 1px solid #e9e9e9;
+    border-radius: 15px;
+    box-shadow: 0 5px 22px #00000005;
+}
+
+.pago-panel h2,
+.pago-resumen h2 {
+    margin: 0 0 22px;
+    font-size: 19px;
+}
+
+.pago-campos {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.pago-campo {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 17px;
+    color: #363636;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.pago-campo input {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    padding: 13px 14px;
+    border: 1px solid #d9d9d9;
+    border-radius: 8px;
+    background: #fff;
+    color: #222;
+    font: inherit;
+    font-size: 14px;
+    outline: none;
+    transition: border-color .2s, box-shadow .2s;
+}
+
+
+.pago-campo input:focus {
+    border-color: #333;
+    box-shadow: 0 0 0 3px #0000000b;
+}
+
+.ancho-completo {
+    grid-column: 1 / -1;
+}
+
+.pago-separador {
+    height: 1px;
+    margin: 10px 0 25px;
+    background: #ededed;
+}
+
+.pago-boton,
+.pago-boton-secundario {
+    width: 100%;
+    padding: 16px;
+    margin-top: 13px;
+    border: 0;
+    border-radius: 9px;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: .5px;
+    cursor: pointer;
+    transition: transform .2s, background .2s;
+}
+
+.pago-boton {
+    background: #171717;
+    color: #fff;
+}
+
+.pago-boton:hover {
+    background: #333;
+    transform: translateY(-1px);
+}
+
+.pago-boton-secundario {
+    background: #f1f1f1;
+    color: #333;
+}
+
+.pago-metodos {
+    display: grid;
+    gap: 12px;
+}
+
+.pago-metodo {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    padding: 17px;
+    border: 1px solid #ddd;
+    border-radius: 11px;
+    cursor: pointer;
+    transition: border-color .2s, background .2s;
+}
+
+.pago-metodo.seleccionado {
+    border: 1.5px solid #292929;
+    background: #f8f8f8;
+}
+
+.pago-metodo input {
+    position: absolute;
+    opacity: 0;
+}
+
+.pago-metodo:focus-within {
+    outline: 2px solid #777;
+    outline-offset: 2px;
+}
+
+.pago-metodo-icono {
+    font-size: 26px;
+}
+
+.pago-metodo-texto {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.pago-metodo-texto strong {
+    font-size: 14px;
+}
+
+.pago-metodo-texto small {
+    color: #777;
+    font-size: 12px;
+}
+
+.pago-radio {
+    width: 17px;
+    height: 17px;
+    border: 1px solid #aaa;
+    border-radius: 50%;
+}
+
+.pago-metodo.seleccionado .pago-radio {
+    border: 5px solid #222;
+}
+
+.pago-tarjeta-demo {
+    margin-top: 25px;
+}
+
+.pago-tarjeta-visual {
+    min-height: 180px;
+    box-sizing: border-box;
+    padding: 23px;
+    margin-bottom: 20px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #282828, #565656);
+    color: #fff;
+    box-shadow: 0 10px 25px #00000020;
+}
+
+.pago-tarjeta-arriba,
+.pago-tarjeta-abajo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.pago-tarjeta-arriba {
+    font-size: 11px;
+    letter-spacing: 2px;
+}
+
+.pago-chip {
+    width: 38px;
+    height: 27px;
+    margin: 23px 0 18px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #e8d6a5, #a9905c);
+}
+
+.pago-numero-preview {
+    margin-bottom: 20px;
+    font-size: clamp(16px, 3vw, 21px);
+    letter-spacing: 2px;
+    overflow-wrap: anywhere;
+}
+
+.pago-tarjeta-abajo {
+    font-size: 10px;
+    letter-spacing: 1px;
+}
+
+.pago-aviso {
+    padding: 12px;
+    margin: 15px 0;
+    border-radius: 8px;
+    background: #fff7e8;
+    color: #79551b;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.pago-info {
+    padding: 17px;
+    margin-top: 18px;
+    border-radius: 10px;
+    background: #f5f5f5;
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+.pago-info p {
+    margin-bottom: 0;
+    color: #666;
+}
+
+.pago-lateral {
+    display: grid;
+    gap: 18px;
+    position: sticky;
+    top: 20px;
+}
+
+.pago-resumen h2 {
+    font-size: 17px;
+}
+
+.pago-productos {
+    display: grid;
+    gap: 17px;
+    padding-bottom: 20px;
+}
+
+.pago-producto {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 12px;
+}
+
+.pago-producto-imagen {
+    display: grid;
+    flex-shrink: 0;
+    place-items: center;
+    width: 54px;
+    height: 58px;
+    overflow: hidden;
+    border-radius: 8px;
+    background: #f1f1f1;
+    font-size: 24px;
+}
+
+.pago-producto-imagen img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.pago-producto-info {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 5px;
+    overflow-wrap: anywhere;
+}
+
+.pago-producto-info small {
+    color: #777;
+}
+
+.pago-total-linea,
+.pago-total-final {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 0;
+    font-size: 13px;
+}
+
+.pago-total-linea {
+    color: #686868;
+}
+
+.pago-total-final {
+    align-items: center;
+    margin-top: 7px;
+    padding-top: 19px;
+    border-top: 1px solid #e5e5e5;
+    color: #171717;
+    font-size: 15px;
+}
+
+.pago-total-final strong {
+    font-size: 24px;
+}
+
+.pago-envio-nota,
+.pago-medios-aceptados > small {
+    display: block;
+    margin-top: 13px;
+    color: #888;
+    font-size: 11px;
+    line-height: 1.6;
+}
+
+.pago-protegido {
+    display: flex;
+    align-items: flex-start;
+    gap: 13px;
+}
+
+.pago-protegido > span {
+    font-size: 24px;
+}
+
+.pago-protegido strong {
+    font-size: 13px;
+}
+
+.pago-protegido p {
+    margin-bottom: 0;
+    color: #777;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.pago-medios-aceptados > span {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+}
+
+.pago-logos {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.logo-naranja,
+.logo-visa,
+.logo-master {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 8px;
+    border: 1px solid #eee;
+    border-radius: 6px;
+    font-size: 11px;
+}
+
+.logo-naranja {
+    color: #e66b18;
+}
+
+.logo-visa {
+    color: #1b3b91;
+    font-style: italic;
+}
+
+.logo-master {
+    position: relative;
+}
+
+.logo-master i {
+    width: 17px;
+    height: 17px;
+    border-radius: 50%;
+    background: #e34b42;
+}
+
+.logo-master i + i {
+    margin-left: -9px;
+    background: #e9a33a;
+    opacity: .9;
+}
+
+.logo-master small {
+    color: #333;
+    font-size: 8px;
+}
+
+.pago-exito {
+    text-align: center;
+    padding-top: 40px;
+    padding-bottom: 40px;
+}
+
+.pago-exito-icono {
+    display: grid;
+    place-items: center;
+    width: 75px;
+    height: 75px;
+    margin: 0 auto 22px;
+    border-radius: 50%;
+    background: #e4f5e9;
+    color: #247443;
+    font-size: 38px;
+}
+
+.pago-exito > p {
+    color: #666;
+    line-height: 1.7;
+}
+
+.pago-numero-pedido {
+    padding: 15px;
+    margin: 22px 0;
+    border: 1px dashed #ccc;
+    border-radius: 8px;
+    font-weight: 800;
+}
+
+.pago-footer {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+    padding: 24px 5%;
+    border-top: 1px solid #e7e7e7;
+    background: #fff;
+    color: #777;
+    font-size: 12px;
+}
+
+@media (max-width: 850px) {
+    .pago-contenido {
+        grid-template-columns: 1fr;
+        width: min(650px, 92%);
+        margin: 25px auto;
+    }
+
+    .pago-lateral {
+        position: static;
+        grid-row: 1;
+    }
+
+    .pago-header {
+        padding: 16px 4%;
+    }
+
+    .pago-seguro {
+        display: none;
+    }
+}
+
+@media (max-width: 520px) {
+    .pago-header {
+        gap: 8px;
+    }
+
+    .pago-volver {
+        font-size: 12px;
+    }
+
+    .pago-marca {
+        font-size: 12px;
+        letter-spacing: 1px;
+    }
+
+    .pago-contenido {
+        width: 94%;
+        margin: 20px auto;
+        gap: 17px;
+    }
+
+    .pago-panel,
+    .pago-resumen,
+    .pago-protegido,
+    .pago-medios-aceptados {
+        padding: 18px;
+        border-radius: 11px;
+    }
+
+    .pago-campos {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+
+    .ancho-completo {
+        grid-column: auto;
+    }
+
+    .pago-paso {
+        flex-direction: column;
+        gap: 6px;
+        font-size: 11px;
+    }
+
+    .pago-total-final strong {
+        font-size: 20px;
+    }
+
+    .pago-footer {
+        flex-direction: column;
+        align-items: center;
+    }
+}
