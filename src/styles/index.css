@@ -1,10 +1,37 @@
+/* ============================================================================
+   ÍNDICE
+   ----------------------------------------------------------------------------
+   Etiquetas que uso en los comentarios:
+     NUEVO   -> regla o variable que antes no existía
+     CAMBIO  -> regla que ya existía y se modificó (se explica qué y por qué)
+   Sin etiqueta -> sin cambios, solo se agregó una explicación.
+
+   1. Variables globales
+   2. Base de la página
+   3. Hero
+   4. Botones
+   5. Títulos de sección
+   6. Tarjetas (base, secciones, novedades)
+   7. Enlaces de texto
+   8. Publicación destacada y construcciones
+   9. Banner de la tienda
+  10. Responsive
+  11. Modo administrador (panel, botones, modal, formulario)
+  12. Iconos
+   ========================================================================= */
+
+
+/* ============================================================================
+   1. VARIABLES GLOBALES
+   ========================================================================= */
+
 :root {
     --verde: #1db53c;
     --verde-hover: #00a521;
     --verde-claro: #dcefdc;
     --marron: #7a573a;
     --fondo: #e9e9e9;
-    --texto: #302f2a;
+    --texto: #111111;
     --blanco: #fffdf9;
 }
 
@@ -12,11 +39,27 @@ body {
     background-color: var(--fondo);
 }
 
+
+/* ============================================================================
+   2. BASE DE LA PÁGINA
+   ========================================================================= */
+
 .inicio {
-    /* Movimiento (mismos valores que el header) */
+    /* Movimiento.
+       --inicio-dur y --inicio-dur-corta son los mismos valores que usa el header,
+       por eso no se tocaron: así la barra y la página se sienten igual. */
     --inicio-dur: 480ms;
     --inicio-dur-corta: 250ms;
     --inicio-ease: cubic-bezier(0.22, 0.8, 0.24, 1);
+
+    /* NUEVO: tiempos y curva para los movimientos propios de la página.
+       - media: levantar tarjetas y botones. Más lenta que antes = más elegante.
+       - lenta: zoom de imágenes y entradas.
+       - ease-suave (easeOutQuart): arranca rápido y frena muy despacio,
+         se siente como si el elemento "se posara" en su lugar. */
+    --inicio-dur-media: 640ms;
+    --inicio-dur-lenta: 900ms;
+    --inicio-ease-suave: cubic-bezier(0.25, 1, 0.5, 1);
 
     /* Formas */
     --inicio-radio: 22px;
@@ -54,11 +97,19 @@ body {
     outline-offset: 3px;
 }
 
-/* 
-   Hero
+/* CAMBIO: antes esta regla era "h3 { margin-bottom: 0 !important }" y afectaba
+   a TODOS los h3 del sitio (header, footer, otras páginas). Ahora solo toca los
+   de esta página y ya no necesita !important. */
+.inicio h3 {
+    margin-bottom: 0;
+}
+
+
+/* ============================================================================
+   3. HERO
    El header es fixed, así que el hero deja ese espacio arriba
    y la imagen queda por debajo de la barra.
-   */
+   ========================================================================= */
 
 .inicio-hero {
     box-sizing: border-box;
@@ -91,20 +142,23 @@ body {
 }
 
 /* Única animación automática de la página: el texto del hero entra al cargar.
-   Usa "backwards" para no pisar los hover de los botones después. */
+   Usa "backwards" para no pisar los hover de los botones después.
+   CAMBIO: entrada más lenta (700 -> 900ms), con la curva suave, y un escalón
+   mayor entre elementos (80ms) para que se lea como una cascada y no como un golpe. */
 .inicio-hero-texto > * {
-    animation: inicio-entrada 700ms var(--inicio-ease) backwards;
+    animation: inicio-entrada var(--inicio-dur-lenta) var(--inicio-ease-suave) backwards;
 }
 
-.inicio-hero-texto > :nth-child(1) { animation-delay: 60ms; }
-.inicio-hero-texto > :nth-child(2) { animation-delay: 140ms; }
-.inicio-hero-texto > :nth-child(3) { animation-delay: 220ms; }
-.inicio-hero-texto > :nth-child(4) { animation-delay: 300ms; }
+.inicio-hero-texto > :nth-child(1) { animation-delay: 80ms; }
+.inicio-hero-texto > :nth-child(2) { animation-delay: 170ms; }
+.inicio-hero-texto > :nth-child(3) { animation-delay: 260ms; }
+.inicio-hero-texto > :nth-child(4) { animation-delay: 350ms; }
 
+/* CAMBIO: sube 18px en vez de 14px, así el recorrido se nota con la nueva duración. */
 @keyframes inicio-entrada {
     from {
         opacity: 0;
-        transform: translateY(14px);
+        transform: translateY(18px);
     }
     to {
         opacity: 1;
@@ -146,7 +200,12 @@ body {
     line-height: 1.65;
 }
 
-/* ---------- Botones (píldora, como el buscador del header) ---------- */
+
+/* ============================================================================
+   4. BOTONES (píldora, como el buscador del header)
+   Los !important están porque Bootstrap (.btn) define estilos más fuertes
+   y hay que ganarle.
+   ========================================================================= */
 
 .inicio-btn-principal,
 .inicio-btn-secundario {
@@ -155,16 +214,19 @@ body {
     justify-content: center !important;
     min-height: 46px !important;
     padding: 11px 24px !important;
-    border-radius: 999px !important ;
+    border-radius: 999px !important;
     font-size: 0.875rem !important;
     font-weight: 700 !important;
     cursor: pointer !important;
+    /* CAMBIO: los colores siguen rápidos (responden al cursor), pero la sombra
+       y el levantado ahora usan la duración media y la curva suave.
+       Eso evita el "salto" al pasar el mouse. */
     transition:
         background-color var(--inicio-dur-corta) var(--inicio-ease),
         border-color var(--inicio-dur-corta) var(--inicio-ease),
         color var(--inicio-dur-corta) var(--inicio-ease),
-        box-shadow var(--inicio-dur) var(--inicio-ease),
-        transform var(--inicio-dur) var(--inicio-ease) !important;
+        box-shadow var(--inicio-dur-media) var(--inicio-ease-suave),
+        transform var(--inicio-dur-media) var(--inicio-ease-suave) !important;
 }
 
 .inicio-btn-principal {
@@ -187,7 +249,7 @@ body {
 }
 
 .inicio-btn-secundario {
-    border: 1.5px solid color-mix(in srgb, var(--texto) 16%, transparent) !important;
+    border: 1.5px solid color-mix(in srgb, var(--verde) 80%, transparent) !important;
     background: color-mix(in srgb, var(--blanco) 80%, transparent) !important;
     color: var(--texto) !important;
     -webkit-backdrop-filter: blur(10px) !important;
@@ -195,19 +257,24 @@ body {
 }
 
 .inicio-btn-secundario:hover {
-    border-color: var(--verde);
-    background: var(--blanco);
-    color: var(--verde-hover);
+    border-color: var(--verde-hover) !important;
+    background: var(--blanco) !important;
+    color: var(--verde-hover) !important;
     transform: translateY(-2px);
 }
 
+/* Al hacer clic el botón se hunde. Es corto a propósito: es una respuesta
+   directa a la mano del usuario, tiene que sentirse inmediata. */
 .inicio-btn-principal:active,
 .inicio-btn-secundario:active {
     transform: translateY(0) scale(0.97);
     transition-duration: 120ms;
 }
 
-/* Contenido */
+
+/* ============================================================================
+   5. TÍTULOS DE SECCIÓN
+   ========================================================================= */
 
 .inicio-contenido {
     padding-top: 32px;
@@ -248,8 +315,13 @@ body {
     margin-bottom: 0;
 }
 
-/* ---------- Tarjetas (secciones, novedades, publicación, construcciones) ---------- */
 
+/* ============================================================================
+   6. TARJETAS
+   ========================================================================= */
+
+/* Base compartida por todas las tarjetas (secciones, novedades,
+   publicación destacada y construcciones). */
 .inicio-card-seccion,
 .inicio-card-novedad,
 .inicio-publicacion,
@@ -261,41 +333,55 @@ body {
     box-shadow: var(--inicio-sombra);
 }
 
+/* CAMBIO: el levantado de las tarjetas usa la duración media y la curva suave.
+   Antes duraba 480ms con una curva más brusca. */
 .inicio-card-seccion,
 .inicio-card-novedad {
     transition:
-        transform var(--inicio-dur) var(--inicio-ease),
-        border-color var(--inicio-dur) var(--inicio-ease),
-        box-shadow var(--inicio-dur) var(--inicio-ease);
+        transform var(--inicio-dur-media) var(--inicio-ease-suave),
+        border-color var(--inicio-dur-media) var(--inicio-ease-suave),
+        box-shadow var(--inicio-dur-media) var(--inicio-ease-suave);
 }
 
+/* CAMBIO: sube 3px en vez de 4px. Un movimiento más corto se ve más fino. */
 .inicio-card-seccion:hover,
 .inicio-card-novedad:hover {
     border-color: color-mix(in srgb, var(--verde) 55%, transparent);
     box-shadow: var(--inicio-sombra-hover);
-    transform: translateY(-4px);
+    transform: translateY(-3px);
 }
 
-/* ---------- Secciones ---------- */
+/* ---------- Tarjetas de secciones ---------- */
 
+/* NUEVO: "isolation: isolate" evita el parpadeo en los bordes redondeados
+   cuando la imagen hace zoom dentro de un contenedor con overflow: hidden
+   (se nota sobre todo en Chrome). Lo mismo se aplica a las otras imágenes con zoom. */
 .inicio-imagen-link {
     display: block;
     overflow: hidden;
+    isolation: isolate;
 }
 
+/* CAMBIO: el zoom es más pequeño (1.05 -> 1.04) y más lento (700 -> 900ms). */
 .inicio-card-imagen {
     display: block;
     width: 100%;
     height: 140px;
     object-fit: cover;
-    transition: transform 700ms var(--inicio-ease);
+    transition: transform var(--inicio-dur-lenta) var(--inicio-ease-suave);
 }
 
 .inicio-card-seccion:hover .inicio-card-imagen {
-    transform: scale(1.05);
+    transform: scale(1.04);
 }
 
+/* CAMBIO (enlace siempre abajo): el cuerpo de la tarjeta ahora es una columna.
+   Como la tarjeta ya mide lo mismo que sus vecinas (h-100), el enlace
+   "Descubrir" se empuja al fondo con margin-top: auto (ver sección 7)
+   y queda alineado en todas, sin importar cuánto texto tenga la descripción. */
 .inicio-card-seccion .card-body {
+    display: flex;
+    flex-direction: column;
     padding: 18px 20px 20px;
 }
 
@@ -303,90 +389,20 @@ body {
     display: flex;
     align-items: center;
     gap: 12px;
-    margin-bottom: 10px;
     font-size: 1.0625rem;
     font-weight: 800;
 }
 
-/* El icono vive en un cuadrado verde claro que se llena al pasar el cursor. */
-.inicio-card-seccion h3 i {
-    display: grid;
-    flex-shrink: 0;
-    place-items: center;
-    width: 36px;
-    height: 36px;
-    border-radius: var(--inicio-radio-interno);
-    background: var(--verde-claro);
-    color: var(--verde-hover);
-    font-size: 1.05rem;
-    transition:
-        background-color var(--inicio-dur) var(--inicio-ease),
-        color var(--inicio-dur) var(--inicio-ease),
-        transform var(--inicio-dur) var(--inicio-ease);
-}
-
-.inicio-card-seccion:hover h3 i {
-    background: var(--verde);
-    color: var(--blanco);
-    transform: rotate(-6deg) scale(1.06);
-}
-
+/* CAMBIO: se quitó "min-height: 44px". Era un parche para igualar alturas
+   y ya no hace falta: el enlace se ancla solo al fondo. */
 .inicio-card-seccion p {
-    min-height: 44px;
-    margin-bottom: 12px;
+    margin-bottom: 14px;
     color: var(--inicio-texto-suave);
     font-size: 0.875rem;
     line-height: 1.6;
 }
 
-/* ---------- Enlaces de texto: línea verde que se dibuja al pasar el cursor ---------- */
-
-.inicio-enlace,
-.inicio-ver-todo,
-.inicio-leer-mas {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    color: var(--verde-hover);
-    font-size: 0.875rem;
-    font-weight: 700;
-    transition: color var(--inicio-dur-corta) var(--inicio-ease);
-}
-
-.inicio-enlace::after,
-.inicio-ver-todo::after,
-.inicio-leer-mas::after {
-    content: "";
-    position: absolute;
-    right: 0;
-    bottom: -3px;
-    left: 0;
-    height: 2px;
-    border-radius: 2px;
-    background: var(--verde);
-    transform: scaleX(0);
-    transform-origin: left;
-    transition: transform 350ms var(--inicio-ease);
-}
-
-.inicio-enlace:hover,
-.inicio-ver-todo:hover,
-.inicio-leer-mas:hover {
-    color: var(--inicio-verde-texto);
-}
-
-.inicio-enlace:hover::after,
-.inicio-ver-todo:hover::after,
-.inicio-leer-mas:hover::after {
-    transform: scaleX(1);
-}
-
-.inicio-ver-todo {
-    white-space: nowrap;
-}
-
-/* ---------- Novedades ---------- */
+/* ---------- Tarjetas de novedades ---------- */
 
 .inicio-card-novedad {
     display: flex;
@@ -400,6 +416,7 @@ body {
     flex: 0 0 38%;
     min-width: 0;
     overflow: hidden;
+    isolation: isolate; /* NUEVO: ver nota en .inicio-imagen-link */
     border-radius: var(--inicio-radio-interno);
 }
 
@@ -409,14 +426,18 @@ body {
     height: 100%;
     min-height: 150px;
     object-fit: cover;
-    transition: transform 700ms var(--inicio-ease);
+    transition: transform var(--inicio-dur-lenta) var(--inicio-ease-suave); /* CAMBIO: igual que las secciones */
 }
 
 .inicio-card-novedad:hover .inicio-novedad-imagen img {
-    transform: scale(1.05);
+    transform: scale(1.04);
 }
 
+/* CAMBIO (enlace siempre abajo): igual que en secciones, el cuerpo es una columna
+   para que "Leer publicación" quede anclado al fondo de la tarjeta. */
 .inicio-card-novedad .card-body {
+    display: flex;
+    flex-direction: column;
     min-width: 0;
     padding: 6px 8px 6px 16px;
 }
@@ -430,7 +451,6 @@ body {
 }
 
 .inicio-card-novedad h3 {
-    margin-bottom: 8px;
     font-size: 0.97rem;
     font-weight: 800;
     line-height: 1.35;
@@ -455,7 +475,7 @@ body {
 }
 
 .inicio-card-novedad p {
-    margin-bottom: 10px;
+    margin-bottom: 12px; /* CAMBIO: 10 -> 12px, para que el enlace anclado no quede pegado al texto */
     color: var(--inicio-texto-suave);
     font-size: 0.84rem;
     line-height: 1.55;
@@ -465,7 +485,99 @@ body {
     font-size: 0.8125rem;
 }
 
-/* ---------- Publicación destacada y construcciones ---------- */
+
+/* ============================================================================
+   7. ENLACES DE TEXTO
+   Línea verde que se dibuja al pasar el cursor.
+   ========================================================================= */
+
+.inicio-enlace,
+.inicio-ver-todo,
+.inicio-leer-mas {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--verde-hover);
+    font-size: 0.875rem;
+    font-weight: 700;
+    transition: color var(--inicio-dur-corta) var(--inicio-ease);
+}
+
+/* NUEVO (enlace siempre abajo): estas dos líneas son las que hacen el trabajo.
+   - margin-top: auto  -> empuja el enlace al fondo del contenedor flex (la tarjeta).
+   - align-self: flex-start -> evita que se estire a todo el ancho; la línea verde
+     solo cubre el texto.
+   Fuera de un contenedor flex no hacen nada, así que son seguras. */
+.inicio-enlace,
+.inicio-leer-mas {
+    align-self: flex-start;
+    margin-top: auto;
+}
+
+/* CAMBIO: la línea ahora "sale" por el lado contrario. Al entrar el cursor
+   se dibuja de izquierda a derecha, y al salir se retira hacia la derecha
+   (transform-origin cambia en :hover). Se siente como un trazo continuo. */
+.inicio-enlace::after,
+.inicio-ver-todo::after,
+.inicio-leer-mas::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    bottom: -3px;
+    left: 0;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--verde);
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform var(--inicio-dur-media) var(--inicio-ease-suave);
+}
+
+.inicio-enlace:hover,
+.inicio-ver-todo:hover,
+.inicio-leer-mas:hover {
+    color: var(--inicio-verde-texto);
+}
+
+.inicio-enlace:hover::after,
+.inicio-ver-todo:hover::after,
+.inicio-leer-mas:hover::after {
+    transform: scaleX(1);
+    transform-origin: left;
+}
+
+/* NUEVO: la flecha avanza un poco al pasar el cursor.
+   Funciona porque el enlace es inline-flex, y sus hijos se pueden transformar. */
+.inicio-enlace i,
+.inicio-ver-todo i,
+.inicio-leer-mas i {
+    transition: transform var(--inicio-dur-media) var(--inicio-ease-suave);
+}
+
+.inicio-enlace:hover i,
+.inicio-ver-todo:hover i,
+.inicio-leer-mas:hover i {
+    transform: translateX(3px);
+}
+
+/* La flecha diagonal de "Leer publicación" sube en vez de avanzar. */
+.inicio-leer-mas:hover i {
+    transform: translate(2px, -2px);
+}
+
+/* CAMBIO: se eliminó el bloque ".inicio-enlace { position: relative;
+   display: inline-flex; bottom: 0 }" que estaba repetido más abajo.
+   Ya está incluido en la regla de arriba. */
+
+.inicio-ver-todo {
+    white-space: nowrap;
+}
+
+
+/* ============================================================================
+   8. PUBLICACIÓN DESTACADA Y CONSTRUCCIONES
+   ========================================================================= */
 
 .inicio-inferior {
     margin-top: 0;
@@ -487,13 +599,14 @@ body {
 .inicio-avatar {
     display: grid;
     flex: 0 0 52px;
+    align-self: flex-start; /* NUEVO: el avatar no se estira cuando el texto crece */
     place-items: center;
     overflow: hidden;
     width: 52px;
     height: 52px;
     border: 2px solid var(--verde);
     border-radius: 50%;
-    background: var(--verde);
+    background: white;
     box-shadow:
         0 0 0 3px var(--verde-claro),
         0 4px 12px -2px color-mix(in srgb, var(--verde) 45%, transparent);
@@ -509,8 +622,17 @@ body {
     image-rendering: pixelated;
 }
 
+/* CAMBIO (enlace siempre abajo): el contenido ocupa toda la altura de la tarjeta
+   y es una columna, así "Ver publicaciones" queda abajo como en las otras tarjetas. */
+.inicio-publicacion-contenido {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-self: stretch;
+    min-width: 0;
+}
+
 .inicio-publicacion-contenido h3 {
-    margin-bottom: 6px;
     font-size: 1rem;
     font-weight: 800;
 }
@@ -537,6 +659,7 @@ body {
     position: relative;
     display: block;
     overflow: hidden;
+    isolation: isolate; /* NUEVO: ver nota en .inicio-imagen-link */
     height: 96px;
     border-radius: var(--inicio-radio-interno);
     background: var(--verde-claro);
@@ -546,14 +669,16 @@ body {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 700ms var(--inicio-ease);
+    transition: transform var(--inicio-dur-lenta) var(--inicio-ease-suave); /* CAMBIO: 700 -> 900ms, curva suave */
 }
 
+/* CAMBIO: zoom 1.07 -> 1.05. Las miniaturas son chicas y un zoom grande se ve brusco. */
 .inicio-construccion:hover img {
-    transform: scale(1.07);
+    transform: scale(1.05);
 }
 
-/* El nombre sube desde abajo al pasar el cursor. */
+/* El nombre sube desde abajo al pasar el cursor.
+   CAMBIO: la subida usa la duración media y la curva suave. */
 .inicio-construccion span {
     position: absolute;
     inset: auto 0 0;
@@ -565,8 +690,8 @@ body {
     opacity: 0;
     transform: translateY(8px);
     transition:
-        opacity var(--inicio-dur-corta) var(--inicio-ease),
-        transform var(--inicio-dur) var(--inicio-ease);
+        opacity var(--inicio-dur) var(--inicio-ease-suave),
+        transform var(--inicio-dur-media) var(--inicio-ease-suave);
 }
 
 .inicio-construccion:hover span {
@@ -584,7 +709,10 @@ body {
     font-size: 0.875rem;
 }
 
-/* ---------- Banner de la tienda ---------- */
+
+/* ============================================================================
+   9. BANNER DE LA TIENDA
+   ========================================================================= */
 
 .inicio-tienda {
     display: flex;
@@ -600,9 +728,10 @@ body {
         var(--blanco)
     );
     box-shadow: var(--inicio-sombra);
+    /* CAMBIO: borde y sombra con duración media y curva suave. */
     transition:
-        border-color var(--inicio-dur) var(--inicio-ease),
-        box-shadow var(--inicio-dur) var(--inicio-ease);
+        border-color var(--inicio-dur-media) var(--inicio-ease-suave),
+        box-shadow var(--inicio-dur-media) var(--inicio-ease-suave);
 }
 
 .inicio-tienda:hover {
@@ -624,7 +753,10 @@ body {
     line-height: 1.6;
 }
 
-/* Responsive  */
+
+/* ============================================================================
+   10. RESPONSIVE
+   ========================================================================= */
 
 @media (min-width: 1200px) {
     .inicio-contenido {
@@ -635,13 +767,16 @@ body {
 @media (max-width: 767.98px) {
     .inicio-hero {
         min-height: calc(340px + var(--header-alto));
+        /* CAMBIO: la imagen de respaldo en móvil apuntaba a "/images/inicio/hero.jpg",
+           distinta a la de escritorio. Ahora usa la misma. Si esa ruta vieja
+           sí existe en tu proyecto, volvé a ponerla acá. */
         background-image:
             linear-gradient(
                 90deg,
                 color-mix(in srgb, var(--fondo) 97%, transparent),
                 color-mix(in srgb, var(--fondo) 78%, transparent)
             ),
-            var(--inicio-hero-imagen, url("/images/inicio/hero.jpg"));
+            var(--inicio-hero-imagen, url("../assets/index/hero-index.png"));
     }
 
     .inicio-hero-contenido {
@@ -690,6 +825,8 @@ body {
         width: 100%;
     }
 
+    /* En pantallas muy chicas la novedad pasa a columna (imagen arriba).
+       El cuerpo sigue siendo flex, así que "Leer publicación" sigue abajo. */
     .inicio-card-novedad {
         flex-direction: column;
     }
@@ -716,7 +853,10 @@ body {
     }
 }
 
-/*  Modo administrador */
+
+/* ============================================================================
+   11. MODO ADMINISTRADOR
+   ========================================================================= */
 
 /* Contorno punteado que indica qué elementos se pueden editar. */
 .inicio-modo-admin .inicio-card-seccion,
@@ -755,7 +895,7 @@ body {
     color: var(--inicio-texto-suave);
     font-size: 0.8125rem;
     font-weight: 600;
-    animation: inicio-admin-aparece var(--inicio-dur) var(--inicio-ease) backwards;
+    animation: inicio-admin-aparece var(--inicio-dur-media) var(--inicio-ease-suave) backwards; /* CAMBIO: entrada más suave */
 }
 
 .inicio-admin-aviso i {
@@ -771,6 +911,7 @@ body {
     border: var(--inicio-borde) solid color-mix(in srgb, var(--texto) 16%, transparent);
     border-radius: 999px;
     background: color-mix(in srgb, #111111 10%, transparent);
+    -webkit-backdrop-filter: blur(14px);
     backdrop-filter: blur(14px);
     box-shadow: var(--inicio-sombra);
     color: var(--texto);
@@ -778,12 +919,13 @@ body {
     font-size: 0.875rem;
     font-weight: 700;
     cursor: pointer;
+    /* CAMBIO: sombra y levantado con duración media y curva suave. */
     transition:
         background-color var(--inicio-dur-corta) var(--inicio-ease),
         border-color var(--inicio-dur-corta) var(--inicio-ease),
         color var(--inicio-dur-corta) var(--inicio-ease),
-        box-shadow var(--inicio-dur) var(--inicio-ease),
-        transform var(--inicio-dur) var(--inicio-ease);
+        box-shadow var(--inicio-dur-media) var(--inicio-ease-suave),
+        transform var(--inicio-dur-media) var(--inicio-ease-suave);
 }
 
 .inicio-admin-toggle:hover {
@@ -810,7 +952,7 @@ body {
     color: var(--blanco);
 }
 
-/* ---------- Botones sobre cada elemento ---------- */
+/* ---------- Botones sobre cada elemento (editar / eliminar) ---------- */
 
 .inicio-admin-acciones {
     position: absolute;
@@ -819,7 +961,7 @@ body {
     z-index: 3;
     display: flex;
     gap: 6px;
-    animation: inicio-admin-aparece var(--inicio-dur) var(--inicio-ease) backwards;
+    animation: inicio-admin-aparece var(--inicio-dur-media) var(--inicio-ease-suave) backwards; /* CAMBIO */
 }
 
 .inicio-construccion-item .inicio-admin-acciones {
@@ -845,7 +987,7 @@ body {
         background-color var(--inicio-dur-corta) var(--inicio-ease),
         border-color var(--inicio-dur-corta) var(--inicio-ease),
         color var(--inicio-dur-corta) var(--inicio-ease),
-        transform var(--inicio-dur) var(--inicio-ease);
+        transform var(--inicio-dur-media) var(--inicio-ease-suave); /* CAMBIO */
 }
 
 .inicio-admin-btn:hover {
@@ -866,10 +1008,12 @@ body {
     transition-duration: 120ms;
 }
 
+/* CAMBIO: aparece desde 8px más abajo y con un poco menos de escala (0.96 -> 0.97).
+   Es la entrada que usan el aviso, los botones de edición y los errores del formulario. */
 @keyframes inicio-admin-aparece {
     from {
         opacity: 0;
-        transform: translateY(8px) scale(0.96);
+        transform: translateY(8px) scale(0.97);
     }
     to {
         opacity: 1;
@@ -897,11 +1041,12 @@ body {
     font-size: 0.9rem;
     font-weight: 700;
     cursor: pointer;
+    /* CAMBIO: levantado y colores con curva suave. */
     transition:
-        background-color var(--inicio-dur) var(--inicio-ease),
-        border-color var(--inicio-dur) var(--inicio-ease),
-        color var(--inicio-dur) var(--inicio-ease),
-        transform var(--inicio-dur) var(--inicio-ease);
+        background-color var(--inicio-dur) var(--inicio-ease-suave),
+        border-color var(--inicio-dur) var(--inicio-ease-suave),
+        color var(--inicio-dur) var(--inicio-ease-suave),
+        transform var(--inicio-dur-media) var(--inicio-ease-suave);
 }
 
 .inicio-admin-agregar i {
@@ -913,9 +1058,9 @@ body {
     background: var(--verde-claro);
     font-size: 1.1rem;
     transition:
-        background-color var(--inicio-dur) var(--inicio-ease),
-        color var(--inicio-dur) var(--inicio-ease),
-        transform var(--inicio-dur) var(--inicio-ease);
+        background-color var(--inicio-dur) var(--inicio-ease-suave),
+        color var(--inicio-dur) var(--inicio-ease-suave),
+        transform var(--inicio-dur-media) var(--inicio-ease-suave);
 }
 
 .inicio-admin-agregar:hover {
@@ -925,6 +1070,7 @@ body {
     transform: translateY(-3px);
 }
 
+/* El "+" gira un cuarto de vuelta al pasar el cursor. */
 .inicio-admin-agregar:hover i {
     background: var(--verde);
     color: var(--blanco);
@@ -956,7 +1102,9 @@ body {
     background: color-mix(in srgb, var(--texto) 45%, transparent);
     -webkit-backdrop-filter: blur(6px);
     backdrop-filter: blur(6px);
-    animation: inicio-modal-fondo-entrada var(--inicio-dur-corta) var(--inicio-ease) backwards;
+    /* CAMBIO: el fondo aparece en la duración normal (antes la corta),
+       para que acompañe a la ventana y no "parpadee" antes que ella. */
+    animation: inicio-modal-fondo-entrada var(--inicio-dur) var(--inicio-ease-suave) backwards;
 }
 
 .inicio-modal {
@@ -971,7 +1119,8 @@ body {
     border-radius: 28px;
     background: var(--blanco);
     box-shadow: 0 32px 64px -20px rgba(48, 47, 42, 0.45), 0 6px 18px -6px rgba(48, 47, 42, 0.2);
-    animation: inicio-modal-entrada var(--inicio-dur) var(--inicio-ease) backwards;
+    /* CAMBIO: la ventana tarda un poco más y usa la curva suave. */
+    animation: inicio-modal-entrada var(--inicio-dur-media) var(--inicio-ease-suave) backwards;
 }
 
 .inicio-modal-chico {
@@ -1022,10 +1171,12 @@ body {
     to   { opacity: 1; }
 }
 
+/* CAMBIO: recorrido más corto (18px -> 14px) y escala más cercana a 1 (0.97 -> 0.98).
+   La ventana "se asienta" en lugar de saltar. */
 @keyframes inicio-modal-entrada {
     from {
         opacity: 0;
-        transform: translateY(18px) scale(0.97);
+        transform: translateY(14px) scale(0.98);
     }
     to {
         opacity: 1;
@@ -1050,8 +1201,8 @@ body {
     cursor: pointer;
     transition:
         background-color var(--inicio-dur-corta) var(--inicio-ease),
-        box-shadow var(--inicio-dur) var(--inicio-ease),
-        transform var(--inicio-dur) var(--inicio-ease);
+        box-shadow var(--inicio-dur-media) var(--inicio-ease-suave),
+        transform var(--inicio-dur-media) var(--inicio-ease-suave); /* CAMBIO */
 }
 
 .inicio-btn-peligro:hover {
@@ -1093,7 +1244,7 @@ body {
     transition:
         border-color var(--inicio-dur-corta) var(--inicio-ease),
         background-color var(--inicio-dur-corta) var(--inicio-ease),
-        box-shadow var(--inicio-dur-corta) var(--inicio-ease);
+        box-shadow var(--inicio-dur) var(--inicio-ease-suave); /* CAMBIO: el halo verde del foco se expande más suave */
 }
 
 textarea.inicio-campo-control {
@@ -1124,10 +1275,11 @@ textarea.inicio-campo-control {
     color: var(--marron);
     font-size: 0.875rem;
     font-weight: 600;
-    animation: inicio-admin-aparece var(--inicio-dur-corta) var(--inicio-ease) backwards;
+    animation: inicio-admin-aparece var(--inicio-dur) var(--inicio-ease-suave) backwards;
 }
 
-/* Selector de icono */
+/* ---------- Selector de icono (dentro del formulario) ---------- */
+
 .inicio-admin-iconos {
     display: flex;
     flex-wrap: wrap;
@@ -1144,29 +1296,37 @@ textarea.inicio-campo-control {
     border-radius: var(--inicio-radio-interno);
     background: transparent;
     color: var(--texto);
-    font-size: 1.1rem;
     cursor: pointer;
     transition:
         background-color var(--inicio-dur-corta) var(--inicio-ease),
         border-color var(--inicio-dur-corta) var(--inicio-ease),
-        color var(--inicio-dur-corta) var(--inicio-ease),
-        transform var(--inicio-dur) var(--inicio-ease);
+        transform var(--inicio-dur-media) var(--inicio-ease-suave); /* CAMBIO */
+}
+
+/* NUEVO: los iconos ahora son imágenes (<img>), no fuentes (<i>).
+   Esta regla les da tamaño y evita que el pixel art se vea borroso. */
+.inicio-admin-icono img {
+    display: block;
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+    image-rendering: pixelated;
 }
 
 .inicio-admin-icono:hover {
     border-color: var(--verde);
     background: var(--verde-claro);
-    color: var(--verde-hover);
     transform: translateY(-2px);
 }
 
 .inicio-admin-icono.activo {
     border-color: var(--verde);
-    background: var(--verde);
-    color: var(--blanco);
+    background: var(--verde-claro); /* CAMBIO: antes era verde sólido, y un icono de colores se perdía sobre ese fondo */
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--verde) 28%, transparent);
 }
 
-/* Selector de imagen con vista previa */
+/* ---------- Selector de imagen con vista previa ---------- */
+
 .inicio-admin-imagen {
     display: flex;
     align-items: center;
@@ -1235,7 +1395,73 @@ textarea.inicio-campo-control {
     }
 }
 
-/* ---------- Menos movimiento ---------- */
+
+/* ============================================================================
+   12. ICONOS
+   Los iconos de las secciones son imágenes (<img class="inicio-icono">).
+   ========================================================================= */
+
+/* CAMBIO: antes esta regla tenía "display: grid" y "font-size", pensados para
+   iconos de fuente (<i class="bi ...">). Como ahora son imágenes, se define
+   el tamaño directamente y "image-rendering: pixelated" mantiene los bordes
+   nítidos si el icono es pixel art. */
+.inicio-icono {
+    display: block;
+    flex-shrink: 0;
+    width: 30px;
+    height: 30px;
+    object-fit: contain;
+    image-rendering: pixelated;
+    transition: transform var(--inicio-dur-media) var(--inicio-ease-suave);
+}
+
+/* NUEVO: cuando el cursor está sobre la tarjeta, el icono se inclina un poco.
+   Es un detalle sutil que conecta el icono con el resto del movimiento de la tarjeta. */
+.inicio-card-seccion:hover .inicio-icono {
+    transform: rotate(-6deg) scale(1.1);
+}
+
+/* Contenedor circular opcional: si envolvés el icono en un
+   <span class="icono-container">, el círculo se pinta de verde al pasar el cursor. */
+.icono-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 100%;
+    background: none;
+    transition:
+        background-color var(--inicio-dur) var(--inicio-ease-suave),
+        color var(--inicio-dur) var(--inicio-ease-suave),
+        transform var(--inicio-dur-media) var(--inicio-ease-suave); /* CAMBIO: curva suave */
+}
+
+.icono-container:hover {
+    background: var(--verde);
+    color: var(--blanco);
+    transform: rotate(-6deg) scale(1.06);
+}
+
+/* Se conserva por compatibilidad con tu versión anterior. Si ya no la usás
+   en ningún lado, se puede borrar. */
+.inicio-icono.activo {
+    background: var(--verde);
+    color: var(--blanco);
+}
+
+.seccion-titulo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+
+/* ============================================================================
+   MENOS MOVIMIENTO
+   Si la persona tiene activada la opción "reducir movimiento" en su sistema,
+   se apagan todas las animaciones y transiciones de la página.
+   ========================================================================= */
 
 @media (prefers-reduced-motion: reduce) {
     .inicio *,
