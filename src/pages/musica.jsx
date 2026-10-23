@@ -1,15 +1,10 @@
-
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import Header from "../components/header";
 import Footer from "../components/Footer";
-import {
-  songs,
-  composers,
-  albums,
-  playlists,
-} from "../data/musicData";
+
+import { songs, composers, albums, playlists } from "../data/musicData";
 
 import SongRow from "../components/music/SongRow";
 import FeaturedSongs from "../components/music/FeaturedSongs";
@@ -30,173 +25,169 @@ export default function Musica() {
   const [isShuffle, setIsShuffle] = useState(false);
   const [repeatMode, setRepeatMode] = useState("off");
   const [songDurations, setSongDurations] = useState({});
+  const [showAllSongs, setShowAllSongs] = useState(false);
 
-  const availableSongs = songs.filter(
-    (song) => !blockedSongs.includes(song.id)
-  );
+  // Lee las duraciones reales de los archivos de audio sin reproducirlos.
+  useEffect(() => {
+    let cancelled = false;
+    let songIndex = 0;
+    const metadataAudio = new Audio();
+    metadataAudio.preload = "metadata";
 
-  const favoriteSongs = songs.filter(
-    (song) => favorites.includes(song.id)
-  );
+    const loadNextDuration = () => {
+      if (cancelled) return;
+
+      while (songIndex < songs.length && !songs[songIndex]?.audio) {
+        songIndex += 1;
+      }
+
+      if (songIndex >= songs.length) {
+        metadataAudio.removeAttribute("src");
+        metadataAudio.load();
+        return;
+      }
+
+      const song = songs[songIndex++];
+      metadataAudio.onloadedmetadata = () => {
+        if (cancelled) return;
+        const duration = metadataAudio.duration;
+        if (Number.isFinite(duration) && duration > 0) {
+          setSongDurations((previous) => ({ ...previous, [song.id]: duration }));
+        }
+        loadNextDuration();
+      };
+      metadataAudio.onerror = () => {
+        if (!cancelled) loadNextDuration();
+      };
+      metadataAudio.src = song.audio;
+      metadataAudio.load();
+    };
+
+    loadNextDuration();
+    return () => {
+      cancelled = true;
+      metadataAudio.onloadedmetadata = null;
+      metadataAudio.onerror = null;
+      metadataAudio.pause();
+      metadataAudio.removeAttribute("src");
+      metadataAudio.load();
+    };
+  }, []);
+
+  const availableSongs = songs.filter((song) => !blockedSongs.includes(song.id));
+  const favoriteSongs = songs.filter((song) => favorites.includes(song.id));
 
   const getComposer = (song) =>
-    composers.find(
-      (composer) => composer.id === song.composerId
-    );
+    composers.find((composer) => composer.id === song.composerId);
 
   const getAlbum = (song) =>
-    albums.find(
-      (album) => album.id === song.albumId
-    );
+    albums.find((album) => album.id === song.albumId);
 
   const playSong = (song) => {
-    setCurrentSong(song);
+    setCurrentSong({
+      ...song,
+      composerName: getComposer(song)?.name || "Compositor desconocido",
+    });
   };
 
   const playNext = (fromEnded = false) => {
     if (availableSongs.length === 0) return;
-
     if (!currentSong) {
-      setCurrentSong(availableSongs[0]);
+      playSong(availableSongs[0]);
       return;
     }
 
-    const currentIndex = availableSongs.findIndex(
-      (song) => song.id === currentSong.id
-    );
-
+    const currentIndex = availableSongs.findIndex((song) => song.id === currentSong.id);
     if (currentIndex === -1) {
-      setCurrentSong(availableSongs[0]);
+      playSong(availableSongs[0]);
       return;
     }
 
-    if (
-      fromEnded &&
-      currentIndex === availableSongs.length - 1 &&
-      repeatMode !== "all" &&
-      !isShuffle
-    ) {
+    if (fromEnded && currentIndex === availableSongs.length - 1 && repeatMode !== "all" && !isShuffle) {
       return;
     }
 
     if (isShuffle && availableSongs.length > 1) {
-      const otherSongs = availableSongs.filter(
-        (song) => song.id !== currentSong.id
-      );
-
-      const randomIndex = Math.floor(
-        Math.random() * otherSongs.length
-      );
-
-      setCurrentSong(otherSongs[randomIndex]);
+      const otherSongs = availableSongs.filter((song) => song.id !== currentSong.id);
+      playSong(otherSongs[Math.floor(Math.random() * otherSongs.length)]);
       return;
     }
 
     const nextIndex = currentIndex + 1;
-
     if (nextIndex >= availableSongs.length) {
-      if (repeatMode === "all" || !fromEnded) {
-        setCurrentSong(availableSongs[0]);
-      }
+      if (repeatMode === "all" || !fromEnded) playSong(availableSongs[0]);
       return;
     }
-
-    setCurrentSong(availableSongs[nextIndex]);
+    playSong(availableSongs[nextIndex]);
   };
 
   const playPrevious = () => {
     if (!currentSong) {
-      if (availableSongs.length > 0) {
-        setCurrentSong(availableSongs[0]);
-      }
+      if (availableSongs.length > 0) playSong(availableSongs[0]);
       return;
     }
 
-    const currentIndex = availableSongs.findIndex(
-      (song) => song.id === currentSong.id
-    );
-
+    const currentIndex = availableSongs.findIndex((song) => song.id === currentSong.id);
     if (currentIndex === -1) {
-      setCurrentSong(availableSongs[0]);
+      if (availableSongs.length > 0) playSong(availableSongs[0]);
       return;
     }
 
-    const previousIndex =
-      currentIndex === 0
-        ? availableSongs.length - 1
-        : currentIndex - 1;
-
-    setCurrentSong(availableSongs[previousIndex]);
+    const previousIndex = currentIndex === 0 ? availableSongs.length - 1 : currentIndex - 1;
+    playSong(availableSongs[previousIndex]);
   };
 
   const toggleFavorite = (song) => {
     const songId = typeof song === "object" ? song.id : song;
-
-    setFavorites((previousFavorites) =>
-      previousFavorites.includes(songId)
-        ? previousFavorites.filter((id) => id !== songId)
-        : [...previousFavorites, songId]
+    setFavorites((previous) =>
+      previous.includes(songId)
+        ? previous.filter((id) => id !== songId)
+        : [...previous, songId]
     );
   };
 
   const toggleBlocked = (song) => {
     const songId = typeof song === "object" ? song.id : song;
-
-    if (
-      !blockedSongs.includes(songId) &&
-      currentSong?.id === songId
-    ) {
+    if (!blockedSongs.includes(songId) && currentSong?.id === songId) {
       setCurrentSong(null);
     }
-
-    setBlockedSongs((previousBlocked) =>
-      previousBlocked.includes(songId)
-        ? previousBlocked.filter((id) => id !== songId)
-        : [...previousBlocked, songId]
+    setBlockedSongs((previous) =>
+      previous.includes(songId)
+        ? previous.filter((id) => id !== songId)
+        : [...previous, songId]
     );
+    setSelectedSong(null);
   };
 
   const playPlaylist = (playlist) => {
-    let playlistSongs = [];
+    const playlistSongs = playlist.system
+      ? favoriteSongs.filter((song) => !blockedSongs.includes(song.id))
+      : songs.filter((song) => playlist.songs.includes(song.id) && !blockedSongs.includes(song.id));
 
-    if (playlist.system) {
-      playlistSongs = favoriteSongs;
-    } else {
-      playlistSongs = songs.filter(
-        (song) =>
-          playlist.songs.includes(song.id) &&
-          !blockedSongs.includes(song.id)
-      );
-    }
-
-    if (playlistSongs.length > 0) {
-      setCurrentSong(playlistSongs[0]);
-    }
+    if (playlistSongs.length > 0) playSong(playlistSongs[0]);
   };
+
+  const songsToShow = showAllSongs ? availableSongs : availableSongs.slice(0, 10);
 
   return (
     <>
       <Header />
 
       <main className="music-page">
-        <section className="music-header container my-5">
-          <p className="music-eyebrow">
-            WIKICRAFT · MÚSICA
-          </p>
-
+        <section
+          className="music-header container my-5"
+  style={{
+  backgroundImage: "url('/music/banner-minecraft.gif')"
+}}
+        >
+          <p className="music-eyebrow">WIKICRAFT · MÚSICA</p>
           <h1>Biblioteca musical</h1>
-
-          <p>
-            Explorá el repertorio musical, descubrí compositores,
-            álbumes y listas de reproducción.
-          </p>
+          <p>Explorá el repertorio musical, descubrí compositores, álbumes y listas de reproducción.</p>
         </section>
 
         <div className="container">
           <section className="music-section">
             <div className="section-title">
-              <span>01</span>
-
               <div>
                 <h2>Todo el repertorio</h2>
                 <p>{availableSongs.length} canciones</p>
@@ -204,16 +195,11 @@ export default function Musica() {
             </div>
 
             <div className="songs-list">
-              {availableSongs.length > 0 ? (
-                availableSongs.map((song, index) => (
+              {songsToShow.length > 0 ? (
+                songsToShow.map((song, index) => (
                   <SongRow
                     key={song.id}
-                    song={{
-                      ...song,
-                      duration:
-                        songDurations[song.id] ??
-                        song.duration,
-                    }}
+                    song={{ ...song, duration: songDurations[song.id] ?? song.duration }}
                     index={index}
                     composer={getComposer(song)}
                     isFavorite={favorites.includes(song.id)}
@@ -228,35 +214,36 @@ export default function Musica() {
                 <p>No hay canciones disponibles.</p>
               )}
             </div>
+
+            {availableSongs.length > 10 && (
+              <button
+                type="button"
+                className="songs-expand-button"
+                onClick={() => setShowAllSongs((previous) => !previous)}
+                aria-expanded={showAllSongs}
+              >
+                {showAllSongs ? "Mostrar menos canciones" : "Ver todas las canciones"}
+              </button>
+            )}
           </section>
 
           <section className="music-section">
             <div className="section-title">
-              <span>02</span>
-
               <div>
                 <h2>Canciones destacadas</h2>
                 <p>Las canciones más destacadas</p>
               </div>
             </div>
-
-            <FeaturedSongs
-              songs={availableSongs.slice(0, 5)}
-              composers={composers}
-              onPlay={playSong}
-            />
+            <FeaturedSongs songs={availableSongs.slice(0, 5)} composers={composers} onPlay={playSong} />
           </section>
 
           <section className="music-section">
             <div className="section-title">
-              <span>03</span>
-
               <div>
                 <h2>Listas de reproducción</h2>
                 <p>Música organizada para cada momento</p>
               </div>
             </div>
-
             <div className="playlist-grid">
               {playlists.map((playlist) => (
                 <PlaylistCard
@@ -264,13 +251,11 @@ export default function Musica() {
                   playlist={playlist}
                   songCount={
                     playlist.system
-                      ? favoriteSongs.length
-                      : playlist.songs.length
+                      ? favoriteSongs.filter((song) => !blockedSongs.includes(song.id)).length
+                      : playlist.songs.filter((id) => !blockedSongs.includes(id)).length
                   }
                   onPlay={playPlaylist}
-                  onOpen={(item) =>
-                    navigate(`/musica/playlist/${item.id}`)
-                  }
+                  onOpen={(item) => navigate(`/musica/playlist/${item.id}`)}
                 />
               ))}
             </div>
@@ -278,34 +263,24 @@ export default function Musica() {
 
           <section className="music-section">
             <div className="section-title">
-              <span>04</span>
-
               <div>
                 <h2>Álbumes</h2>
                 <p>Explorá los álbumes completos</p>
               </div>
             </div>
-
             <div className="album-grid">
               {albums.map((album) => {
-                const composer = composers.find(
-                  (item) => item.id === album.composerId
-                );
-
+                const composer = composers.find((item) => item.id === album.composerId);
                 return (
                   <button
                     key={album.id}
                     type="button"
                     className="album-card"
-                    onClick={() =>
-                      navigate(`/musica/album/${album.id}`)
-                    }
+                    onClick={() => navigate(`/musica/album/${album.id}`)}
                   >
                     <img src={album.cover} alt={album.title} />
                     <strong>{album.title}</strong>
-                    <span>
-                      {composer?.name || "Compositor desconocido"}
-                    </span>
+                    <span>{composer?.name || "Compositor desconocido"}</span>
                     <small>{album.songs.length} canciones</small>
                   </button>
                 );
@@ -315,22 +290,17 @@ export default function Musica() {
 
           <section className="music-section">
             <div className="section-title">
-              <span>05</span>
-
               <div>
                 <h2>Compositores</h2>
                 <p>Descubrí quién está detrás de la música</p>
               </div>
             </div>
-
             <div className="composer-grid">
               {composers.map((composer) => (
                 <ComposerCard
                   key={composer.id}
                   composer={composer}
-                  onOpen={(item) =>
-                    navigate(`/musica/compositor/${item.id}`)
-                  }
+                  onOpen={(item) => navigate(`/musica/compositor/${item.id}`)}
                 />
               ))}
             </div>
@@ -339,20 +309,10 @@ export default function Musica() {
 
         <SongPanel
           song={selectedSong}
-          composer={
-            selectedSong ? getComposer(selectedSong) : null
-          }
+          composer={selectedSong ? getComposer(selectedSong) : null}
           album={selectedSong ? getAlbum(selectedSong) : null}
-          isFavorite={
-            selectedSong
-              ? favorites.includes(selectedSong.id)
-              : false
-          }
-          isBlocked={
-            selectedSong
-              ? blockedSongs.includes(selectedSong.id)
-              : false
-          }
+          isFavorite={selectedSong ? favorites.includes(selectedSong.id) : false}
+          isBlocked={selectedSong ? blockedSongs.includes(selectedSong.id) : false}
           onClose={() => setSelectedSong(null)}
           onPlay={(song) => {
             playSong(song);
@@ -360,17 +320,15 @@ export default function Musica() {
           }}
           onToggleFavorite={toggleFavorite}
           onToggleBlocked={toggleBlocked}
-          onOpenAlbum={(album) =>
-            navigate(`/musica/album/${album.id}`)
-          }
-          onOpenComposer={(composer) =>
-            navigate(`/musica/compositor/${composer.id}`)
-          }
+          onOpenAlbum={(album) => navigate(`/musica/album/${album.id}`)}
+          onOpenComposer={(composer) => navigate(`/musica/compositor/${composer.id}`)}
         />
       </main>
 
       <MusicPlayer
         currentSong={currentSong}
+        onClose={() => setCurrentSong(null)}
+        isDetailsOpen={Boolean(selectedSong)}
         onNext={playNext}
         onPrevious={playPrevious}
         isShuffle={isShuffle}
@@ -378,10 +336,7 @@ export default function Musica() {
         repeatMode={repeatMode}
         setRepeatMode={setRepeatMode}
         onDurationChange={(songId, duration) => {
-          setSongDurations((previous) => ({
-            ...previous,
-            [songId]: duration,
-          }));
+          setSongDurations((previous) => ({ ...previous, [songId]: duration }));
         }}
       />
 

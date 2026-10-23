@@ -1,0 +1,161 @@
+.song-page,
+.album-page,
+.composer-page,
+.playlist-page {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 100vh;
+  padding: 35px clamp(18px, 5vw, 70px) 70px;
+  color: #f5f7f5;
+  background:
+    radial-gradient(ellipse at top left, rgba(47, 104, 70, 0.22), transparent 48%),
+    linear-gradient(145deg, #111713, #171d19 55%, #101411);
+}
+
+.song-page *,
+.album-page *,
+.composer-page *,
+.playlist-page * {
+  box-sizing: border-box;
+}
+
+.song-page .back-button,
+.album-page .back-button,
+.composer-page .back-button,
+.playlist-page .back-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 30px;
+  padding: 10px 17px;
+  color: #e4e9e4;
+  background: #252e28;
+  border: 1px solid #35443a;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.song-page .back-button:hover,
+.album-page .back-button:hover,
+.composer-page .back-button:hover,
+.playlist-page .back-button:hover {
+  background: #34483a;
+  transform: translateX(-3px);
+}
+
+.song-detail {
+  display: grid;
+  grid-template-columns: minmax(220px, 340px) minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(28px, 5vw, 65px);
+  max-width: 1100px;
+  margin: 20px auto 0;
+  padding: clamp(22px, 4vw, 45px);
+  background: linear-gradient(135deg, #28382d, #1c241f 75%);
+  border: 1px solid #3b4b3e;
+  border-radius: 25px;
+  box-shadow: 0 20px 60px #0005;
+}
+
+.song-detail > img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 18px;
+  box-shadow: 0 12px 35px #0006;
+}
+
+.song-detail > div > span,
+.album-header > div > span,
+.composer-header > div > span,
+.playlist-header > div > span {
+  color: #a7d9ad;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 3px;
+}
+
+.song-detail h1,
+.album-header h1,
+.composer-header h1,
+.playlist-header h1 {
+  margin: 14px 0;
+  color: #fff;
+  font-size: clamp(2rem, 5vw, 3.8rem);
+  line-height: 1.08;
+  overflow-wrap: anywhere;
+}
+
+.song-detail p,
+.album-header p,
+.composer-header p,
+.playlist-header p {
+  color: #b8c3ba;
+  line-height: 1.8;
+}
+
+.song-detail > div > button:not(.song-actions button),
+.album-header > div > button:not(.album-header button),
+.composer-header > div > button,
+.playlist-header > div > button {
+  color: #d4e8d6;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.song-detail > div > button:not(.song-actions button):hover,
+.album-header > div > button:hover {
+  color: #9bdfa5;
+}
+
+.song-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 25px;
+}
+
+.song-actions button,
+.album-header > div > div button,
+.playlist-header > div > div button,
+.composer-header > div > button {
+  padding: 12px 20px;
+  color: #f7fff7;
+  background: #315e3c;
+  border: 1px solid #4b8057;
+  border-radius: 999px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s, background 0.2s;
+}
+
+.song-actions button:hover,
+.album-header > div > div button:hover,
+.playlist-header > div > div button:hover,
+.composer-header > div > button:hover {
+  background: #427c50;
+  transform: translateY(-2px);
+}
+
+@media (max-width: 650px) {
+  .song-page,
+  .album-page,
+  .composer-page,
+  .playlist-page {
+    padding: 24px 16px 45px;
+  }
+
+  .song-detail {
+    grid-template-columns: 1fr;
+    gap: 25px;
+    padding: 22px;
+  }
+
+  .song-detail > img {
+    width: min(100%, 300px);
+    margin: 0 auto;
+  }
+}

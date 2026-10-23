@@ -14,7 +14,7 @@ import Cancion from './pages/cancion';
 import Playlist from './pages/playlist';
 import Album from './pages/album';
 import Compositor from './pages/compositor';
-
+import MaestroMelodias from './pages/MaestroMelodias';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import './styles/App.css';
@@ -35,6 +35,7 @@ function App() {
             <Route path="/musica/playlist/:id" element={<Playlist />} />
             <Route path="/musica/album/:id" element={<Album />} />
             <Route path="/musica/compositor/:id" element={<Compositor />} />
+            <Route path="/musica/maestro" element={<MaestroMelodias />} />
           </Routes>
     </BrowserRouter>
   );
