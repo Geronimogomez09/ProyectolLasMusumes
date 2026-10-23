@@ -99,7 +99,7 @@ function ComentarioForm({ onEnviar, placeholder = '¿Qué opinás?' }) {
                       e.target.nextElementSibling.style.display = 'inline';
                     }}
                   />
-                  <span className="emoji-picker__fallback">{emoji.nombre}</span>
+                  <span style={{ display: 'none', fontSize: '0.55rem' }}>{emoji.nombre}</span>
                 </button>
               ))}
             </div>

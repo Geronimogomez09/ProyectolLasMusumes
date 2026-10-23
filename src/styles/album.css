@@ -1,0 +1,9 @@
+.album-songs button img {
+  width: 55px;
+  height: 55px;
+  object-fit: cover;
+}
+
+.album-songs button span {
+  opacity: 0.6;
+}

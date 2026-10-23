@@ -1,0 +1,62 @@
+.composer-header {
+  align-items: center;
+}
+
+.composer-header > img {
+  width: 280px;
+  height: 280px;
+
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.composer-songs,
+.composer-albums {
+  display: grid;
+  grid-template-columns:
+    repeat(auto-fill, minmax(250px, 1fr));
+
+  gap: 20px;
+
+  margin-bottom: 70px;
+}
+
+.composer-songs button,
+.composer-albums button {
+  border: none;
+  background: transparent;
+
+  text-align: left;
+  cursor: pointer;
+}
+
+.composer-songs button {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+
+  padding: 10px;
+}
+
+.composer-songs img {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+}
+
+.composer-songs div {
+  display: flex;
+  flex-direction: column;
+}
+
+.composer-songs span,
+.composer-albums span {
+  opacity: 0.6;
+}
+
+.composer-albums img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  margin-bottom: 12px;
+}

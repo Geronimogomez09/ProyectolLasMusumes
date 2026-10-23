@@ -1,16 +1,18 @@
-import { useState, useRef } from 'react';
+// comunidad.jsx
+import { useState } from 'react';
 import ListaComentarios from '../components/comunidadComponentes/lista-comentarios';
 import DenunciaModal from '../components/comunidadComponentes/denuncia-modal';
+import NuevoPost from '../components/comunidadComponentes/nuevo-post';
 import { EMOJIS_MINECRAFT } from '../components/comunidadComponentes/emojis-minecraft';
-import './Comunidad.css';
 import Footer from '../components/Footer';
 import Header from '../components/header';
+import '../styles/Comunidad.css';
 // ---------------------------------------------------------------------------
 // DATOS MOCKEADOS (posts)
 // Cuando exista backend, este array se va a reemplazar por props:
 // function Comunidad({ posts }) { ... }
-// Cada post ahora trae su propio array de comentarios (en vez de un número
-// suelto), para poder listarlos y agregar nuevos de verdad.
+// Cada post trae su propio array de comentarios (en vez de un número suelto),
+// para poder listarlos y agregar nuevos de verdad.
 // ---------------------------------------------------------------------------
 const postsIniciales = [
   {
@@ -24,7 +26,10 @@ const postsIniciales = [
     contenido:
       'Saben si el hierro aparece en capas negativas?, estoy hace media hora buscando y no encuentro',
     likes: 5,
-    reaccionBase: { conteo: 11, icono: 'creeper' },
+    reacciones: [
+      { emojiId: 'creeper', conteo: 8 },
+      { emojiId: 'diamante', conteo: 3 },
+    ],
     comentarios: [
       {
         id: 101,
@@ -53,7 +58,7 @@ const postsIniciales = [
     contenido:
       'Le gané un 1v3 en el Nether usando solo tridente. Alguien más juega PVP en este server?',
     likes: 23,
-    reaccionBase: { conteo: 4, icono: 'espada' },
+    reacciones: [{ emojiId: 'diamante', conteo: 4 }],
     comentarios: [],
   },
   {
@@ -67,7 +72,7 @@ const postsIniciales = [
     contenido:
       'Actualicé el pack de shaders + Create para 1.21, ¿lo subo al canal de descargas?',
     likes: 34,
-    reaccionBase: { conteo: 2, icono: 'diamante' },
+    reacciones: [{ emojiId: 'diamante', conteo: 2 }],
     comentarios: [],
   },
   {
@@ -81,7 +86,7 @@ const postsIniciales = [
     contenido:
       'Este sábado arrancamos el evento de construcción temática: Aldeas Medievales. Premios en la tienda.',
     likes: 61,
-    reaccionBase: { conteo: 3, icono: 'estrella' },
+    reacciones: [{ emojiId: 'estrella', conteo: 3 }],
     comentarios: [],
   },
   {
@@ -95,32 +100,45 @@ const postsIniciales = [
     contenido:
       'Terminé mi granja de aldeanos automática, rinde como 40 esmeraldas por hora.',
     likes: 18,
-    reaccionBase: { conteo: 1, icono: 'esmeralda' },
+    reacciones: [{ emojiId: 'esmeralda', conteo: 1 }],
     comentarios: [],
   },
 ];
 
-const CATEGORIAS_FILTRO = ['Todas', 'construcciones', 'Mods', 'Anuncios', 'pvps'];
 const CATEGORIAS_ETIQUETA = ['construcciones', 'Mods', 'Anuncios', 'pvps'];
+const CATEGORIAS_FILTRO = ['Todas', ...CATEGORIAS_ETIQUETA];
+
+// Datos del usuario actual (se reutilizan al crear posts y comentarios).
+const USUARIO_ACTUAL = { usuario: 'Vos', inicial: 'V', colorAvatar: '#3d9970' };
+
+// Índice de emojis por id: evita hacer .find() en cada render.
+const EMOJIS_POR_ID = Object.fromEntries(EMOJIS_MINECRAFT.map((e) => [e.id, e]));
+
+// Ícono de emoji con fallback: si la imagen falla, muestra el nombre en texto.
+// Reemplaza la manipulación directa del DOM (e.target.style...) por estado de React.
+function EmojiIcono({ emoji, claseFallback }) {
+  const [fallo, setFallo] = useState(false);
+
+  if (fallo) return <span className={claseFallback}>{emoji?.nombre}</span>;
+
+  return <img src={emoji?.src} alt={emoji?.nombre} onError={() => setFallo(true)} />;
+}
 
 function Comunidad({ posts: postsProp }) {
   const [posts, setPosts] = useState(postsProp || postsIniciales);
   const [filtroActivo, setFiltroActivo] = useState('Todas');
 
-  // Estado del formulario "nuevo post"
-  const [textoNuevoPost, setTextoNuevoPost] = useState('');
-  const [etiquetaSeleccionada, setEtiquetaSeleccionada] = useState('');
-  const [mostrarSelectorEtiqueta, setMostrarSelectorEtiqueta] = useState(false);
-  const [imagenPreview, setImagenPreview] = useState(null);
-  const [errorPublicacion, setErrorPublicacion] = useState('');
-  const inputImagenRef = useRef(null);
+  // Likes del usuario actual: { [postId]: true }
+  const [likesUsuario, setLikesUsuario] = useState({});
 
-  // Estado de reacciones por post
-  const [reacciones, setReacciones] = useState({}); // { [postId]: { like: bool } }
-  const [reaccionEmojiUsuario, setReaccionEmojiUsuario] = useState({}); // { [postId]: emojiId }
+  // Reacciones con emoji estilo Discord/WhatsApp: cada emoji acumula su propio
+  // contador. Acá solo guardamos CUÁLES tiene activas el usuario actual; el
+  // conteo "de base" (de otros usuarios) vive en post.reacciones.
+  // Forma: { [postId]: { [emojiId]: true } }
+  const [reaccionesUsuario, setReaccionesUsuario] = useState({});
   const [pickerReaccionAbierto, setPickerReaccionAbierto] = useState(null); // postId con el picker abierto
 
-  // Comentarios: qué post tiene la sección de comentarios abierta
+  // Comentarios: qué posts tienen la sección de comentarios abierta
   const [comentariosAbiertos, setComentariosAbiertos] = useState({});
 
   // Denuncias: qué post tiene el modal abierto, y el registro de las enviadas
@@ -129,86 +147,64 @@ function Comunidad({ posts: postsProp }) {
   const [denunciasEnviadas, setDenunciasEnviadas] = useState([]);
 
   const postsFiltrados =
-    filtroActivo === 'Todas'
-      ? posts
-      : posts.filter((p) => p.categoria === filtroActivo);
+    filtroActivo === 'Todas' ? posts : posts.filter((p) => p.categoria === filtroActivo);
 
-  function handleImagenSeleccionada(e) {
-    const archivo = e.target.files[0];
-    if (archivo) {
-      setImagenPreview(URL.createObjectURL(archivo));
-    }
-  }
-
-  function handlePublicar() {
-    if (!textoNuevoPost.trim()) {
-      setErrorPublicacion('Escribí algo antes de publicar.');
-      return;
-    }
-    if (!etiquetaSeleccionada) {
-      setErrorPublicacion('Elegí una etiqueta para tu publicación.');
-      return;
-    }
-
+  // Recibe los datos ya validados desde <NuevoPost /> y arma el post completo.
+  function handlePublicar({ contenido, categoria, imagen }) {
     const nuevoPost = {
       id: Date.now(),
-      usuario: 'Vos',
-      inicial: 'V',
-      colorAvatar: '#3d9970',
+      ...USUARIO_ACTUAL,
       tiempo: 'Ahora',
       contexto: 'Tu partida',
-      categoria: etiquetaSeleccionada,
-      contenido: textoNuevoPost.trim(),
+      categoria,
+      contenido,
       likes: 0,
-      reaccionBase: { conteo: 0, icono: 'diamante' },
+      reacciones: [],
       comentarios: [],
-      imagen: imagenPreview,
+      imagen,
     };
 
-    setPosts([nuevoPost, ...posts]);
+    setPosts((prev) => [nuevoPost, ...prev]);
 
     // TODO (sistema de logros): disparar acá el logro "Primera publicación"
     // cuando se implemente el sistema de logros global.
-
-    setTextoNuevoPost('');
-    setEtiquetaSeleccionada('');
-    setImagenPreview(null);
-    setMostrarSelectorEtiqueta(false);
-    setErrorPublicacion('');
   }
 
-  function toggleReaccion(postId) {
-    setReacciones((prev) => {
-      const actual = prev[postId] || { like: false };
-      return {
-        ...prev,
-        [postId]: { ...actual, like: !actual.like },
-      };
-    });
+  function toggleLike(postId) {
+    setLikesUsuario((prev) => ({ ...prev, [postId]: !prev[postId] }));
   }
 
   function contarLikes(post) {
-    const activo = reacciones[post.id]?.like;
-    return activo ? post.likes + 1 : post.likes;
+    return post.likes + (likesUsuario[post.id] ? 1 : 0);
   }
 
-  function obtenerEmoji(id) {
-    return EMOJIS_MINECRAFT.find((e) => e.id === id);
+  // Toggle de UN emoji puntual en UN post: si ya lo tenías puesto, lo saca;
+  // si no, lo suma. Cada emoji es independiente del resto.
+  function toggleEmojiReaccion(postId, emojiId) {
+    setReaccionesUsuario((prev) => {
+      const { [emojiId]: yaActiva, ...resto } = prev[postId] || {};
+      return { ...prev, [postId]: yaActiva ? resto : { ...resto, [emojiId]: true } };
+    });
   }
 
-  // Reacción con emoji de Minecraft en vez de la risa fija. Si tocás el mismo
-  // emoji que ya tenías elegido, se saca (toggle); si tocás otro, lo reemplaza.
-  function handleElegirReaccion(postId, emojiId) {
-    setReaccionEmojiUsuario((prev) => ({
-      ...prev,
-      [postId]: prev[postId] === emojiId ? undefined : emojiId,
-    }));
-    setPickerReaccionAbierto(null);
-  }
+  // Combina las reacciones "de base" del post (mock, simulan otros usuarios)
+  // con las que el usuario actual fue activando, incluso si eligió un emoji
+  // que el post todavía no tenía. Oculta las que queden en 0.
+  function obtenerReaccionesVisibles(post) {
+    const propias = reaccionesUsuario[post.id] || {};
+    const conteos = new Map(post.reacciones.map((r) => [r.emojiId, r.conteo]));
 
-  function contarReaccionEmoji(post) {
-    const tieneReaccionPropia = Boolean(reaccionEmojiUsuario[post.id]);
-    return post.reaccionBase.conteo + (tieneReaccionPropia ? 1 : 0);
+    Object.keys(propias).forEach((emojiId) => {
+      if (!conteos.has(emojiId)) conteos.set(emojiId, 0);
+    });
+
+    return [...conteos]
+      .map(([emojiId, base]) => ({
+        emojiId,
+        total: base + (propias[emojiId] ? 1 : 0),
+        activa: Boolean(propias[emojiId]),
+      }))
+      .filter((r) => r.total > 0);
   }
 
   function toggleComentarios(postId) {
@@ -223,13 +219,7 @@ function Comunidad({ posts: postsProp }) {
               ...p,
               comentarios: [
                 ...p.comentarios,
-                {
-                  id: Date.now(),
-                  usuario: 'Vos',
-                  inicial: 'V',
-                  colorAvatar: '#3d9970',
-                  texto: comentario.texto,
-                },
+                { id: Date.now(), ...USUARIO_ACTUAL, texto: comentario.texto },
               ],
             }
           : p
@@ -252,283 +242,186 @@ function Comunidad({ posts: postsProp }) {
   return (
     <>
       <Header />
-    <div className="comunidad-page">
-      {/* ---------- HERO / ENCABEZADO ---------- */}
-      <header className="comunidad-hero">
-        <div className="comunidad-hero__overlay" />
-        <div className="comunidad-hero__contenido">
-          <h1>Comunidad</h1>
-          <p>Comparte experiencias, situaciones, historias, recomendaciones y mas</p>
-        </div>
-      </header>
-
-      <main className="comunidad-main">
-        {/* ---------- FILTROS ---------- */}
-        <nav className="comunidad-filtros" aria-label="Filtrar publicaciones por categoría">
-          {CATEGORIAS_FILTRO.map((cat) => (
-            <button
-              key={cat}
-              className={`filtro-pill ${filtroActivo === cat ? 'filtro-pill--activo' : ''}`}
-              onClick={() => setFiltroActivo(cat)}
-            >
-              {cat}
-            </button>
-          ))}
-        </nav>
-
-        {/* ---------- FORMULARIO NUEVO POST ---------- */}
-        <section className="nuevo-post">
-          <div className="nuevo-post__fila">
-            <div className="avatar avatar--propio">V</div>
-            <textarea
-              className="nuevo-post__texto"
-              placeholder="¿Que vas a escribir hoy?"
-              value={textoNuevoPost}
-              onChange={(e) => setTextoNuevoPost(e.target.value)}
-              rows={2}
-            />
+      <div className="comunidad-page">
+        {/* ---------- HERO / ENCABEZADO ---------- */}
+        <header className="comunidad-hero cascada-item">
+          <div className="comunidad-hero__overlay" />
+          <div className="comunidad-hero__contenido">
+            <h1>Comunidad</h1>
+            <p>Comparte experiencias, situaciones, historias, recomendaciones y mas</p>
           </div>
+        </header>
 
-          {imagenPreview && (
-            <div className="nuevo-post__preview">
-              <img src={imagenPreview} alt="Vista previa de la imagen a publicar" />
+        <main className="comunidad-main">
+          {/* ---------- FILTROS ---------- */}
+          <nav
+            className="comunidad-filtros cascada-item"
+            aria-label="Filtrar publicaciones por categoría"
+          >
+            {CATEGORIAS_FILTRO.map((cat) => (
               <button
-                className="nuevo-post__quitar-imagen"
-                onClick={() => setImagenPreview(null)}
-                aria-label="Quitar imagen"
+                key={cat}
+                className={`filtro-pill ${filtroActivo === cat ? 'filtro-pill--activo' : ''}`}
+                onClick={() => setFiltroActivo(cat)}
               >
-                ×
+                {cat}
               </button>
-            </div>
-          )}
+            ))}
+          </nav>
 
-          {errorPublicacion && (
-            <p className="nuevo-post__error">{errorPublicacion}</p>
-          )}
+          {/* ---------- FORMULARIO NUEVO POST ---------- */}
+          <NuevoPost
+            usuario={USUARIO_ACTUAL}
+            categorias={CATEGORIAS_ETIQUETA}
+            onPublicar={handlePublicar}
+          />
 
-          <div className="nuevo-post__acciones">
-            <div className="nuevo-post__acciones-izquierda">
-              <div className="etiqueta-selector">
-                <button
-                  className="btn-etiqueta"
-                  onClick={() => setMostrarSelectorEtiqueta((v) => !v)}
-                >
-                  {etiquetaSeleccionada ? etiquetaSeleccionada : 'Etiqueta'}
-                </button>
-                {mostrarSelectorEtiqueta && (
-                  <ul className="etiqueta-menu">
-                    {CATEGORIAS_ETIQUETA.map((cat) => (
-                      <li key={cat}>
-                        <button
-                          onClick={() => {
-                            setEtiquetaSeleccionada(cat);
-                            setMostrarSelectorEtiqueta(false);
-                          }}
-                        >
-                          {cat}
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
+          {/* ---------- LISTA DE POSTS ---------- */}
+          <section className="lista-posts">
+            {postsFiltrados.length === 0 && (
+              <p className="lista-posts__vacio">No hay publicaciones en esta categoría todavía.</p>
+            )}
 
-              <button
-                className="btn-imagen"
-                onClick={() => inputImagenRef.current.click()}
-                aria-label="Adjuntar imagen"
+            {/* --delay: cada post aparece con más delay según su índice, generando
+                el efecto de cascada. Math.min(index, 8) evita que el delay crezca
+                sin límite si hay muchísimos posts. Es lo único que queda inline
+                porque depende del índice. */}
+            {postsFiltrados.map((post, index) => (
+              <article
+                key={post.id}
+                className={`post-card cascada-item ${
+                  reportados[post.id] ? 'post-card--reportado' : ''
+                }`}
+                style={{ '--delay': `${0.45 + Math.min(index, 8) * 0.15}s` }}
               >
-                🖼
-              </button>
-              <input
-                type="file"
-                accept="image/*"
-                ref={inputImagenRef}
-                onChange={handleImagenSeleccionada}
-                hidden
-              />
-            </div>
+                <div className="post-card__encabezado">
+                  <div className="avatar" style={{ backgroundColor: post.colorAvatar }}>
+                    {post.inicial}
+                  </div>
+                  <div className="post-card__meta">
+                    <span className="post-card__usuario">{post.usuario}</span>
+                    <span className="post-card__submeta">
+                      {post.tiempo} · {post.contexto}
+                    </span>
+                  </div>
+                  <span className="post-card__categoria-badge">{post.categoria}</span>
 
-            <button className="btn-publicar" onClick={handlePublicar}>
-              Publicar
-            </button>
-          </div>
-        </section>
-
-        {/* ---------- LISTA DE POSTS ---------- */}
-        <section className="lista-posts">
-          {postsFiltrados.length === 0 && (
-            <p className="lista-posts__vacio">
-              No hay publicaciones en esta categoría todavía.
-            </p>
-          )}
-
-          {postsFiltrados.map((post) => (
-            <article
-              key={post.id}
-              className={`post-card ${reportados[post.id] ? 'post-card--reportado' : ''}`}
-            >
-              <div className="post-card__encabezado">
-                <div
-                  className="avatar"
-                  style={{ backgroundColor: post.colorAvatar }}
-                >
-                  {post.inicial}
+                  <button
+                    className="btn-warning"
+                    aria-label="Reportar publicación"
+                    onClick={() => setDenunciaAbiertaPost(post.id)}
+                  >
+                    ⚠
+                  </button>
                 </div>
-                <div className="post-card__meta">
-                  <span className="post-card__usuario">{post.usuario}</span>
-                  <span className="post-card__submeta">
-                    {post.tiempo} · {post.contexto}
-                  </span>
-                </div>
-                <span className="post-card__categoria-badge">{post.categoria}</span>
 
-                <button
-                  className="btn-warning"
-                  aria-label="Reportar publicación"
-                  onClick={() => setDenunciaAbiertaPost(post.id)}
-                >
-                  ⚠
-                </button>
-              </div>
+                {reportados[post.id] ? (
+                  <p className="post-card__reportado-aviso">
+                    Publicación reportada. Gracias por avisarnos.
+                  </p>
+                ) : (
+                  <>
+                    <p className="post-card__contenido">{post.contenido}</p>
 
-              {reportados[post.id] ? (
-                <p className="post-card__reportado-aviso">
-                  Publicación reportada. Gracias por avisarnos.
-                </p>
-              ) : (
-                <>
-                  <p className="post-card__contenido">{post.contenido}</p>
+                    {post.imagen && (
+                      <img
+                        src={post.imagen}
+                        alt="Imagen adjunta a la publicación"
+                        className="post-card__imagen"
+                      />
+                    )}
 
-                  {post.imagen && (
-                    <img
-                      src={post.imagen}
-                      alt="Imagen adjunta a la publicación"
-                      className="post-card__imagen"
-                    />
-                  )}
-
-                  <div className="post-card__reacciones">
-                    <button
-                      className={`reaccion ${
-                        reacciones[post.id]?.like ? 'reaccion--activa' : ''
-                      }`}
-                      onClick={() => toggleReaccion(post.id)}
-                    >
-                      ❤️ {contarLikes(post)}
-                    </button>
-
-                    <div className="reaccion-emoji-selector" style={{ position: 'relative' }}>
+                    <div className="post-card__reacciones">
                       <button
-                        className={`reaccion ${
-                          reaccionEmojiUsuario[post.id] ? 'reaccion--activa' : ''
-                        }`}
-                        onClick={() =>
-                          setPickerReaccionAbierto(
-                            pickerReaccionAbierto === post.id ? null : post.id
-                          )
-                        }
+                        className={`reaccion ${likesUsuario[post.id] ? 'reaccion--activa' : ''}`}
+                        onClick={() => toggleLike(post.id)}
                       >
-                        <img
-                          src={
-                            obtenerEmoji(reaccionEmojiUsuario[post.id] || post.reaccionBase.icono)
-                              ?.src
-                          }
-                          alt="Reaccionar con emoji"
-                          className="reaccion-emoji__icono"
-                          style={{ width: '18px', height: '18px', objectFit: 'contain' }}
-                          onError={(e) => {
-                            e.target.style.display = 'none';
-                          }}
-                        />
-                        {contarReaccionEmoji(post)}
+                        <span>❤️</span>
+                        <span>{contarLikes(post)}</span>
                       </button>
 
-                      {pickerReaccionAbierto === post.id && (
-                        <div
-                          className="reaccion-emoji-picker"
-                          style={{
-                            position: 'absolute',
-                            bottom: '130%',
-                            left: 0,
-                            background: '#fff',
-                            border: '1px solid #dcdcdc',
-                            borderRadius: '10px',
-                            boxShadow: '0 8px 22px rgba(0,0,0,0.15)',
-                            padding: '8px',
-                            zIndex: 20,
-                            display: 'grid',
-                            gridTemplateColumns: 'repeat(4, 44px)',
-                            gap: '6px',
-                          }}
-                        >
-                          {EMOJIS_MINECRAFT.map((emoji) => (
+                      <div className="reacciones-emoji-grupo">
+                        {obtenerReaccionesVisibles(post).map((r) => {
+                          const emoji = EMOJIS_POR_ID[r.emojiId];
+                          return (
                             <button
-                              key={emoji.id}
-                              type="button"
-                              className="reaccion-emoji-picker__item"
-                              title={emoji.nombre}
-                              style={{
-                                width: '44px',
-                                height: '44px',
-                                overflow: 'hidden',
-                                padding: '2px',
-                              }}
-                              onClick={() => handleElegirReaccion(post.id, emoji.id)}
+                              key={r.emojiId}
+                              className={`reaccion-pill ${r.activa ? 'reaccion-pill--activa' : ''}`}
+                              title={emoji?.nombre}
+                              onClick={() => toggleEmojiReaccion(post.id, r.emojiId)}
                             >
-                              <img
-                                src={emoji.src}
-                                alt={emoji.nombre}
-                                style={{
-                                  width: '26px',
-                                  height: '26px',
-                                  objectFit: 'contain',
-                                }}
-                                onError={(e) => {
-                                  e.target.style.display = 'none';
-                                  e.target.nextElementSibling.style.display = 'inline';
-                                }}
-                              />
-                              <span className="reaccion-emoji-picker__fallback">
-                                {emoji.nombre}
-                              </span>
+                              <EmojiIcono emoji={emoji} claseFallback="reaccion-pill__fallback" />
+                              <span className="reaccion-pill__conteo">{r.total}</span>
                             </button>
-                          ))}
+                          );
+                        })}
+
+                        <div className="reaccion-emoji-selector">
+                          <button
+                            className="btn-agregar-reaccion"
+                            aria-label="Agregar reacción"
+                            onClick={() =>
+                              setPickerReaccionAbierto(
+                                pickerReaccionAbierto === post.id ? null : post.id
+                              )
+                            }
+                          >
+                            🙂
+                          </button>
+
+                          {pickerReaccionAbierto === post.id && (
+                            <div className="reaccion-emoji-picker">
+                              {EMOJIS_MINECRAFT.map((emoji) => (
+                                <button
+                                  key={emoji.id}
+                                  type="button"
+                                  className="reaccion-emoji-picker__item"
+                                  title={emoji.nombre}
+                                  onClick={() => {
+                                    toggleEmojiReaccion(post.id, emoji.id);
+                                    setPickerReaccionAbierto(null);
+                                  }}
+                                >
+                                  <EmojiIcono
+                                    emoji={emoji}
+                                    claseFallback="reaccion-emoji-picker__fallback"
+                                  />
+                                </button>
+                              ))}
+                            </div>
+                          )}
                         </div>
-                      )}
+                      </div>
+
+                      <button className="reaccion" onClick={() => toggleComentarios(post.id)}>
+                        <span>💬</span>
+                        <span>{post.comentarios.length}</span>
+                      </button>
                     </div>
 
-                    <button
-                      className="reaccion"
-                      onClick={() => toggleComentarios(post.id)}
-                    >
-                      💬 {post.comentarios.length}
-                    </button>
-                  </div>
+                    {comentariosAbiertos[post.id] && (
+                      <ListaComentarios
+                        comentarios={post.comentarios}
+                        onAgregarComentario={(comentario) =>
+                          handleAgregarComentario(post.id, comentario)
+                        }
+                      />
+                    )}
+                  </>
+                )}
+              </article>
+            ))}
+          </section>
+        </main>
 
-                  {comentariosAbiertos[post.id] && (
-                    <ListaComentarios
-                      comentarios={post.comentarios}
-                      onAgregarComentario={(comentario) =>
-                        handleAgregarComentario(post.id, comentario)
-                      }
-                    />
-                  )}
-                </>
-              )}
-            </article>
-          ))}
-        </section>
-      </main>
-
-      {denunciaAbiertaPost !== null && (
-        <DenunciaModal
-          onConfirmar={(datos) => handleConfirmarDenuncia(denunciaAbiertaPost, datos)}
-          onCancelar={() => setDenunciaAbiertaPost(null)}
-        />
-      )}
-    </div>
-    <Footer/>
+        {denunciaAbiertaPost !== null && (
+          <DenunciaModal
+            onConfirmar={(datos) => handleConfirmarDenuncia(denunciaAbiertaPost, datos)}
+            onCancelar={() => setDenunciaAbiertaPost(null)}
+          />
+        )}
+      </div>
+      <Footer />
     </>
   );
 }

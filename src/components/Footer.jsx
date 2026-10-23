@@ -1,37 +1,62 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link } from "react-router-dom";
+import "../styles/variables.css";
+import "../styles/Footer.css";
 
-export default function Footer() {
-  const location = useLocation();
-  const rutasSinNavbar = ['/login', '/registro', '/tienda', '/versiones', '/historia', '/musica'];
+function Footer() {
+    const anioActual = new Date().getFullYear();
+    
+    return (
+        <footer className="site-footer">
+            <div className="container footer-container">
+                <div className="footer-main row g-4 g-xl-5">
+                    <div className="col-12 col-lg-5">
+                        <div className="footer-brand">
+                            <Link className="footer-logo" to="/" aria-label="Wiki-Craft, página principal">
+                                <span>WIKI</span><i>-</i><strong>CRAFT</strong>
+                            </Link>
+                            <p>
+                                Un espacio para explorar el mundo de Wiki-Craft, descubrir contenido y compartir la experiencia con la comunidad.
+                            </p>
+                        </div>
+                    </div>
 
-  if (rutasSinNavbar.includes(location.pathname)) {
-    return null;
-  }
-  return (
-    <footer className="bg-dark text-white py-4 mt-5">
-      <div className="container">
-        <div className="row">
-          <div className="col-md-4">
-            <h5>WikiCraft</h5>
-            <p>Tu enciclopedia de Minecraft</p>
-          </div>
-          <div className="col-md-4">
-            <h5>Contacto</h5>
-            <p>Email: info@wikicraft.com</p>
-            <p>Teléfono: +54 299 4123456</p>
-          </div>
-          <div className="col-md-4">
-            <h5>Enlaces</h5>
-            <ul className="list-unstyled">
-              <li><a href="#" className="text-white text-decoration-none">Términos</a></li>
-              <li><a href="#" className="text-white text-decoration-none">Privacidad</a></li>
-              <li><a href="#" className="text-white text-decoration-none">Contacto</a></li>
-            </ul>
-          </div>
-        </div>
-        <hr className="bg-white" />
-        <p className="text-center mb-0">&copy; 2024 WikiCraft. Todos los derechos reservados.</p>
-      </div>
-    </footer>
-  )
+                    <div className="col-6 col-md-4 col-lg-2">
+                        <div className="footer-column">
+                            <h2>Explorar</h2>
+                            <Link to="/">Principal</Link>
+                            <Link to="/historia">Historia</Link>
+                            <Link to="/versiones">Versiones</Link>
+                        </div>
+                    </div>
+
+                    <div className="col-6 col-md-4 col-lg-2">
+                        <div className="footer-column">
+                            <h2>Contenido</h2>
+                            <Link to="/comunidad">Comunidad</Link>
+                            <Link to="/musica">Música</Link>
+                            <Link to="/tienda">Tienda</Link>
+                        </div>
+                    </div>
+
+                    <div className="col-12 col-md-4 col-lg-3">
+                        <div className="footer-column footer-help">
+                            <h2>¿Necesitás ayuda?</h2>
+                            <p>Podés acercarte a la comunidad para compartir consultas, ideas y sugerencias.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="footer-divider" />
+
+                <div className="footer-bottom">
+                    <p>© {anioActual} <strong>WIKI-CRAFT</strong>. Todos los derechos reservados.</p>
+                    <a className="footer-back-top" href="#top">
+                        Volver al inicio <span aria-hidden="true">↑</span>
+                    </a>
+                </div>
+            </div>
+        </footer>
+    );
 }
+
+export default Footer;
