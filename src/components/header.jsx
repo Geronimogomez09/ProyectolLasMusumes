@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import "../styles/variables.css";
-import "../styles/Header.css";
+import "../styles/header.css";
 
 // Distancia de scroll necesaria para activar el header compacto.
 const LIMITE_SCROLL = 300;
@@ -10,7 +10,6 @@ const LIMITE_SCROLL = 300;
 const RUTAS_SIN_NAVBAR = [
     "/login",
     "/registro",
-    "/tienda",
     "/historia",
 ];
 

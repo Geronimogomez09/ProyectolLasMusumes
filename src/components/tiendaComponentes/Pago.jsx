@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import MinecraftIcon from "./MinecraftIcon";
 import "../../styles/tienda.css";
 
 export default function Pago({
@@ -136,7 +137,12 @@ export default function Pago({
                     <div className="pago-marca">FINALIZAR COMPRA</div>
 
                     <span className="pago-seguro">
-                        🔒 Compra protegida
+                        <MinecraftIcon
+                            name="seguro"
+                            alt="Compra protegida"
+                            className="pago-header-icono"
+                        />
+                        Compra protegida
                     </span>
                 </header>
 
@@ -170,7 +176,15 @@ export default function Pago({
                                         } ${paso > numero ? "completo" : ""}`}
                                     >
                                         <span>
-                                            {paso > numero ? "✓" : numero}
+                                            {paso > numero ? (
+                                                <MinecraftIcon
+                                                    name="check"
+                                                    alt="Paso completado"
+                                                    className="pago-paso-icono"
+                                                />
+                                            ) : (
+                                                numero
+                                            )}
                                         </span>
                                         {nombre}
                                     </div>
@@ -301,7 +315,10 @@ export default function Pago({
                                             }
                                         />
                                         <span className="pago-metodo-icono">
-                                            💳
+                                            <MinecraftIcon
+                                                name="tarjeta"
+                                                alt="Tarjeta"
+                                            />
                                         </span>
                                         <span className="pago-metodo-texto">
                                             <strong>Tarjeta</strong>
@@ -331,7 +348,10 @@ export default function Pago({
                                             }
                                         />
                                         <span className="pago-metodo-icono">
-                                            🏦
+                                            <MinecraftIcon
+                                                name="transferencia"
+                                                alt="Transferencia"
+                                            />
                                         </span>
                                         <span className="pago-metodo-texto">
                                             <strong>Transferencia</strong>
@@ -359,7 +379,10 @@ export default function Pago({
                                             }
                                         />
                                         <span className="pago-metodo-icono">
-                                            💵
+                                            <MinecraftIcon
+                                                name="efectivo"
+                                                alt="Efectivo"
+                                            />
                                         </span>
                                         <span className="pago-metodo-texto">
                                             <strong>Efectivo</strong>
@@ -489,7 +512,20 @@ export default function Pago({
 
                         {paso === 3 && (
                             <div className="pago-panel pago-exito">
-                                <div className="pago-exito-icono">✓</div>
+                                <div className="pago-exito-icono">
+                                    <MinecraftIcon
+                                        name="carrito"
+                                        alt="Carrito"
+                                        className="pago-exito-carrito"
+                                    />
+                                    <span className="pago-exito-check-wrap">
+                                        <MinecraftIcon
+                                            name="check"
+                                            alt="Compra exitosa"
+                                            className="pago-exito-icono-imagen"
+                                        />
+                                    </span>
+                                </div>
                                 <h2>¡Pedido registrado!</h2>
                                 <p>
                                     Gracias, {datos.nombre}. Registramos los
@@ -525,7 +561,14 @@ export default function Pago({
 
                     <aside className="pago-lateral">
                         <div className="pago-resumen">
-                            <h2>🛍️ Resumen de tu pedido</h2>
+                            <h2>
+                                <MinecraftIcon
+                                    name="resumen"
+                                    alt="Resumen de tu pedido"
+                                    className="pago-resumen-icono"
+                                />
+                                Resumen de tu pedido
+                            </h2>
 
                             <div className="pago-productos">
                                 {carrito.map((producto, index) => (
@@ -540,7 +583,11 @@ export default function Pago({
                                                     alt={producto.nombre}
                                                 />
                                             ) : (
-                                                <span>🛍️</span>
+                                                <MinecraftIcon
+                                                    name="producto"
+                                                    alt="Producto"
+                                                    className="pago-producto-icono"
+                                                />
                                             )}
                                         </div>
                                         <div className="pago-producto-info">
@@ -572,7 +619,13 @@ export default function Pago({
                         </div>
 
                         <div className="pago-protegido">
-                            <span>🔒</span>
+                            <span>
+                                <MinecraftIcon
+                                    name="seguro"
+                                    alt="Datos protegidos"
+                                    className="pago-protegido-icono"
+                                />
+                            </span>
                             <div>
                                 <strong>Tus datos, protegidos</strong>
                                 <p>
