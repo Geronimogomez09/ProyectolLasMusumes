@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import MinecraftIcon from "./MinecraftIcon";
 
 export default function DetalleProducto({
     producto,
@@ -80,7 +81,11 @@ export default function DetalleProducto({
                         ) : (
 
                             <div className="imagen-vacia">
-                                🛍️
+                                <MinecraftIcon
+                                    name="producto"
+                                    alt="Producto"
+                                    className="imagen-vacia-icono"
+                                />
                             </div>
 
                         )}
@@ -102,7 +107,11 @@ export default function DetalleProducto({
                             ) : (
 
                                 <div className="imagen-vacia">
-                                    🛍️
+                                    <MinecraftIcon
+                                        name="producto"
+                                        alt="Producto"
+                                        className="imagen-vacia-icono"
+                                    />
                                 </div>
 
                             )}
@@ -200,9 +209,18 @@ export default function DetalleProducto({
                         }
                     >
 
-                        {producto.stock > 0
-                            ? "🛒 AGREGAR AL CARRITO"
-                            : "SIN STOCK"}
+                        {producto.stock > 0 ? (
+                            <>
+                                <MinecraftIcon
+                                    name="carrito"
+                                    alt="Agregar al carrito"
+                                    className="detalle-agregar-icono"
+                                />
+                                AGREGAR AL CARRITO
+                            </>
+                        ) : (
+                            "SIN STOCK"
+                        )}
 
                     </button>
 
@@ -210,21 +228,39 @@ export default function DetalleProducto({
                     <div className="detalle-beneficios">
 
                         <div className="detalle-beneficio">
-                            <span>✓</span>
+                            <span>
+                                <MinecraftIcon
+                                    name="check"
+                                    alt="Disponible"
+                                    className="detalle-beneficio-icono"
+                                />
+                            </span>
                             <span>
                                 Producto disponible
                             </span>
                         </div>
 
                         <div className="detalle-beneficio">
-                            <span>🚚</span>
+                            <span>
+                                <MinecraftIcon
+                                    name="envio"
+                                    alt="Envíos disponibles"
+                                    className="detalle-beneficio-icono"
+                                />
+                            </span>
                             <span>
                                 Envíos disponibles
                             </span>
                         </div>
 
                         <div className="detalle-beneficio">
-                            <span>🔒</span>
+                            <span>
+                                <MinecraftIcon
+                                    name="seguro"
+                                    alt="Compra segura"
+                                    className="detalle-beneficio-icono"
+                                />
+                            </span>
                             <span>
                                 Compra segura
                             </span>
@@ -338,7 +374,11 @@ export default function DetalleProducto({
                                     ) : (
 
                                         <div className="imagen-vacia">
-                                            🛍️
+                                            <MinecraftIcon
+                                                name="producto"
+                                                alt="Producto"
+                                                className="imagen-vacia-icono"
+                                            />
                                         </div>
 
                                     )}
