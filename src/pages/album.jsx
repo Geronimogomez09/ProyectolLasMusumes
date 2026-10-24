@@ -1,51 +1,40 @@
-import React from "react";
-import {
-  useNavigate,
-  useParams,
-} from "react-router-dom";
 
-import {
-  albums,
-  songs,
-  composers,
-} from "../data/musicData";
-
+import React, { useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { albums, songs, composers } from "../data/musicData";
+import { useMusic } from "../context/MusicContext";
+import SongRow from "../components/music/SongRow";
+import SongPanel from "../components/music/SongPanel";
 import "../styles/album.css";
-
-function PlayIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M8 5.5v13l11-6.5z" fill="currentColor" />
-    </svg>
-  );
-}
-
-function ShuffleIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path
-        d="M16 3h5v5M4 7h2.5c5 0 6 10 11 10H21m-5-5 5 5-5 5M4 17h2.5c2 0 3.5-2 4.5-4M16 3l5 5"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
+import "../styles/musica.css";
 
 function Album() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [selectedSong, setSelectedSong] = useState(null);
 
-  const album = albums.find(
-    (item) => item.id === Number(id)
-  );
+  const {
+    playSong,
+    playCollection,
+    isBlocked,
+    isFavorite,
+    toggleFavorite,
+    toggleBlocked,
+    songDurations,
+  } = useMusic();
+
+  const album = albums.find((item) => item.id === Number(id));
 
   if (!album) {
     return (
-      <main>
+      <main className="album-page">
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          className="back-button"
+        >
+          ← Volver
+        </button>
         <h1>Álbum no encontrado</h1>
       </main>
     );
@@ -55,16 +44,24 @@ function Album() {
     (item) => item.id === album.composerId
   );
 
-  const albumSongs = album.songs
-    .map((songId) =>
-      songs.find((song) => song.id === songId)
-    )
+  const albumSongs = (album.songs ?? [])
+    .map((songId) => songs.find((song) => song.id === songId))
     .filter(Boolean);
+
+  const playableSongs = albumSongs.filter(
+    (song) => !isBlocked(song) && song.audio
+  );
+
+  const getComposer = (song) =>
+    composers.find((item) => item.id === song?.composerId);
+
+  const getAlbum = (song) =>
+    albums.find((item) => item.id === song?.albumId);
 
   return (
     <main className="album-page">
-
       <button
+        type="button"
         onClick={() => navigate(-1)}
         className="back-button"
       >
@@ -72,91 +69,100 @@ function Album() {
       </button>
 
       <section className="album-header">
-
-        <img
-          src={album.cover}
-          alt={album.title}
-        />
+        <img src={album.cover} alt={album.title} />
 
         <div>
-
           <span>ÁLBUM</span>
-
           <h1>{album.title}</h1>
 
-          <button
-            onClick={() =>
-              navigate(
-                `/musica/compositor/${composer.id}`
-              )
-            }
-          >
-            {composer?.name}
-          </button>
+          {composer && (
+            <button
+              type="button"
+              onClick={() =>
+                navigate(`/musica/compositor/${composer.id}`)
+              }
+            >
+              {composer.name}
+            </button>
+          )}
 
           <p>
-            {album.year} ·{" "}
-            {albumSongs.length} canciones
+            {album.year} · {albumSongs.length} canciones
           </p>
-
           <p>{album.description}</p>
 
+          <div className="album-actions">
+            <button
+              type="button"
+              className="album-primary-action"
+              disabled={!playableSongs.length}
+              onClick={() => playCollection(albumSongs)}
+            >
+              ▶ <span>Reproducir</span>
+            </button>
 
-<div className="album-actions">
-  <button
-    type="button"
-    className="album-primary-action"
-    aria-label="Reproducir álbum"
-    title="Reproducir álbum"
-  >
-    <PlayIcon />
-    <span>Reproducir</span>
-  </button>
-
-  <button
-    type="button"
-    className="album-secondary-action"
-    aria-label="Reproducción aleatoria"
-    title="Reproducción aleatoria"
-  >
-    <ShuffleIcon />
-    <span>Aleatorio</span>
-  </button>
-</div>
-
-
+            <button
+              type="button"
+              className="album-secondary-action"
+              disabled={!playableSongs.length}
+              onClick={() =>
+                playCollection(albumSongs, { shuffle: true })
+              }
+            >
+              ⤨ <span>Aleatorio</span>
+            </button>
+          </div>
         </div>
-
       </section>
 
-      <section className="album-songs">
-
+      <section className="album-songs songs-list">
         {albumSongs.map((song, index) => (
-          <button
+          <SongRow
             key={song.id}
-            onClick={() =>
-              navigate(
-                `/musica/cancion/${song.id}`
-              )
+            song={{
+              ...song,
+              duration: songDurations[song.id] ?? song.duration,
+            }}
+            index={index}
+            composer={getComposer(song)}
+            isFavorite={isFavorite(song)}
+            isBlocked={isBlocked(song)}
+            onPlay={(selectedSong) =>
+              playSong(selectedSong, albumSongs)
             }
-          >
-            <span>
-              {String(index + 1).padStart(2, "0")}
-            </span>
-
-            <img
-              src={song.cover}
-              alt={song.title}
-            />
-
-            <strong>{song.title}</strong>
-
-            <span>{song.duration}</span>
-          </button>
+            onOpen={setSelectedSong}
+            onToggleFavorite={toggleFavorite}
+            onToggleBlocked={toggleBlocked}
+          />
         ))}
 
+        {!albumSongs.length && (
+          <p>Este álbum todavía no tiene canciones.</p>
+        )}
       </section>
 
+      <SongPanel
+        song={selectedSong}
+        composer={selectedSong ? getComposer(selectedSong) : null}
+        album={selectedSong ? getAlbum(selectedSong) : album}
+        isFavorite={selectedSong ? isFavorite(selectedSong) : false}
+        isBlocked={selectedSong ? isBlocked(selectedSong) : false}
+        onClose={() => setSelectedSong(null)}
+        onPlay={(song) => {
+          playSong(song, albumSongs);
+          setSelectedSong(null);
+        }}
+        onToggleFavorite={toggleFavorite}
+        onToggleBlocked={toggleBlocked}
+        onOpenAlbum={(selectedAlbum) => {
+          setSelectedSong(null);
+          navigate(`/musica/album/${selectedAlbum.id}`);
+        }}
+        onOpenComposer={(selectedComposer) => {
+          setSelectedSong(null);
+          navigate(`/musica/compositor/${selectedComposer.id}`);
+        }}
+      />
     </main>
   );
 }
