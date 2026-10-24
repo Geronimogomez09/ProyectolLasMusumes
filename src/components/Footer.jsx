@@ -43,6 +43,7 @@ function Footer() {
                         <div className="footer-column footer-help">
                             <h2>¿Necesitás ayuda?</h2>
                             <p>Podés acercarte a la comunidad para compartir consultas, ideas y sugerencias.</p>
+                            <Link to="/nosotros">Conocé al equipo y contactanos</Link>
                         </div>
                     </div>
                 </div>
