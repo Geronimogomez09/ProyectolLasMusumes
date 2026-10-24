@@ -6,7 +6,12 @@ export const productosIniciales = [
         categoria: "Ropa",
         precio: 20000,
         stock: 10,
-        imagen: "",
+        imagen: "/fondos/banner-coleccion-abeja.png",
+        imagenes: [
+            "/fondos/banner-coleccion-abeja.png",
+            "/fondos/banner-coleccion-diamante.png",
+            "/fondos/banner-coleccion-oscura.png"
+        ],
         descripcion: "Remera de algodón con diseño Creeper."
     },
 
