@@ -1,14 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import Header from "../components/header";
 import Footer from "../components/Footer";
-import {
-  songs,
-  composers,
-  albums,
-  playlists,
-} from "../data/musicData";
+
+import { songs, composers, albums, playlists } from "../data/musicData";
 
 import SongRow from "../components/music/SongRow";
 import FeaturedSongs from "../components/music/FeaturedSongs";
@@ -26,180 +22,184 @@ export default function Musica() {
   const [blockedSongs, setBlockedSongs] = useState([]);
   const [selectedSong, setSelectedSong] = useState(null);
   const [currentSong, setCurrentSong] = useState(null);
+  const [isShuffle, setIsShuffle] = useState(false);
+  const [repeatMode, setRepeatMode] = useState("off");
+  const [songDurations, setSongDurations] = useState({});
+  const [showAllSongs, setShowAllSongs] = useState(false);
 
-  // Canciones disponibles:
-  // se excluyen las canciones bloqueadas.
-  const availableSongs = songs.filter(
-    (song) => !blockedSongs.includes(song.id)
-  );
+  // Lee las duraciones reales de los archivos de audio sin reproducirlos.
+  useEffect(() => {
+    let cancelled = false;
+    let songIndex = 0;
+    const metadataAudio = new Audio();
+    metadataAudio.preload = "metadata";
 
-  // Canciones favoritas.
-  const favoriteSongs = songs.filter(
-    (song) => favorites.includes(song.id)
-  );
+    const loadNextDuration = () => {
+      if (cancelled) return;
 
-  // Buscar compositor de una canción.
-  const getComposer = (song) => {
-    return composers.find(
-      (composer) => composer.id === song.composerId
-    );
-  };
-
-  // Buscar álbum de una canción.
-  const getAlbum = (song) => {
-    return albums.find(
-      (album) => album.id === song.albumId
-    );
-  };
-
-  // Reproducir una canción.
-  const playSong = (song) => {
-    setCurrentSong(song);
-  };
-
-  // Siguiente canción.
-  const playNext = () => {
-    if (!currentSong) {
-      if (availableSongs.length > 0) {
-        setCurrentSong(availableSongs[0]);
+      while (songIndex < songs.length && !songs[songIndex]?.audio) {
+        songIndex += 1;
       }
+
+      if (songIndex >= songs.length) {
+        metadataAudio.removeAttribute("src");
+        metadataAudio.load();
+        return;
+      }
+
+      const song = songs[songIndex++];
+      metadataAudio.onloadedmetadata = () => {
+        if (cancelled) return;
+        const duration = metadataAudio.duration;
+        if (Number.isFinite(duration) && duration > 0) {
+          setSongDurations((previous) => ({ ...previous, [song.id]: duration }));
+        }
+        loadNextDuration();
+      };
+      metadataAudio.onerror = () => {
+        if (!cancelled) loadNextDuration();
+      };
+      metadataAudio.src = song.audio;
+      metadataAudio.load();
+    };
+
+    loadNextDuration();
+    return () => {
+      cancelled = true;
+      metadataAudio.onloadedmetadata = null;
+      metadataAudio.onerror = null;
+      metadataAudio.pause();
+      metadataAudio.removeAttribute("src");
+      metadataAudio.load();
+    };
+  }, []);
+
+  const availableSongs = songs.filter((song) => !blockedSongs.includes(song.id));
+  const favoriteSongs = songs.filter((song) => favorites.includes(song.id));
+
+  const getComposer = (song) =>
+    composers.find((composer) => composer.id === song.composerId);
+
+  const getAlbum = (song) =>
+    albums.find((album) => album.id === song.albumId);
+
+  const playSong = (song) => {
+    setCurrentSong({
+      ...song,
+      composerName: getComposer(song)?.name || "Compositor desconocido",
+    });
+  };
+
+  const playNext = (fromEnded = false) => {
+    if (availableSongs.length === 0) return;
+    if (!currentSong) {
+      playSong(availableSongs[0]);
       return;
     }
 
-    const currentIndex = availableSongs.findIndex(
-      (song) => song.id === currentSong.id
-    );
+    const currentIndex = availableSongs.findIndex((song) => song.id === currentSong.id);
+    if (currentIndex === -1) {
+      playSong(availableSongs[0]);
+      return;
+    }
 
-    const nextIndex =
-      currentIndex === -1
-        ? 0
-        : (currentIndex + 1) % availableSongs.length;
+    if (fromEnded && currentIndex === availableSongs.length - 1 && repeatMode !== "all" && !isShuffle) {
+      return;
+    }
 
-    setCurrentSong(availableSongs[nextIndex]);
+    if (isShuffle && availableSongs.length > 1) {
+      const otherSongs = availableSongs.filter((song) => song.id !== currentSong.id);
+      playSong(otherSongs[Math.floor(Math.random() * otherSongs.length)]);
+      return;
+    }
+
+    const nextIndex = currentIndex + 1;
+    if (nextIndex >= availableSongs.length) {
+      if (repeatMode === "all" || !fromEnded) playSong(availableSongs[0]);
+      return;
+    }
+    playSong(availableSongs[nextIndex]);
   };
 
-  // Canción anterior.
   const playPrevious = () => {
     if (!currentSong) {
-      if (availableSongs.length > 0) {
-        setCurrentSong(availableSongs[0]);
-      }
+      if (availableSongs.length > 0) playSong(availableSongs[0]);
       return;
     }
 
-    const currentIndex = availableSongs.findIndex(
-      (song) => song.id === currentSong.id
-    );
-
+    const currentIndex = availableSongs.findIndex((song) => song.id === currentSong.id);
     if (currentIndex === -1) {
-      setCurrentSong(availableSongs[0]);
+      if (availableSongs.length > 0) playSong(availableSongs[0]);
       return;
     }
 
-    const previousIndex =
-      currentIndex === 0
-        ? availableSongs.length - 1
-        : currentIndex - 1;
-
-    setCurrentSong(availableSongs[previousIndex]);
+    const previousIndex = currentIndex === 0 ? availableSongs.length - 1 : currentIndex - 1;
+    playSong(availableSongs[previousIndex]);
   };
 
-  // Agregar o quitar de favoritos.
   const toggleFavorite = (song) => {
-    setFavorites((previousFavorites) => {
-      if (previousFavorites.includes(song.id)) {
-        return previousFavorites.filter(
-          (id) => id !== song.id
-        );
-      }
-
-      return [...previousFavorites, song.id];
-    });
+    const songId = typeof song === "object" ? song.id : song;
+    setFavorites((previous) =>
+      previous.includes(songId)
+        ? previous.filter((id) => id !== songId)
+        : [...previous, songId]
+    );
   };
 
-  // Bloquear o desbloquear una canción.
   const toggleBlocked = (song) => {
-    setBlockedSongs((previousBlocked) => {
-      if (previousBlocked.includes(song.id)) {
-        return previousBlocked.filter(
-          (id) => id !== song.id
-        );
-      }
-
-      // Si se bloquea la canción que se está reproduciendo,
-      // dejamos de mostrarla como canción actual.
-      if (currentSong?.id === song.id) {
-        setCurrentSong(null);
-      }
-
-      return [...previousBlocked, song.id];
-    });
+    const songId = typeof song === "object" ? song.id : song;
+    if (!blockedSongs.includes(songId) && currentSong?.id === songId) {
+      setCurrentSong(null);
+    }
+    setBlockedSongs((previous) =>
+      previous.includes(songId)
+        ? previous.filter((id) => id !== songId)
+        : [...previous, songId]
+    );
+    setSelectedSong(null);
   };
 
-  // Reproducir una playlist.
   const playPlaylist = (playlist) => {
-    let playlistSongs = [];
+    const playlistSongs = playlist.system
+      ? favoriteSongs.filter((song) => !blockedSongs.includes(song.id))
+      : songs.filter((song) => playlist.songs.includes(song.id) && !blockedSongs.includes(song.id));
 
-    if (playlist.system) {
-      playlistSongs = favoriteSongs;
-    } else {
-      playlistSongs = songs.filter(
-        (song) =>
-          playlist.songs.includes(song.id) &&
-          !blockedSongs.includes(song.id)
-      );
-    }
-
-    if (playlistSongs.length > 0) {
-      setCurrentSong(playlistSongs[0]);
-    }
+    if (playlistSongs.length > 0) playSong(playlistSongs[0]);
   };
+
+  const songsToShow = showAllSongs ? availableSongs : availableSongs.slice(0, 10);
 
   return (
     <>
-      {/* HEADER ORIGINAL DEL PROYECTO */}
       <Header />
 
       <main className="music-page">
-
-        {/* ENCABEZADO DE LA PÁGINA */}
-        <section className="music-header container my-5">
-          <p className="music-eyebrow">
-            WIKICRAFT · MÚSICA
-          </p>
-
+        <section
+          className="music-header container my-5"
+  style={{
+  backgroundImage: "url('/music/banner-minecraft.gif')"
+}}
+        >
+          <p className="music-eyebrow">WIKICRAFT · MÚSICA</p>
           <h1>Biblioteca musical</h1>
-
-          <p>
-            Explorá el repertorio musical, descubrí compositores,
-            álbumes y listas de reproducción.
-          </p>
+          <p>Explorá el repertorio musical, descubrí compositores, álbumes y listas de reproducción.</p>
         </section>
 
         <div className="container">
-
-          {/* REPERTORIO */}
           <section className="music-section">
-
             <div className="section-title">
-              <span>01</span>
-
               <div>
                 <h2>Todo el repertorio</h2>
-
-                <p>
-                  {availableSongs.length} canciones
-                </p>
+                <p>{availableSongs.length} canciones</p>
               </div>
             </div>
 
             <div className="songs-list">
-
-              {availableSongs.length > 0 ? (
-                availableSongs.map((song, index) => (
+              {songsToShow.length > 0 ? (
+                songsToShow.map((song, index) => (
                   <SongRow
                     key={song.id}
-                    song={song}
+                    song={{ ...song, duration: songDurations[song.id] ?? song.duration }}
                     index={index}
                     composer={getComposer(song)}
                     isFavorite={favorites.includes(song.id)}
@@ -211,193 +211,108 @@ export default function Musica() {
                   />
                 ))
               ) : (
-                <p>
-                  No hay canciones disponibles.
-                </p>
+                <p>No hay canciones disponibles.</p>
               )}
-
             </div>
 
+            {availableSongs.length > 10 && (
+              <button
+                type="button"
+                className="songs-expand-button"
+                onClick={() => setShowAllSongs((previous) => !previous)}
+                aria-expanded={showAllSongs}
+              >
+                {showAllSongs ? "Mostrar menos canciones" : "Ver todas las canciones"}
+              </button>
+            )}
           </section>
 
-          {/* DESTACADAS */}
           <section className="music-section">
-
             <div className="section-title">
-              <span>02</span>
-
               <div>
                 <h2>Canciones destacadas</h2>
-
-                <p>
-                  Las canciones más destacadas
-                </p>
+                <p>Las canciones más destacadas</p>
               </div>
             </div>
-
-            <FeaturedSongs
-              songs={availableSongs.slice(0, 5)}
-              composers={composers}
-              onPlay={playSong}
-            />
-
+            <FeaturedSongs songs={availableSongs.slice(0, 5)} composers={composers} onPlay={playSong} />
           </section>
 
-          {/* PLAYLISTS */}
           <section className="music-section">
-
             <div className="section-title">
-              <span>03</span>
-
               <div>
                 <h2>Listas de reproducción</h2>
-
-                <p>
-                  Música organizada para cada momento
-                </p>
+                <p>Música organizada para cada momento</p>
               </div>
             </div>
-
             <div className="playlist-grid">
-
               {playlists.map((playlist) => (
                 <PlaylistCard
                   key={playlist.id}
                   playlist={playlist}
                   songCount={
                     playlist.system
-                      ? favoriteSongs.length
-                      : playlist.songs.length
+                      ? favoriteSongs.filter((song) => !blockedSongs.includes(song.id)).length
+                      : playlist.songs.filter((id) => !blockedSongs.includes(id)).length
                   }
                   onPlay={playPlaylist}
-                  onOpen={(item) =>
-                    navigate(
-                      `/musica/playlist/${item.id}`
-                    )
-                  }
+                  onOpen={(item) => navigate(`/musica/playlist/${item.id}`)}
                 />
               ))}
-
             </div>
-
           </section>
 
-          {/* ÁLBUMES */}
           <section className="music-section">
-
             <div className="section-title">
-              <span>04</span>
-
               <div>
                 <h2>Álbumes</h2>
-
-                <p>
-                  Explorá los álbumes completos
-                </p>
+                <p>Explorá los álbumes completos</p>
               </div>
             </div>
-
             <div className="album-grid">
-
               {albums.map((album) => {
-                const composer = composers.find(
-                  (item) =>
-                    item.id === album.composerId
-                );
-
+                const composer = composers.find((item) => item.id === album.composerId);
                 return (
                   <button
                     key={album.id}
                     type="button"
                     className="album-card"
-                    onClick={() =>
-                      navigate(
-                        `/musica/album/${album.id}`
-                      )
-                    }
+                    onClick={() => navigate(`/musica/album/${album.id}`)}
                   >
-                    <img
-                      src={album.cover}
-                      alt={album.title}
-                    />
-
-                    <strong>
-                      {album.title}
-                    </strong>
-
-                    <span>
-                      {composer?.name || "Compositor desconocido"}
-                    </span>
-
-                    <small>
-                      {album.songs.length} canciones
-                    </small>
+                    <img src={album.cover} alt={album.title} />
+                    <strong>{album.title}</strong>
+                    <span>{composer?.name || "Compositor desconocido"}</span>
+                    <small>{album.songs.length} canciones</small>
                   </button>
                 );
               })}
-
             </div>
-
           </section>
 
-          {/* COMPOSITORES */}
           <section className="music-section">
-
             <div className="section-title">
-              <span>05</span>
-
               <div>
                 <h2>Compositores</h2>
-
-                <p>
-                  Descubrí quién está detrás de la música
-                </p>
+                <p>Descubrí quién está detrás de la música</p>
               </div>
             </div>
-
             <div className="composer-grid">
-
               {composers.map((composer) => (
                 <ComposerCard
                   key={composer.id}
                   composer={composer}
-                  onOpen={(item) =>
-                    navigate(
-                      `/musica/compositor/${item.id}`
-                    )
-                  }
+                  onOpen={(item) => navigate(`/musica/compositor/${item.id}`)}
                 />
               ))}
-
             </div>
-
           </section>
-
         </div>
 
-        {/* PANEL DE CANCIÓN */}
         <SongPanel
           song={selectedSong}
-          composer={
-            selectedSong
-              ? getComposer(selectedSong)
-              : null
-          }
-          album={
-            selectedSong
-              ? getAlbum(selectedSong)
-              : null
-          }
-          isFavorite={
-            selectedSong
-              ? favorites.includes(selectedSong.id)
-              : false
-          }
-          isBlocked={
-            selectedSong
-              ? blockedSongs.includes(selectedSong.id)
-              : false
-          }
+          composer={selectedSong ? getComposer(selectedSong) : null}
+          album={selectedSong ? getAlbum(selectedSong) : null}
+          isFavorite={selectedSong ? favorites.includes(selectedSong.id) : false}
+          isBlocked={selectedSong ? blockedSongs.includes(selectedSong.id) : false}
           onClose={() => setSelectedSong(null)}
           onPlay={(song) => {
             playSong(song);
@@ -405,27 +320,27 @@ export default function Musica() {
           }}
           onToggleFavorite={toggleFavorite}
           onToggleBlocked={toggleBlocked}
-          onOpenAlbum={(album) =>
-            navigate(
-              `/musica/album/${album.id}`
-            )
-          }
-          onOpenComposer={(composer) =>
-            navigate(
-              `/musica/compositor/${composer.id}`
-            )
-          }
-
+          onOpenAlbum={(album) => navigate(`/musica/album/${album.id}`)}
+          onOpenComposer={(composer) => navigate(`/musica/compositor/${composer.id}`)}
         />
       </main>
 
-      {/* REPRODUCTOR FIJO */}
       <MusicPlayer
         currentSong={currentSong}
+        onClose={() => setCurrentSong(null)}
+        isDetailsOpen={Boolean(selectedSong)}
         onNext={playNext}
         onPrevious={playPrevious}
+        isShuffle={isShuffle}
+        setIsShuffle={setIsShuffle}
+        repeatMode={repeatMode}
+        setRepeatMode={setRepeatMode}
+        onDurationChange={(songId, duration) => {
+          setSongDurations((previous) => ({ ...previous, [songId]: duration }));
+        }}
       />
-      <Footer/>
+
+      <Footer />
     </>
   );
 }
