@@ -1,6 +1,7 @@
 
 import { useState } from "react";
 import Pago from "./Pago";
+import MinecraftIcon from "./MinecraftIcon";
 
 export default function Carrito({
     abierto,
@@ -20,7 +21,14 @@ export default function Carrito({
         <>
             <aside className={`carrito ${abierto ? "abierto" : ""}`}>
                 <div className="carrito-header">
-                    <h2>🛒 Carrito</h2>
+                    <h2>
+                        <MinecraftIcon
+                            name="carrito"
+                            alt="Carrito"
+                            className="carrito-header-icono"
+                        />
+                        Carrito
+                    </h2>
                     <button
                         className="cerrar-carrito"
                         onClick={cerrarCarrito}
