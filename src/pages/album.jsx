@@ -12,29 +12,6 @@ import {
 
 import "../styles/album.css";
 
-function PlayIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M8 5.5v13l11-6.5z" fill="currentColor" />
-    </svg>
-  );
-}
-
-function ShuffleIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path
-        d="M16 3h5v5M4 7h2.5c5 0 6 10 11 10H21m-5-5 5 5-5 5M4 17h2.5c2 0 3.5-2 4.5-4M16 3l5 5"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
 function Album() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -101,29 +78,15 @@ function Album() {
 
           <p>{album.description}</p>
 
+          <div>
+            <button>
+              ▶ Reproducir
+            </button>
 
-<div className="album-actions">
-  <button
-    type="button"
-    className="album-primary-action"
-    aria-label="Reproducir álbum"
-    title="Reproducir álbum"
-  >
-    <PlayIcon />
-    <span>Reproducir</span>
-  </button>
-
-  <button
-    type="button"
-    className="album-secondary-action"
-    aria-label="Reproducción aleatoria"
-    title="Reproducción aleatoria"
-  >
-    <ShuffleIcon />
-    <span>Aleatorio</span>
-  </button>
-</div>
-
+            <button>
+              🔀 Aleatorio
+            </button>
+          </div>
 
         </div>
 

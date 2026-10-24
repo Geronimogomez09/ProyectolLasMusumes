@@ -25,7 +25,6 @@ function Footer() {
                             <h2>Explorar</h2>
                             <Link to="/">Principal</Link>
                             <Link to="/historia">Historia</Link>
-                            <Link to="/nosotros">Nosotros</Link>
                             <Link to="/versiones">Versiones</Link>
                         </div>
                     </div>

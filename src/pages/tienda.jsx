@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 
-import Header from '../components/header';
+import Header from "../components/header";
 import Footer from "../components/Footer";
 import TarjetaProducto from "../components/tiendaComponentes/TarjetaProducto";
 import ControlesTienda from "../components/tiendaComponentes/ControlesTienda";
@@ -283,9 +283,9 @@ export default function Tienda() {
         );
 
 
-         alert(
+        alert(
             `${producto.nombre} fue agregado al carrito.`
-         );
+        );
 
     }
 
@@ -454,117 +454,70 @@ export default function Tienda() {
                     {/* =========================
                         BANNER
                     ========================== */}
-{(() => {
-  const slides = [
-    {
-      subtitulo: "NUEVA COLECCIÓN",
-      titulo: "EDICIÓN ABEJA",
-      descripcion: "Descubrí prendas inspiradas en el mundo de Minecraft.",
-      boton: "VER PRODUCTOS",
-      imagen: "/fondos/banner-coleccion-abeja.png"
-    },
-    {
-      subtitulo: "ESTILO Y AVENTURA",
-      titulo: "COLECCIÓN OSCURA",
-      descripcion: "Explorá la nueva colección inspirada en Minecraft.",
-      boton: "VER PRODUCTOS",
-      imagen: "/fondos/banner-coleccion-oscura.png"
-    },
-    {
-      subtitulo: "NUEVO LANZAMIENTO",
-      titulo: "COLECCIÓN DIAMANTE",
-      descripcion: "Prendas con detalles inspirados en los bloques del juego.",
-      boton: "COMPRAR AHORA",
-      imagen: "/fondos/banner-coleccion-diamante.png"
-    }
-  ];
 
-  const [slideActual, setSlideActual] = useState(0);
+                    <section className="banner">
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setSlideActual((prev) => (prev + 1) % slides.length);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [slides.length]);
+                        <div className="banner-text">
 
-  const slide = slides[slideActual];
+                            <small>
+                                NUEVA COLECCIÓN
+                            </small>
 
-  return (
-    <section className="banner">
-      <button 
-        className="carrusel-flecha flecha-izq" 
-        onClick={() => setSlideActual(slideActual === 0 ? slides.length - 1 : slideActual - 1)}
-      >
-        &#10094;
-      </button>
+                            <h1>
+                                Productos que
+                                <br />
+                                se mueven con vos
+                            </h1>
 
-      <div className="banner-contenido">
-        <div className="banner-text">
-          <small>{slide.subtitulo}</small>
-          <h1>{slide.titulo}</h1>
-          <p>{slide.descripcion}</p>
-          <button className="banner-btn" onClick={irProductos}>
-            {slide.boton}
-          </button>
-        </div>
+                            <p>
+                                Ropa, tazas, sábanas,
+                                figuras, accesorios,
+                                decoración y mucho más.
+                            </p>
 
-        <div className="banner-imagen-container">
-          <img src={slide.imagen} alt={slide.titulo} className="banner-img" />
-        </div>
-      </div>
+                            <button
+                                className="banner-btn"
+                                onClick={irProductos}
+                            >
+                                VER PRODUCTOS
+                            </button>
 
-      <button 
-        className="carrusel-flecha flecha-der" 
-        onClick={() => setSlideActual((slideActual + 1) % slides.length)}
-      >
-        &#10095;
-      </button>
+                        </div>
 
-      {/* Franja verde inferior estilo píxel */}
-      <div className="franja-verde-pixel">
-        <div className="pixeles-decoracion">
-          <span></span>
-          <span></span>
-          <span></span>
-        </div>
-      </div>
-    </section>
-  );
-})()}
+                    </section>
+
 
                     {/* =========================
                         TITULO
                     ========================== */}
 
-                    <div className="tienda-catalogo">
-                        <div
-                            className="titulo-productos"
-                            id="productos"
-                        >
-                            TODOS LOS PRODUCTOS
-                        </div>
+                    <div
+                        className="titulo-productos"
+                        id="productos"
+                    >
+                        TODOS LOS PRODUCTOS
+                    </div>
 
 
                     {/* =========================
                         CATEGORIAS
                     ========================== */}
 
-                        <CategoriasTienda
-                            categoriaActiva={
-                                categoriaActiva
-                            }
-                            setCategoriaActiva={
-                                setCategoriaActiva
-                            }
-                        />
+                    <CategoriasTienda
+                        categoriaActiva={
+                            categoriaActiva
+                        }
+                        setCategoriaActiva={
+                            setCategoriaActiva
+                        }
+                    />
 
 
                     {/* =========================
                         PRODUCTOS
                     ========================== */}
 
-                        <section className="productos">
+                    <section className="productos">
 
                         {productosFiltrados.length === 0 ? (
 
@@ -601,41 +554,25 @@ export default function Tienda() {
 
                         )}
 
-                        </section>
-
-                        <section
-                            className="tienda-promo"
-                            aria-label="Promoción del peluche Creeper"
-                        >
-                            <div className="tienda-promo__contenido">
-                                <h2>Peluche Creeper</h2>
-                                <p>Un compañero para cada ocasión</p>
-                                <button
-                                    className="tienda-promo__boton"
-                                    type="button"
-                                    onClick={irProductos}
-                                >
-                                    Ver productos
-                                </button>
-                            </div>
-                        </section>
+                    </section>
 
 
                     {/* =========================
                         ADMINISTRADOR
                     ========================== */}
 
-                        <AdministrarProductos
-                            productos={productos}
-                            agregarProducto={
-                                agregarProducto
-                            }
-                            eliminarProducto={
-                                eliminarProducto
-                            }
-                        />
+                    <AdministrarProductos
+                        productos={productos}
+                        agregarProducto={
+                            agregarProducto
+                        }
+                        eliminarProducto={
+                            eliminarProducto
+                        }
+                    />
 
-                    </div>
+
+                    <Footer />
 
                 </main>
 
@@ -661,24 +598,24 @@ export default function Tienda() {
 
             )}
 
-            <Footer />
-
 
             {/* =========================
                 CARRITO
             ========================== */}
 
-         <Carrito
-    abierto={carritoAbierto}
-    cerrarCarrito={() => setCarritoAbierto(false)}
-    carrito={carrito}
-    quitarCarrito={quitarCarrito}
-    vaciarCarrito={() => setCarrito([])}
-/>
+            <Carrito
+                abierto={carritoAbierto}
+                cerrarCarrito={() =>
+                    setCarritoAbierto(false)
+                }
+                carrito={carrito}
+                quitarCarrito={
+                    quitarCarrito
+                }
+            />
 
         </div>
 
     );
-    
 
 }

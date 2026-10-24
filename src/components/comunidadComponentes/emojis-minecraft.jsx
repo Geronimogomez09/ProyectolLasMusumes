@@ -16,17 +16,13 @@
 // ---------------------------------------------------------------------------
 
 export const EMOJIS_MINECRAFT = [
-  { id: 'diamante', nombre: 'Diamante', src: 'iconos/diamond.png' },
-  { id: 'esmeralda', nombre: 'Esmeralda', src: 'iconos/emerald.png' },
-  { id: 'oro', nombre: 'Lingote de oro', src: 'iconos/gold_ingot.png' },
-  { id: 'hierro', nombre: 'Lingote de hierro', src: 'iconos/iron_ingot.png' },
-  { id: 'estrella', nombre: 'Nether estrella', src: 'iconos/nether_star.png' },
-  { id: 'creeper', nombre: 'Creeper', src: 'iconos/creeper_head.png' },
-  { id: 'tnt', nombre: 'TNT', src: 'iconos/tnt.png' },
-  {id: 'girasol', nombre: 'Girasol', src: 'iconos/sunflower.png' },
-  {id: 'cincel', nombre: 'Cincel', src: 'iconos/brush.png' },
-  {id: 'corazon', nombre: 'Corazon', src: 'iconos/damage.png' },
-  {id: 'void', nombre: 'Void', src: 'iconos/structure_void.png' },
+  { id: 'diamante', nombre: 'Diamante', src: '/emojis/diamond.png' },
+  { id: 'esmeralda', nombre: 'Esmeralda', src: '/emojis/emerald.png' },
+  { id: 'oro', nombre: 'Lingote de oro', src: '/emojis/gold_ingot.png' },
+  { id: 'hierro', nombre: 'Lingote de hierro', src: '/emojis/iron_ingot.png' },
+  { id: 'estrella', nombre: 'Nether estrella', src: '/emojis/nether_star.png' },
+  { id: 'creeper', nombre: 'Creeper', src: '/emojis/creeper_head.png' },
+  { id: 'tnt', nombre: 'TNT', src: '/emojis/tnt.png' },
 ];
 
 // Convierte un texto con tokens tipo ":diamante:" en un array de nodos React,
