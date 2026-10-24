@@ -1,21 +1,16 @@
-
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
 function formatDuration(duration) {
-  if (duration == null || duration === "") {
-    return "—";
-  }
+  if (duration == null || duration === "") return "—";
 
-  // Compatibilidad con duraciones antiguas como "3:35".
   if (typeof duration === "string" && duration.includes(":")) {
     return duration;
   }
 
   const seconds = Number(duration);
 
-  if (!Number.isFinite(seconds) || seconds <= 0) {
-    return "—";
-  }
+  if (!Number.isFinite(seconds) || seconds <= 0) return "—";
 
   const minutes = Math.floor(seconds / 60);
   const remaining = Math.floor(seconds % 60);
@@ -32,8 +27,17 @@ function SongRow({
   onPlay,
   onOpen,
   onToggleFavorite,
-  onToggleBlocked,
 }) {
+  const navigate = useNavigate();
+
+  const openSongDetails = () => {
+    if (onOpen) {
+      onOpen(song);
+    } else {
+      navigate(`/musica/cancion/${song.id}`);
+    }
+  };
+
   return (
     <div className={`song-row ${isBlocked ? "is-blocked" : ""}`}>
       <span className="song-index">{index + 1}</span>
@@ -49,17 +53,15 @@ function SongRow({
           alt={song.title}
           className="song-cover"
         />
-
         <span className="song-cover-play">▶</span>
       </button>
 
       <button
         type="button"
         className="song-info"
-        onClick={() => onOpen(song)}
+        onClick={openSongDetails}
       >
         <strong>{song.title}</strong>
-
         <span>{composer?.name || "Compositor desconocido"}</span>
       </button>
 
@@ -81,36 +83,15 @@ function SongRow({
         {formatDuration(song.duration)}
       </span>
 
-      <div className="song-menu">
-        <button
-          type="button"
-          className="song-menu-button"
-          aria-label={`Opciones de ${song.title}`}
-          onClick={() => onOpen(song)}
-        >
-          ⋮
-        </button>
-
-        <div className="song-menu-content">
-          <button
-            type="button"
-            onClick={() => onToggleFavorite(song.id)}
-          >
-            {isFavorite
-              ? "Quitar de favoritos"
-              : "Agregar a favoritos"}
-          </button>
-
-          <button
-            type="button"
-            onClick={() => onToggleBlocked(song.id)}
-          >
-            {isBlocked
-              ? "Desbloquear canción"
-              : "Bloquear canción"}
-          </button>
-        </div>
-      </div>
+      <button
+        type="button"
+        className="song-menu-button"
+        aria-label={`Ver detalles de ${song.title}`}
+        title="Ver detalles de la canción"
+        onClick={openSongDetails}
+      >
+        ⋮
+      </button>
     </div>
   );
 }

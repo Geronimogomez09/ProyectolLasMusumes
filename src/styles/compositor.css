@@ -166,3 +166,39 @@
     gap: 12px;
   }
 }
+
+/* ==========================================================================
+   TIPOGRAFÍA WIKICRAFT
+   ========================================================================== */
+
+/* Texto general de la página */
+.composer-page {
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+/* Título principal del compositor */
+.composer-header h1 {
+  font-family: "Minecrafttitulo", "MinecraftSeven", sans-serif;
+}
+
+/* Títulos de las secciones */
+.composer-page h2 {
+  font-family: "MinecraftSeven", "Segoe UI", sans-serif;
+  letter-spacing: 0;
+  line-height: 1.55;
+}
+
+/* Nombres de canciones y álbumes */
+.composer-songs strong,
+.composer-albums strong {
+  font-family: "MinecraftSeven", "Segoe UI", sans-serif;
+  letter-spacing: 0;
+  line-height: 1.55;
+}
+
+/* Botones y textos secundarios */
+.composer-page button,
+.composer-page p,
+.composer-page span {
+  font-family: inherit;
+}

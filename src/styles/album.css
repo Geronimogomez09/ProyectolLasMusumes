@@ -90,22 +90,7 @@
   margin-top: 30px;
 }
 
-.album-songs button,
-.playlist-songs button {
-  display: grid;
-  grid-template-columns: 35px 55px minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 16px;
-  width: 100%;
-  padding: 12px 16px;
-  color: #eef3ef;
-  text-align: left;
-  background: transparent;
-  border: 1px solid transparent;
-  border-radius: 13px;
-  cursor: pointer;
-  transition: background 0.2s, border-color 0.2s;
-}
+
 
 .album-songs button:hover,
 .playlist-songs button:hover {
@@ -225,4 +210,111 @@
 .album-page h2,
 .album-page h3 {
   font-family: "Minecrafttitulo", sans-serif;
+}
+
+.collection-track {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-width: 0;
+}
+
+.collection-track-play,
+.collection-track .playlist-track {
+  flex: 1;
+  min-width: 0;
+}
+
+.collection-track-play {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.collection-track-play img {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.collection-track-play strong {
+  flex: 1;
+}
+
+.song-blocked {
+  opacity: 0.48;
+  filter: grayscale(0.85);
+}
+
+.song-blocked .song-block-toggle {
+  opacity: 1;
+  filter: none;
+}
+
+.song-block-toggle {
+  flex-shrink: 0;
+  padding: 7px 10px;
+  border: 1px solid currentColor;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.collection-track button:disabled {
+  cursor: not-allowed;
+}
+
+.album-primary-action:disabled,
+.album-secondary-action:disabled,
+.playlist-primary-action:disabled,
+.playlist-secondary-action:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Las canciones reutilizan las filas de la biblioteca principal. */
+.album-songs,
+.playlist-songs {
+  width: 100%;
+  min-width: 0;
+}
+
+.album-songs .song-row,
+.playlist-songs .song-row {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.album-songs .song-info,
+.playlist-songs .song-info {
+  min-width: 0;
+}
+
+.album-songs .song-info strong,
+.playlist-songs .song-info strong,
+.album-songs .song-info span,
+.playlist-songs .song-info span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.album-songs .song-row.is-blocked,
+.playlist-songs .song-row.is-blocked {
+  opacity: 0.48;
+}
+
+.album-songs .song-menu,
+.playlist-songs .song-menu {
+  flex-shrink: 0;
 }
