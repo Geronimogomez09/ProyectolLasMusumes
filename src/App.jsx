@@ -9,6 +9,7 @@ import Login from './pages/login';
 import Comunidad from './pages/comunidad'
 import Versiones from './pages/versiones';
 import Historia from './pages/historia';
+import Nosotros from './pages/nosotros';
 import Musica from './pages/musica';
 import Cancion from './pages/cancion';
 import Playlist from './pages/playlist';
@@ -30,6 +31,7 @@ function App() {
             <Route path="/comunidad" element={<Comunidad />} />
             <Route path="/versiones" element={<Versiones />} />
             <Route path="/historia" element={<Historia />} />
+            <Route path="/nosotros" element={<Nosotros />} />
             <Route path="/musica" element={<Musica />} />
             <Route path="/musica/cancion/:id" element={<Cancion />} />
             <Route path="/musica/playlist/:id" element={<Playlist />} />

@@ -20,6 +20,7 @@ const ENLACES = [
     { nombre: "Música", ruta: "/musica" },
     { nombre: "Tienda", ruta: "/tienda" },
     { nombre: "Historia", ruta: "/historia" },
+    { nombre: "Nosotros", ruta: "/nosotros" },
     { nombre: "Versiones", ruta: "/versiones" },
 ];
 
