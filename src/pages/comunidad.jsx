@@ -109,7 +109,7 @@ const CATEGORIAS_ETIQUETA = ['construcciones', 'Mods', 'Anuncios', 'pvps'];
 const CATEGORIAS_FILTRO = ['Todas', ...CATEGORIAS_ETIQUETA];
 
 // Datos del usuario actual (se reutilizan al crear posts y comentarios).
-const USUARIO_ACTUAL = { usuario: 'Vos', inicial: 'V', colorAvatar: '#3d9970' };
+const USUARIO_ACTUAL = { id: 'usuario-actual-demo', usuario: 'Vos', inicial: 'V', colorAvatar: '#3d9970' };
 
 // Índice de emojis por id: evita hacer .find() en cada render.
 const EMOJIS_POR_ID = Object.fromEntries(EMOJIS_MINECRAFT.map((e) => [e.id, e]));
@@ -142,9 +142,16 @@ function Comunidad({ posts: postsProp }) {
   const [comentariosAbiertos, setComentariosAbiertos] = useState({});
 
   // Denuncias: qué post tiene el modal abierto, y el registro de las enviadas
+  // Objetivo del modal: { tipo: 'publicacion' | 'comentario', postId, comentarioId? }
   const [denunciaAbiertaPost, setDenunciaAbiertaPost] = useState(null);
   const [reportados, setReportados] = useState({});
   const [denunciasEnviadas, setDenunciasEnviadas] = useState([]);
+  const [administradorAbierto, setAdministradorAbierto] = useState(false);
+  const [adminSeccion, setAdminSeccion] = useState('denuncias');
+  const [postEditando, setPostEditando] = useState(null);
+  const [textoPostEditado, setTextoPostEditado] = useState('');
+  const [postUsuarioEditando, setPostUsuarioEditando] = useState(null);
+  const [textoPostUsuarioEditado, setTextoPostUsuarioEditado] = useState('');
 
   const postsFiltrados =
     filtroActivo === 'Todas' ? posts : posts.filter((p) => p.categoria === filtroActivo);
@@ -154,6 +161,7 @@ function Comunidad({ posts: postsProp }) {
     const nuevoPost = {
       id: Date.now(),
       ...USUARIO_ACTUAL,
+      autorId: USUARIO_ACTUAL.id,
       tiempo: 'Ahora',
       contexto: 'Tu partida',
       categoria,
@@ -219,7 +227,7 @@ function Comunidad({ posts: postsProp }) {
               ...p,
               comentarios: [
                 ...p.comentarios,
-                { id: Date.now(), ...USUARIO_ACTUAL, texto: comentario.texto },
+                { id: Date.now(), ...USUARIO_ACTUAL, autorId: USUARIO_ACTUAL.id, texto: comentario.texto },
               ],
             }
           : p
@@ -230,18 +238,143 @@ function Comunidad({ posts: postsProp }) {
     // cuando se implemente el sistema de logros global.
   }
 
-  function handleConfirmarDenuncia(postId, datos) {
-    setDenunciasEnviadas((prev) => [...prev, { postId, ...datos }]);
-    setReportados((prev) => ({ ...prev, [postId]: true }));
-    setDenunciaAbiertaPost(null);
+  function handleConfirmarDenuncia(objetivo, datos) {
+    // Compatibilidad con el formato anterior (solo postId).
+    const destino = typeof objetivo === 'object' && objetivo !== null
+      ? objetivo
+      : { tipo: 'publicacion', postId: objetivo };
+    const post = posts.find((p) => p.id === destino.postId);
+    const comentario = destino.tipo === 'comentario'
+      ? post?.comentarios.find((c) => c.id === destino.comentarioId)
+      : null;
 
-    // TODO (backend): enviar { postId, motivo, detalle } al endpoint de
-    // moderación cuando exista. Por ahora queda solo en denunciasEnviadas.
+    setDenunciasEnviadas((prev) => [...prev, {
+      id: Date.now(),
+      tipoContenido: destino.tipo || 'publicacion',
+      postId: destino.postId,
+      comentarioId: destino.comentarioId ?? null,
+      ...datos,
+      usuarioPost: destino.tipo === 'comentario'
+        ? (comentario?.usuario || 'Usuario desconocido')
+        : (post?.usuario || 'Usuario desconocido'),
+      contenidoPost: destino.tipo === 'comentario'
+        ? (comentario?.texto || '')
+        : (post?.contenido || ''),
+      contextoPublicacion: post?.contenido || '',
+      usuarioPublicacion: post?.usuario || 'Usuario desconocido',
+      fecha: new Date().toLocaleString('es-AR'),
+      estado: 'Pendiente',
+    }]);
+
+    if (destino.tipo !== 'comentario') {
+      setReportados((prev) => ({ ...prev, [destino.postId]: true }));
+    }
+    setDenunciaAbiertaPost(null);
+    // TODO backend: enviar tipoContenido, postId, comentarioId, motivo y detalle.
+  }
+
+  function comenzarEdicionPost(post) { setPostEditando(post.id); setTextoPostEditado(post.contenido); }
+  function guardarEdicionPost(postId) {
+    if (!textoPostEditado.trim()) { window.alert('El contenido no puede quedar vacío.'); return; }
+    setPosts((prev) => prev.map((p) => p.id === postId ? { ...p, contenido: textoPostEditado.trim() } : p));
+    setPostEditando(null);
+  }
+  function eliminarPost(postId) {
+    if (!window.confirm('¿Seguro que querés eliminar esta publicación?')) return;
+    setPosts((prev) => prev.filter((p) => p.id !== postId));
+    setDenunciasEnviadas((prev) => prev.map((d) => d.postId === postId ? { ...d, estado: 'Publicación eliminada' } : d));
+  }
+
+  // En la maqueta se usa un ID de demostración. Cuando exista autenticación,
+  // USUARIO_ACTUAL.id deberá venir de la sesión y autorId del backend.
+  function esPublicacionPropia(post) {
+    return post.autorId === USUARIO_ACTUAL.id || (!post.autorId && post.usuario === USUARIO_ACTUAL.usuario);
+  }
+  function comenzarEdicionPostUsuario(post) {
+    setPostUsuarioEditando(post.id);
+    setTextoPostUsuarioEditado(post.contenido);
+  }
+  function guardarEdicionPostUsuario(postId) {
+    if (!textoPostUsuarioEditado.trim()) { window.alert('La publicación no puede quedar vacía.'); return; }
+    setPosts((prev) => prev.map((p) => p.id === postId && esPublicacionPropia(p) ? { ...p, contenido: textoPostUsuarioEditado.trim(), editado: true } : p));
+    setPostUsuarioEditando(null);
+    setTextoPostUsuarioEditado('');
+  }
+  function eliminarPostUsuario(postId) {
+    const post = posts.find((p) => p.id === postId);
+    if (!post || !esPublicacionPropia(post)) return;
+    if (!window.confirm('¿Querés eliminar tu publicación? Esta acción no se puede deshacer.')) return;
+    setPosts((prev) => prev.filter((p) => p.id !== postId));
+    setDenunciasEnviadas((prev) => prev.map((d) => d.postId === postId ? { ...d, estado: 'Publicación eliminada' } : d));
+  }
+  function cambiarEstadoDenuncia(id, estado) {
+    setDenunciasEnviadas((prev) => prev.map((d) => d.id === id ? { ...d, estado } : d));
+  }
+  function editarComentario(postId, comentarioId, texto) {
+    setPosts((prev) => prev.map((p) => p.id === postId ? { ...p, comentarios: p.comentarios.map((c) => c.id === comentarioId ? { ...c, texto, editado: true } : c) } : p));
+  }
+  function eliminarComentario(postId, comentarioId) {
+    if (!window.confirm('¿Seguro que querés eliminar este comentario?')) return;
+    setPosts((prev) => prev.map((p) => p.id === postId ? { ...p, comentarios: p.comentarios.filter((c) => c.id !== comentarioId) } : p));
+  }
+  function esComentarioPropio(comentario) {
+    return comentario.autorId === USUARIO_ACTUAL.id || (!comentario.autorId && comentario.usuario === USUARIO_ACTUAL.usuario);
+  }
+  function editarComentarioPropio(postId, comentarioId, texto) {
+    const post = posts.find((p) => p.id === postId);
+    const comentario = post?.comentarios.find((c) => c.id === comentarioId);
+    if (!comentario || !esComentarioPropio(comentario)) return;
+    editarComentario(postId, comentarioId, texto);
+  }
+  function eliminarComentarioPropio(postId, comentarioId) {
+    const post = posts.find((p) => p.id === postId);
+    const comentario = post?.comentarios.find((c) => c.id === comentarioId);
+    if (!comentario || !esComentarioPropio(comentario)) return;
+    eliminarComentario(postId, comentarioId);
   }
 
   return (
     <>
-      <Header />
+      {!administradorAbierto && <Header />}
+      {administradorAbierto ? (
+        <main className="comunidad-admin-page">
+          <div className="admin-page-fondo" aria-hidden="true"><span /><span /><span /></div>
+          <header className="admin-topbar">
+            <div className="admin-brand"><span className="admin-brand__icon">⚒</span><div><strong>WIKI-CRAFT</strong><small>Centro de moderación</small></div></div>
+          </header>
+          <section className="admin-dashboard">
+            <div className="admin-welcome"><div><span className="admin-eyebrow">PANEL DE CONTROL / COMUNIDAD</span><h1>Administración</h1><p>Gestioná el contenido y mantené la comunidad segura.</p></div><div className="admin-status"><span className="admin-status__dot" /> SISTEMA ACTIVO</div></div>
+            <div className="admin-stats">
+              <article className="admin-stat admin-stat--green"><span className="admin-stat__icon">▤</span><small>Publicaciones</small><strong>{posts.length}</strong><span>Contenido publicado</span></article>
+              <article className="admin-stat admin-stat--gold"><span className="admin-stat__icon">⚑</span><small>Denuncias pendientes</small><strong>{denunciasEnviadas.filter((d) => d.estado === 'Pendiente').length}</strong><span>Requieren revisión</span></article>
+              <article className="admin-stat admin-stat--blue"><span className="admin-stat__icon">☰</span><small>Comentarios</small><strong>{posts.reduce((total, p) => total + p.comentarios.length, 0)}</strong><span>En todas las publicaciones</span></article>
+            </div>
+            <div className="admin-workspace">
+              <aside className="admin-sidebar"><span className="admin-sidebar__label">MODERACIÓN</span>
+                <button className={adminSeccion === 'denuncias' ? 'seleccionado' : ''} onClick={() => setAdminSeccion('denuncias')}><span>⚑</span> Denuncias <b>{denunciasEnviadas.filter((d) => d.estado === 'Pendiente').length}</b></button>
+                <button className={adminSeccion === 'publicaciones' ? 'seleccionado' : ''} onClick={() => setAdminSeccion('publicaciones')}><span>▤</span> Publicaciones <b>{posts.length}</b></button>
+                <button className={adminSeccion === 'comentarios' ? 'seleccionado' : ''} onClick={() => setAdminSeccion('comentarios')}><span>☰</span> Comentarios</button>
+                <div className="admin-sidebar__nota"><span>✦ Consejo</span><p>Revisá el contexto completo antes de tomar una decisión de moderación.</p></div>
+              </aside>
+              <section className="admin-content">
+                {adminSeccion === 'denuncias' && <>
+                  <div className="admin-section-heading"><div><span className="admin-eyebrow">BANDEJA DE ENTRADA</span><h2>Denuncias recibidas</h2><p>Revisá los reportes enviados por la comunidad.</p></div><span className="admin-count">{denunciasEnviadas.length} reportes</span></div>
+                  {denunciasEnviadas.length === 0 ? <div className="admin-empty"><span>✓</span><h3>Todo tranquilo por acá</h3><p>Cuando alguien denuncie una publicación, aparecerá en esta bandeja.</p></div> : <div className="comunidad-admin-denuncias">{[...denunciasEnviadas].reverse().map((d) => <article className="comunidad-admin-denuncia" key={d.id}><div className="comunidad-admin-denuncia__top"><div><span className="admin-report-id">REPORTE #{String(d.id).slice(-5)}</span><strong>{d.tipoContenido === 'comentario' ? 'Comentario de' : 'Publicación de'} {d.usuarioPost}</strong></div><span className={`estado-${d.estado === 'Pendiente' ? 'pendiente' : 'resuelto'}`}>{d.estado}</span></div><p className="admin-report-content">{d.contenidoPost || (d.tipoContenido === 'comentario' ? 'El comentario ya no está disponible.' : 'La publicación ya no está disponible.')}</p>{d.tipoContenido === 'comentario' && <p className="admin-report-context"><strong>En la publicación de {d.usuarioPublicacion}:</strong> {d.contextoPublicacion}</p>}<div className="admin-report-meta"><span>Tipo: {d.tipoContenido === 'comentario' ? 'Comentario' : 'Publicación'}</span><span>⚑ {d.motivo}</span><span>◷ {d.fecha}</span></div>{d.detalle && <p className="admin-report-detail">“{d.detalle}”</p>}{d.estado === 'Pendiente' && <div className="admin-denuncia-acciones"><button className="admin-btn-primary" onClick={() => cambiarEstadoDenuncia(d.id, 'Revisada')}>✓ Marcar revisada</button><button className="admin-btn-danger" onClick={() => { if (window.confirm(d.tipoContenido === 'comentario' ? '¿Eliminar el comentario denunciado?' : '¿Eliminar la publicación denunciada?')) { if (d.tipoContenido === 'comentario') { setPosts((prev) => prev.map((p) => p.id === d.postId ? { ...p, comentarios: p.comentarios.filter((c) => c.id !== d.comentarioId) } : p)); cambiarEstadoDenuncia(d.id, 'Comentario eliminado'); } else { setPosts((prev) => prev.filter((p) => p.id !== d.postId)); cambiarEstadoDenuncia(d.id, 'Publicación eliminada'); } } }}>{d.tipoContenido === 'comentario' ? 'Eliminar comentario' : 'Eliminar publicación'}</button><button className="admin-btn-quiet" onClick={() => cambiarEstadoDenuncia(d.id, 'Descartada')}>Descartar</button></div>}</article>)}</div>}
+                </>}
+                {adminSeccion === 'publicaciones' && <>
+                  <div className="admin-section-heading"><div><span className="admin-eyebrow">CONTENIDO</span><h2>Publicaciones</h2><p>Editá el texto o eliminá contenido de la comunidad.</p></div><span className="admin-count">{posts.length} publicaciones</span></div>
+                  {posts.length === 0 ? <div className="admin-empty"><span>▤</span><h3>No hay publicaciones</h3><p>Las publicaciones nuevas aparecerán acá.</p></div> : <div className="admin-lista-posts">{posts.map((post) => <article className="admin-item" key={post.id}><div className="admin-item__avatar" style={{background: post.colorAvatar}}>{post.inicial}</div><div className="admin-item__main"><div className="admin-item__meta"><strong>{post.usuario}</strong><span>{post.categoria} · {post.comentarios.length} comentarios</span></div>{postEditando === post.id ? <div className="admin-edicion"><textarea value={textoPostEditado} onChange={(e) => setTextoPostEditado(e.target.value)} rows={4}/><div><button className="admin-btn-primary" onClick={() => guardarEdicionPost(post.id)}>Guardar cambios</button><button className="admin-btn-quiet" onClick={() => setPostEditando(null)}>Cancelar</button></div></div> : <p>{post.contenido}</p>}<div className="admin-item__actions">{postEditando !== post.id && <button className="admin-btn-secondary" onClick={() => comenzarEdicionPost(post)}>✎ Editar</button>}<button className="admin-btn-danger" onClick={() => eliminarPost(post.id)}>⌫ Eliminar</button></div></div></article>)}</div>}
+                </>}
+                {adminSeccion === 'comentarios' && <>
+                  <div className="admin-section-heading"><div><span className="admin-eyebrow">CONVERSACIONES</span><h2>Comentarios</h2><p>Seleccioná una publicación para moderar sus comentarios.</p></div></div>
+                  {posts.every((p) => p.comentarios.length === 0) ? <div className="admin-empty"><span>☰</span><h3>Todavía no hay comentarios</h3><p>Los comentarios aparecerán acá cuando existan.</p></div> : posts.filter((p) => p.comentarios.length > 0).map((post) => <article className="admin-comments-group" key={post.id}><div className="admin-comments-group__heading"><strong>{post.usuario}</strong><span>{post.contenido}</span></div><ListaComentarios comentarios={post.comentarios} modoAdministrador onAgregarComentario={() => {}} onEditarComentario={(comentarioId, texto) => editarComentario(post.id, comentarioId, texto)} onEliminarComentario={(comentarioId) => eliminarComentario(post.id, comentarioId)} /></article>)}
+                </>}
+              </section>
+            </div>
+            <footer className="admin-footer"><span>WIKI-CRAFT · MODERATION TOOLS</span><span>Los cambios de esta sesión se guardan localmente.</span></footer>
+          </section>
+        </main>
+      ) : (
       <div className="comunidad-page">
         {/* ---------- HERO / ENCABEZADO ---------- */}
         <header className="comunidad-hero cascada-item">
@@ -309,19 +442,38 @@ function Comunidad({ posts: postsProp }) {
                   <button
                     className="btn-warning"
                     aria-label="Reportar publicación"
-                    onClick={() => setDenunciaAbiertaPost(post.id)}
+                    onClick={() => setDenunciaAbiertaPost({ tipo: 'publicacion', postId: post.id })}
                   >
                     ⚠
                   </button>
                 </div>
 
-                {reportados[post.id] ? (
+                {reportados[post.id] && !administradorAbierto ? (
                   <p className="post-card__reportado-aviso">
                     Publicación reportada. Gracias por avisarnos.
                   </p>
                 ) : (
                   <>
-                    <p className="post-card__contenido">{post.contenido}</p>
+                    {postUsuarioEditando === post.id ? (
+                      <div className="post-edicion-usuario">
+                        <textarea aria-label="Editar publicación" value={textoPostUsuarioEditado} onChange={(e) => setTextoPostUsuarioEditado(e.target.value)} rows={4} />
+                        <div className="post-edicion-usuario__acciones">
+                          <button type="button" onClick={() => guardarEdicionPostUsuario(post.id)}>Guardar cambios</button>
+                          <button type="button" className="post-edicion-usuario__cancelar" onClick={() => { setPostUsuarioEditando(null); setTextoPostUsuarioEditado(''); }}>Cancelar</button>
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="post-card__contenido">{post.contenido}{post.editado && <span className="contenido-editado"> · editado</span>}</p>
+                    )}
+                    {esPublicacionPropia(post) && postUsuarioEditando !== post.id && (
+                      <div className="post-usuario-acciones">
+                        <span>Tu publicación</span>
+                        <div>
+                          <button type="button" onClick={() => comenzarEdicionPostUsuario(post)}>✎ Editar</button>
+                          <button type="button" className="post-usuario-acciones__eliminar" onClick={() => eliminarPostUsuario(post.id)}>⌫ Eliminar</button>
+                        </div>
+                      </div>
+                    )}
 
                     {post.imagen && (
                       <img
@@ -402,9 +554,12 @@ function Comunidad({ posts: postsProp }) {
                     {comentariosAbiertos[post.id] && (
                       <ListaComentarios
                         comentarios={post.comentarios}
-                        onAgregarComentario={(comentario) =>
-                          handleAgregarComentario(post.id, comentario)
-                        }
+                        onAgregarComentario={(comentario) => handleAgregarComentario(post.id, comentario)}
+                        modoUsuario
+                        usuarioActualId={USUARIO_ACTUAL.id}
+                        onEditarComentario={(comentarioId, texto) => editarComentarioPropio(post.id, comentarioId, texto)}
+                        onEliminarComentario={(comentarioId) => eliminarComentarioPropio(post.id, comentarioId)}
+                        onDenunciarComentario={(comentario) => setDenunciaAbiertaPost({ tipo: 'comentario', postId: post.id, comentarioId: comentario.id })}
                       />
                     )}
                   </>
@@ -414,14 +569,34 @@ function Comunidad({ posts: postsProp }) {
           </section>
         </main>
 
-        {denunciaAbiertaPost !== null && (
+
+         {denunciaAbiertaPost !== null && (
           <DenunciaModal
+            tipoContenido={denunciaAbiertaPost.tipo === 'comentario' ? 'comentario' : 'publicacion'}
             onConfirmar={(datos) => handleConfirmarDenuncia(denunciaAbiertaPost, datos)}
             onCancelar={() => setDenunciaAbiertaPost(null)}
           />
         )}
       </div>
-      <Footer />
+      )}
+      <button
+        type="button"
+        className={`comunidad-admin-toggle ${administradorAbierto ? 'activo' : ''}`}
+        onClick={() => {
+          if (administradorAbierto) {
+            setAdministradorAbierto(false);
+          } else {
+            setAdminSeccion('denuncias');
+            setAdministradorAbierto(true);
+          }
+        }}
+        aria-label={administradorAbierto ? 'Volver al modo usuario' : 'Abrir panel de administración'}
+      >
+        <span className="admin-toggle-pulse" />
+        {administradorAbierto ? 'Modo usuario' : 'Modo administrador'}
+        <span aria-hidden="true">{administradorAbierto ? '↙' : '↗'}</span>
+      </button>
+      {!administradorAbierto && <Footer />}
     </>
   );
 }
