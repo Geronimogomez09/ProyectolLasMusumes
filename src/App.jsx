@@ -14,6 +14,7 @@ import Playlist from "./pages/playlist";
 import Album from "./pages/album";
 import Compositor from "./pages/compositor";
 import MaestroMelodias from "./pages/MaestroMelodias";
+import Nosotros from "./pages/nosotros";
 
 import MusicPlayer from "./components/music/MusicPlayer";
 import { MusicProvider, useMusic } from "./context/MusicContext";
@@ -73,6 +74,7 @@ function AppRoutes() {
         <Route path="/musica/album/:id" element={<Album />} />
         <Route path="/musica/compositor/:id" element={<Compositor />} />
         <Route path="/musica/maestro" element={<MaestroMelodias />} />
+        <Route path="/nosotros" element={<Nosotros />} />
       </Routes>
 
       <GlobalMusicPlayer />
