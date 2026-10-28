@@ -1,5 +1,6 @@
 // comunidad.jsx
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import ListaComentarios from '../components/comunidadComponentes/lista-comentarios';
 import DenunciaModal from '../components/comunidadComponentes/denuncia-modal';
 import NuevoPost from '../components/comunidadComponentes/nuevo-post';
@@ -14,7 +15,7 @@ import '../styles/Comunidad.css';
 // Cada post trae su propio array de comentarios (en vez de un número suelto),
 // para poder listarlos y agregar nuevos de verdad.
 // ---------------------------------------------------------------------------
-const postsIniciales = [
+export const postsIniciales = [
   {
     id: 1,
     usuario: 'Vale_ObsidianaBUILDER',
@@ -110,6 +111,9 @@ const CATEGORIAS_FILTRO = ['Todas', ...CATEGORIAS_ETIQUETA];
 
 // Datos del usuario actual (se reutilizan al crear posts y comentarios).
 const USUARIO_ACTUAL = { id: 'usuario-actual-demo', usuario: 'Vos', inicial: 'V', colorAvatar: '#3d9970' };
+const CLAVE_POSTS = 'wikicraft_comunidad_posts_v1';
+const CLAVE_DENUNCIAS = 'wikicraft_comunidad_denuncias_v1';
+function leerLocal(clave, alternativo) { try { const valor = localStorage.getItem(clave); return valor ? JSON.parse(valor) : alternativo; } catch { return alternativo; } }
 
 // Índice de emojis por id: evita hacer .find() en cada render.
 const EMOJIS_POR_ID = Object.fromEntries(EMOJIS_MINECRAFT.map((e) => [e.id, e]));
@@ -125,7 +129,8 @@ function EmojiIcono({ emoji, claseFallback }) {
 }
 
 function Comunidad({ posts: postsProp }) {
-  const [posts, setPosts] = useState(postsProp || postsIniciales);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [posts, setPosts] = useState(() => postsProp || leerLocal(CLAVE_POSTS, postsIniciales));
   const [filtroActivo, setFiltroActivo] = useState('Todas');
 
   // Likes del usuario actual: { [postId]: true }
@@ -145,13 +150,17 @@ function Comunidad({ posts: postsProp }) {
   // Objetivo del modal: { tipo: 'publicacion' | 'comentario', postId, comentarioId? }
   const [denunciaAbiertaPost, setDenunciaAbiertaPost] = useState(null);
   const [reportados, setReportados] = useState({});
-  const [denunciasEnviadas, setDenunciasEnviadas] = useState([]);
-  const [administradorAbierto, setAdministradorAbierto] = useState(false);
+  const [denunciasEnviadas, setDenunciasEnviadas] = useState(() => leerLocal(CLAVE_DENUNCIAS, []));
+  const [administradorAbierto, setAdministradorAbierto] = useState(() => searchParams.get('admin') === '1');
   const [adminSeccion, setAdminSeccion] = useState('denuncias');
   const [postEditando, setPostEditando] = useState(null);
   const [textoPostEditado, setTextoPostEditado] = useState('');
   const [postUsuarioEditando, setPostUsuarioEditando] = useState(null);
   const [textoPostUsuarioEditado, setTextoPostUsuarioEditado] = useState('');
+
+  useEffect(() => { try { localStorage.setItem(CLAVE_POSTS, JSON.stringify(posts)); } catch (error) { console.warn('No se pudieron guardar las publicaciones.', error); } }, [posts]);
+  useEffect(() => { try { localStorage.setItem(CLAVE_DENUNCIAS, JSON.stringify(denunciasEnviadas)); } catch (error) { console.warn('No se pudieron guardar las denuncias.', error); } }, [denunciasEnviadas]);
+  useEffect(() => { setAdministradorAbierto(searchParams.get('admin') === '1'); }, [searchParams]);
 
   const postsFiltrados =
     filtroActivo === 'Todas' ? posts : posts.filter((p) => p.categoria === filtroActivo);
@@ -343,7 +352,7 @@ function Comunidad({ posts: postsProp }) {
             <div className="admin-brand"><span className="admin-brand__icon">⚒</span><div><strong>WIKI-CRAFT</strong><small>Centro de moderación</small></div></div>
           </header>
           <section className="admin-dashboard">
-            <div className="admin-welcome"><div><span className="admin-eyebrow">PANEL DE CONTROL / COMUNIDAD</span><h1>Administración</h1><p>Gestioná el contenido y mantené la comunidad segura.</p></div><div className="admin-status"><span className="admin-status__dot" /> SISTEMA ACTIVO</div></div>
+            <div className="admin-welcome"><div><span className="admin-eyebrow">PANEL DE CONTROL / COMUNIDAD</span><h1>Administracion</h1><p>Gestioná el contenido y mantené la comunidad segura.</p></div><div className="admin-status"><span className="admin-status__dot" /> SISTEMA ACTIVO</div></div>
             <div className="admin-stats">
               <article className="admin-stat admin-stat--green"><span className="admin-stat__icon">▤</span><small>Publicaciones</small><strong>{posts.length}</strong><span>Contenido publicado</span></article>
               <article className="admin-stat admin-stat--gold"><span className="admin-stat__icon">⚑</span><small>Denuncias pendientes</small><strong>{denunciasEnviadas.filter((d) => d.estado === 'Pendiente').length}</strong><span>Requieren revisión</span></article>
@@ -463,7 +472,24 @@ function Comunidad({ posts: postsProp }) {
                         </div>
                       </div>
                     ) : (
-                      <p className="post-card__contenido">{post.contenido}{post.editado && <span className="contenido-editado"> · editado</span>}</p>
+                      <>
+                        <Link
+                          to={`/publicacion/${post.id}`}
+                          className="post-card__contenido-link"
+                          aria-label={`Abrir publicación de ${post.usuario}`}
+                        >
+                          <p className="post-card__contenido">
+                            {post.contenido}
+                            {post.editado && <span className="contenido-editado"> · editado</span>}
+                          </p>
+                        </Link>
+                        <Link
+                          to={`/publicacion/${post.id}`}
+                          className="post-card__ver-publicacion"
+                        >
+                          Ver publicación completa <span aria-hidden="true">→</span>
+                        </Link>
+                      </>
                     )}
                     {esPublicacionPropia(post) && postUsuarioEditando !== post.id && (
                       <div className="post-usuario-acciones">
@@ -585,9 +611,11 @@ function Comunidad({ posts: postsProp }) {
         onClick={() => {
           if (administradorAbierto) {
             setAdministradorAbierto(false);
+            setSearchParams({});
           } else {
             setAdminSeccion('denuncias');
             setAdministradorAbierto(true);
+            setSearchParams({ admin: '1' });
           }
         }}
         aria-label={administradorAbierto ? 'Volver al modo usuario' : 'Abrir panel de administración'}

@@ -946,3 +946,41 @@
   overflow-wrap: anywhere;
 }
 .admin-report-context strong { color: #3d6841; }
+/* Acceso a la página individual de cada publicación. Limitado a Comunidad. */
+.post-card__contenido-link {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+  border-radius: 8px;
+}
+
+.post-card__contenido-link:hover .post-card__contenido {
+  color: #245d36;
+}
+
+.post-card__contenido-link:focus-visible,
+.post-card__ver-publicacion:focus-visible {
+  outline: 2px solid #36a852;
+  outline-offset: 3px;
+}
+
+.post-card__ver-publicacion {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0.2rem 0 0.65rem;
+  color: #21863a;
+  font-size: 0.84rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: gap 160ms ease, color 160ms ease;
+}
+
+.post-card__ver-publicacion:hover {
+  color: #145d29;
+  gap: 0.65rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .post-card__ver-publicacion { transition: none; }
+}

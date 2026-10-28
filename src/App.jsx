@@ -6,6 +6,7 @@ import Registro from "./pages/signup";
 import Tienda from "./pages/tienda";
 import Login from "./pages/login";
 import Comunidad from "./pages/comunidad";
+import Publicacion from "./pages/publicacion";
 import Versiones from "./pages/versiones";
 import Historia from "./pages/historia";
 import Musica from "./pages/musica";
@@ -25,20 +26,11 @@ import "./styles/App.css";
 
 function GlobalMusicPlayer() {
   const music = useMusic();
-
   if (!music.currentSong) return null;
-
   const composer = music.getComposer(music.currentSong);
-
   return (
     <MusicPlayer
-      currentSong={{
-        ...music.currentSong,
-        composerName:
-          composer?.name ||
-          music.currentSong.composerName ||
-          "Compositor desconocido",
-      }}
+      currentSong={{ ...music.currentSong, composerName: composer?.name || music.currentSong.composerName || "Compositor desconocido" }}
       onClose={() => music.setCurrentSong(null)}
       onNext={music.playNext}
       onPrevious={music.playPrevious}
@@ -47,12 +39,7 @@ function GlobalMusicPlayer() {
       repeatMode={music.repeatMode}
       setRepeatMode={music.setRepeatMode}
       isDetailsOpen={music.isSongDetailsOpen}
-      onDurationChange={(songId, duration) => {
-        music.setSongDurations((previous) => ({
-          ...previous,
-          [songId]: duration,
-        }));
-      }}
+      onDurationChange={(songId, duration) => music.setSongDurations((previous) => ({ ...previous, [songId]: duration }))}
     />
   );
 }
@@ -66,6 +53,7 @@ function AppRoutes() {
         <Route path="/tienda" element={<Tienda />} />
         <Route path="/login" element={<Login />} />
         <Route path="/comunidad" element={<Comunidad />} />
+        <Route path="/publicacion/:id" element={<Publicacion />} />
         <Route path="/versiones" element={<Versiones />} />
         <Route path="/historia" element={<Historia />} />
         <Route path="/musica" element={<Musica />} />
@@ -76,19 +64,11 @@ function AppRoutes() {
         <Route path="/musica/maestro" element={<MaestroMelodias />} />
         <Route path="/nosotros" element={<Nosotros />} />
       </Routes>
-
       <GlobalMusicPlayer />
     </>
   );
 }
 
 export default function App() {
-  return (
-    <BrowserRouter>
-      <MusicProvider>
-        <AppRoutes />
-      </MusicProvider>
-
-    </BrowserRouter>
-  );
+  return <BrowserRouter><MusicProvider><AppRoutes /></MusicProvider></BrowserRouter>;
 }
