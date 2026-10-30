@@ -1,251 +1,23 @@
-import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Header from "../components/header.jsx";
 import Footer from "../components/Footer.jsx";
+import { ModalConfirmar, ModalFormulario } from "../components/admin/ModalAdmin.jsx";
+import { cargarInicio, crearId, fechaHoy, guardarInicio } from "../data/inicio.js";
+import { HERO_URL, ICONOS, Icono, Imagen } from "../utils/imagenes";
 import "../styles/index.css";
+import "../styles/admin.css";
 
 /* ============================================================================
-   1. IMÁGENES
-   ----------------------------------------------------------------------------
-   Todo lo que sea imagen (fotos E iconos) pasa por el mismo buscador.
-   Vite solo procesa las imágenes que se importan, por eso se usa import.meta.glob
-   sobre TODA la carpeta src/assets (cualquier subcarpeta).
-
-   Un campo "imagen" puede contener cualquiera de estas cosas:
-     - un nombre de archivo ............ "granja.jpg"
-     - una ruta dentro de assets ....... "index/granja.jpg"
-     - una ruta vieja .................. "../assets/index/granja.jpg"
-     - una URL externa ................. "https://sitio.com/foto.png"
-     - una ruta de /public ............. "/fotos/portada.png"
-     - una imagen subida (blob / data)
-   ========================================================================= */
-
-const ARCHIVOS = import.meta.glob(
-    "../assets/**/*.{png,jpg,jpeg,webp,gif,avif,svg}",
-    { eager: true, import: "default" }
-);
-
-// BIBLIOTECA["index/castillo.jpg"] y BIBLIOTECA["castillo.jpg"] -> URL final.
-// RUTAS es la lista de rutas relativas, útil para sugerencias en el formulario.
-const BIBLIOTECA = {};
-const RUTAS = [];
-
-for (const [ruta, url] of Object.entries(ARCHIVOS)) {
-    const relativa = ruta.replace("../assets/", "");
-    const nombre = relativa.split("/").pop();
-
-    RUTAS.push(relativa);
-    BIBLIOTECA[relativa] = url;
-    if (!(nombre in BIBLIOTECA)) BIBLIOTECA[nombre] = url; // si hay repetidos, gana el primero
-}
-
-// Carpeta (dentro de src/assets) donde viven los iconos de las secciones.
-const CARPETA_ICONOS = "emojis";
-
-const ICONOS = RUTAS
-    .filter((ruta) => ruta.startsWith(`${CARPETA_ICONOS}/`))
-    .map((ruta) => ruta.split("/").pop());
-
-const SUGERENCIAS_IMAGEN = RUTAS.filter((ruta) => !ruta.startsWith(`${CARPETA_ICONOS}/`));
-
-// Imagen de reemplazo (cuadrícula verde pixelada) para cuando falta un archivo.
-const PLACEHOLDER = `data:image/svg+xml,${encodeURIComponent(
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 20" shape-rendering="crispEdges">' +
-    '<rect width="32" height="20" fill="#dcefdc"/>' +
-    '<g fill="#1db53c" fill-opacity=".35">' +
-    '<rect x="10" y="6" width="2" height="2"/><rect x="12" y="8" width="2" height="2"/>' +
-    '<rect x="14" y="10" width="2" height="2"/><rect x="16" y="8" width="2" height="2"/>' +
-    '<rect x="18" y="6" width="2" height="2"/><rect x="14" y="6" width="2" height="2"/>' +
-    '</g></svg>'
-)}`;
-
-const ES_URL = /^(blob:|data:|https?:\/\/|\/\/|\/)/;
-
-// Devuelve la URL final o undefined si no se encuentra.
-// "carpeta" da prioridad a una subcarpeta (se usa para los iconos).
-function buscarImagen(valor, carpeta) {
-    if (!valor) return undefined;
-    if (ES_URL.test(valor)) return valor;
-
-    const clave = valor.replace(/^(\.{1,2}\/)*(src\/)?assets\//, "");
-    const nombre = clave.split("/").pop();
-
-    return (
-        (carpeta && BIBLIOTECA[`${carpeta}/${nombre}`]) ||
-        BIBLIOTECA[clave] ||
-        BIBLIOTECA[nombre]
-    );
-}
-
-function resolverImagen(valor, carpeta) {
-    const url = buscarImagen(valor, carpeta);
-
-    if (!url && valor && import.meta.env.DEV) {
-        console.warn(`[Inicio] No se encontró la imagen "${valor}" en src/assets/`);
-    }
-
-    return url ?? PLACEHOLDER;
-}
-
-// Si una imagen falla al cargar, se reemplaza una sola vez por el placeholder.
-function aPlaceholder(evento) {
-    const img = evento.currentTarget;
-    if (img.dataset.fallback) return;
-    img.dataset.fallback = "1";
-    img.src = PLACEHOLDER;
-}
-
-function Imagen({ nombre, carpeta, alt = "", ...resto }) {
-    return (
-        <img
-            src={resolverImagen(nombre, carpeta)}
-            alt={alt}
-            loading="lazy"
-            onError={aPlaceholder}
-            {...resto}
-        />
-    );
-}
-
-// Los iconos son imágenes de la carpeta de iconos.
-function Icono({ nombre, alt = "", ...resto }) {
-    return <Imagen nombre={nombre} carpeta={CARPETA_ICONOS} alt={alt} {...resto} />;
-}
-
-// Imagen del hero: si existe en src/assets se usa; si no, el CSS usa su ruta de respaldo.
-const HERO_URL = ["hero.jpg", "hero.jpeg", "hero.png", "hero.webp"]
-    .map((nombre) => BIBLIOTECA[nombre])
-    .find(Boolean);
-
-/* ============================================================================
-   2. ROLES Y PERMISOS
-   ----------------------------------------------------------------------------
-   Cada usuario tiene un rol numérico. Cada acción exige un rol mínimo.
-   Para cambiar quién puede qué, solo se tocan estas dos tablas.
-   (Ajustá los números para que coincidan con los de tu base de datos.)
-   ========================================================================= */
-
-const ROLES = {
-    VISITANTE: 0,
-    USUARIO: 1,
-    EDITOR: 2,
-    ADMIN: 3,
-};
-
-const PERMISOS = {
-    crear: ROLES.EDITOR,
-    editar: ROLES.EDITOR,
-    eliminar: ROLES.ADMIN,
-};
-
-const puedeHacer = (rol, accion) => rol >= PERMISOS[accion];
-
-// Mientras no exista el login, el rol lo controla el botón flotante.
-// Cuando esté el login: poné MODO_DEMO en false y usá el rol real en useRol().
-const MODO_DEMO = true;
-
-function useRol() {
-    const [rolDemo, setRolDemo] = useState(ROLES.VISITANTE);
-
-    // const { usuario } = useAuth();
-    // const rolReal = Number(usuario?.rol ?? ROLES.VISITANTE);
-    const rolReal = ROLES.VISITANTE;
-
-    return {
-        rol: MODO_DEMO ? rolDemo : rolReal,
-        alternarDemo: () =>
-            setRolDemo((actual) => (actual >= ROLES.ADMIN ? ROLES.VISITANTE : ROLES.ADMIN)),
-    };
-}
-
-/* ============================================================================
-   3. CONTENIDO INICIAL
-   ----------------------------------------------------------------------------
-   En "imagen" va cualquiera de los formatos de la sección 1.
-   En "icono" va el nombre de un archivo de src/assets/emojis/.
-   ========================================================================= */
-
-const CONTENIDO_INICIAL = {
-    secciones: [
-        {
-            id: "seccion-comunidad",
-            titulo: "Comunidad",
-            descripcion: "Conocé a otros jugadores, compartí tus ideas, mostrá tus construcciones y participá en eventos.",
-            imagen: "comunidad.png",
-            enlace: "/comunidad",
-            icono: "dirt.png",
-        },
-        {
-            id: "seccion-versiones",
-            titulo: "Versiones",
-            descripcion: "Reviví la historia de Minecraft, explorá cada versión y descubrí todo lo que cambió con el tiempo.",
-            imagen: "versiones.png",
-            enlace: "/versiones",
-            icono: "brush.png",
-        },
-        {
-            id: "seccion-musica",
-            titulo: "Música",
-            descripcion: "Disfrutá de las mejores bandas sonoras, listas y música creada por la comunidad.",
-            imagen: "musica-2.jpg",
-            enlace: "/musica",
-            icono: "note_block.png",
-        },
-    ],
-    novedades: [
-        {
-            id: "novedad-granja",
-            categoria: "TUTORIALES",
-            titulo: "Granja automática de aldeanos",
-            fecha: "12 abr 2026",
-            autor: "NovaBuild",
-            descripcion: "Paso a paso para construir una granja de aldeanos eficiente y fácil de replicar.",
-            imagen: "granja.jpg",
-            enlace: "/comunidad",
-        },
-        {
-            id: "novedad-version",
-            categoria: "VERSIONES",
-            titulo: "La versión que cambió todo",
-            fecha: "8 abr 2026",
-            autor: "ZetaCraft",
-            descripcion: "Recordamos la actualización que transformó la forma de jugar Minecraft.",
-            imagen: "versioncambio.png",
-            enlace: "/versiones",
-        },
-        {
-            id: "novedad-playlist",
-            categoria: "MÚSICA",
-            titulo: "Nueva playlist: sonidos del Overworld",
-            fecha: "5 abr 2026",
-            autor: "Luma",
-            descripcion: "Una selección de los mejores temas del mundo principal, ideal para tus construcciones.",
-            imagen: "musica.png",
-            enlace: "/musica",
-        },
-    ],
-    construcciones: [
-        { id: "construccion-castillo", nombre: "Castillo medieval", imagen: "castillo.png" },
-        { id: "construccion-casa", nombre: "Casa moderna", imagen: "casamoderna.jpg" },
-        { id: "construccion-portal", nombre: "Portal del Nether", imagen: "portal.jpg" },
-    ],
-};
-
-/* ============================================================================
-   4. TIPOS DE CONTENIDO
+   1. TIPOS DE CONTENIDO
    ----------------------------------------------------------------------------
    Para agregar un CAMPO nuevo: una línea en "campos".
    Para agregar un TIPO nuevo: una entrada acá + su sección en la página.
-   Para agregar un tipo de CONTROL nuevo (ej. fecha): un componente en CONTROLES.
+   "activable: true" agrega el interruptor Visible / Oculta a las tarjetas.
 
    Cada campo puede tener "limpiar": una función que normaliza el valor al guardar.
+   Los tipos de control (texto, area, icono, imagen) están en components/admin/ModalAdmin.jsx.
    ========================================================================= */
-
-function fechaHoy() {
-    return new Date()
-        .toLocaleDateString("es-AR", { day: "numeric", month: "short", year: "numeric" })
-        .replace(/\./g, "");
-}
 
 const aRutaInterna = (valor) => `/${valor.replace(/^\/+/, "")}`;
 const aMayusculas = (valor) => valor.toUpperCase();
@@ -275,6 +47,7 @@ const TIPOS = {
     novedad: {
         clave: "novedades",
         singular: "novedad",
+        activable: true,
         campos: [
             { nombre: "titulo", etiqueta: "Título", tipo: "texto", requerido: true },
             { nombre: "categoria", etiqueta: "Categoría", tipo: "texto", ayuda: "Se muestra en mayúsculas", limpiar: aMayusculas },
@@ -284,7 +57,7 @@ const TIPOS = {
             CAMPO_ENLACE,
             { nombre: "imagen", etiqueta: "Imagen", tipo: "imagen" },
         ],
-        nuevo: () => ({ categoria: "", titulo: "", fecha: fechaHoy(), autor: "", descripcion: "", imagen: "", enlace: "/comunidad" }),
+        nuevo: () => ({ activa: true, categoria: "", titulo: "", fecha: fechaHoy(), autor: "", descripcion: "", imagen: "", enlace: "/comunidad" }),
         nombreDe: (item) => item.titulo,
     },
     construccion: {
@@ -299,106 +72,106 @@ const TIPOS = {
     },
 };
 
-function crearId(tipo) {
-    return `${tipo}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
-}
-
-// Deja los datos listos para guardar: sin espacios sobrantes y con cada "limpiar" aplicado.
-function limpiarDatos(tipo, datos) {
-    const limpios = { ...datos };
-
-    for (const campo of TIPOS[tipo].campos) {
-        let valor = limpios[campo.nombre] ?? "";
-        if (typeof valor === "string") valor = valor.trim();
-        if (campo.limpiar) valor = campo.limpiar(valor);
-        limpios[campo.nombre] = valor;
-    }
-
-    return limpios;
-}
+// Las novedades que no tienen el campo "activa" cuentan como activas.
+const estaActiva = (item) => item.activa !== false;
 
 /* ============================================================================
-   5. CONTEXTO DE EDICIÓN
+   2. CONTEXTO DE EDICIÓN
    ----------------------------------------------------------------------------
-   Reparte permisos y acciones a toda la página, así cada elemento solo escribe
-   <Controles /> o <Agregar /> y no repite condiciones de admin.
+   Reparte el modo administrador y las acciones a toda la página, así cada
+   elemento solo escribe <Controles /> o <Agregar /> y no repite condiciones.
    ========================================================================= */
 
 const EdicionContext = createContext({
-    editando: false,
-    puede: () => false,
+    admin: false,
     abrirNuevo: () => {},
     abrirEditar: () => {},
     abrirEliminar: () => {},
+    alternarActiva: () => {},
 });
 
 const useEdicion = () => useContext(EdicionContext);
 
 // Link que no navega mientras se está editando, para no perder cambios sin guardar.
 function Enlace({ onClick, ...props }) {
-    const { editando } = useEdicion();
+    const { admin } = useEdicion();
 
     return (
         <Link
             {...props}
             onClick={(evento) => {
-                if (editando) evento.preventDefault();
+                if (admin) evento.preventDefault();
                 onClick?.(evento);
             }}
         />
     );
 }
 
-// Botones de editar y eliminar sobre cada elemento (según permisos).
+// Botones sobre cada elemento (solo en modo administrador):
+// arriba a la izquierda el interruptor Visible / Oculta, arriba a la derecha editar y eliminar.
 function Controles({ tipo, item }) {
-    const { puede, abrirEditar, abrirEliminar } = useEdicion();
-    const puedeEditar = puede("editar");
-    const puedeEliminar = puede("eliminar");
+    const { admin, abrirEditar, abrirEliminar, alternarActiva } = useEdicion();
 
-    if (!puedeEditar && !puedeEliminar) return null;
+    if (!admin) return null;
 
     const nombre = TIPOS[tipo].nombreDe(item);
+    const activa = estaActiva(item);
 
     return (
-        <div className="inicio-admin-acciones">
-            {puedeEditar && (
+        <>
+            {TIPOS[tipo].activable && (
+                <div className="admin-estado">
+                    <button
+                        type="button"
+                        role="switch"
+                        aria-checked={activa}
+                        aria-label={`Mostrar “${nombre}” en Inicio`}
+                        title={activa ? "Visible en Inicio. Tocá para ocultarla" : "Oculta. Tocá para mostrarla en Inicio"}
+                        className={`admin-switch ${activa ? "activo" : ""}`}
+                        onClick={() => alternarActiva(tipo, item)}
+                    >
+                        <span className="admin-switch-pista" aria-hidden="true"></span>
+                        {activa ? "Visible" : "Oculta"}
+                    </button>
+                </div>
+            )}
+
+            <div className="admin-acciones">
                 <button
                     type="button"
-                    className="inicio-admin-btn"
+                    className="admin-btn"
                     onClick={() => abrirEditar(tipo, item)}
                     aria-label={`Editar ${nombre}`}
                     title="Editar"
                 >
                     <i className="bi bi-pencil-fill"></i>
                 </button>
-            )}
-            {puedeEliminar && (
                 <button
                     type="button"
-                    className="inicio-admin-btn peligro"
+                    className="admin-btn peligro"
                     onClick={() => abrirEliminar(tipo, item)}
                     aria-label={`Eliminar ${nombre}`}
                     title="Eliminar"
                 >
                     <i className="bi bi-trash3-fill"></i>
                 </button>
-            )}
-        </div>
+            </div>
+        </>
     );
 }
 
-// Recuadro punteado para agregar un elemento nuevo (según permisos).
+// Recuadro punteado para agregar un elemento nuevo (solo en modo administrador).
 // "columna" es la clase de la columna de Bootstrap que lo envuelve.
 function Agregar({ tipo, texto, columna, compacto = false }) {
-    const { puede, abrirNuevo } = useEdicion();
+    const { admin, abrirNuevo } = useEdicion();
 
-    if (!puede("crear")) return null;
+    if (!admin) return null;
 
     return (
         <div className={columna}>
             <button
                 type="button"
-                className={`inicio-admin-agregar ${compacto ? "compacto" : ""}`}
+                className={`admin-agregar ${compacto ? "compacto" : ""}`}
                 onClick={() => abrirNuevo(tipo)}
             >
                 <i className="bi bi-plus-lg"></i>
@@ -409,334 +182,52 @@ function Agregar({ tipo, texto, columna, compacto = false }) {
 }
 
 /* ============================================================================
-   6. CONTROLES DEL FORMULARIO
-   ----------------------------------------------------------------------------
-   Cada tipo de campo es un componente con las mismas props:
-   { id, valor, onCambiar, autoFocus }.
-   ========================================================================= */
-
-function ControlTexto({ id, valor, onCambiar, autoFocus }) {
-    return (
-        <input
-            id={id}
-            className="inicio-campo-control"
-            type="text"
-            value={valor}
-            onChange={(e) => onCambiar(e.target.value)}
-            autoFocus={autoFocus}
-        />
-    );
-}
-
-function ControlArea({ id, valor, onCambiar }) {
-    return (
-        <textarea
-            id={id}
-            className="inicio-campo-control"
-            rows={3}
-            value={valor}
-            onChange={(e) => onCambiar(e.target.value)}
-        />
-    );
-}
-
-// Elige un icono entre los archivos de la carpeta de iconos.
-function ControlIcono({ id, valor, onCambiar }) {
-    if (ICONOS.length === 0) {
-        return (
-            <small className="inicio-campo-ayuda">
-                No hay iconos todavía. Agregá imágenes en src/assets/{CARPETA_ICONOS}/.
-            </small>
-        );
-    }
-
-    return (
-        <div id={id} className="inicio-admin-iconos" role="radiogroup" aria-label="Icono">
-            {ICONOS.map((icono) => {
-                const nombre = icono.replace(/\.[^.]+$/, "");
-                const activo = valor === icono;
-
-                return (
-                    <button
-                        key={icono}
-                        type="button"
-                        role="radio"
-                        aria-checked={activo}
-                        aria-label={nombre}
-                        title={nombre}
-                        className={`inicio-admin-icono ${activo ? "activo" : ""}`}
-                        onClick={() => onCambiar(icono)}
-                    >
-                        <Icono nombre={icono} loading="eager" />
-                    </button>
-                );
-            })}
-        </div>
-    );
-}
-
-// Acepta un nombre, una ruta, una URL, o una imagen subida desde el dispositivo.
-function ControlImagen({ id, valor, onCambiar }) {
-    const esSubida = /^(blob:|data:)/.test(valor);
-    const noEncontrada = Boolean(valor) && !buscarImagen(valor);
-
-    const elegirArchivo = (evento) => {
-        const archivo = evento.target.files?.[0];
-        if (archivo) onCambiar(URL.createObjectURL(archivo));
-        evento.target.value = "";
-    };
-
-    return (
-        <div className="inicio-admin-imagen">
-            <Imagen nombre={valor} alt="Vista previa de la imagen" loading="eager" />
-
-            <div className="inicio-admin-imagen-controles">
-                <input
-                    id={id}
-                    className="inicio-campo-control"
-                    type="text"
-                    list={`${id}-sugerencias`}
-                    value={esSubida ? "" : valor}
-                    placeholder={esSubida ? "Imagen subida" : "granja.jpg, https://… o /fotos/portada.png"}
-                    onChange={(e) => onCambiar(e.target.value)}
-                    autoComplete="off"
-                />
-                <datalist id={`${id}-sugerencias`}>
-                    {SUGERENCIAS_IMAGEN.map((ruta) => (
-                        <option key={ruta} value={ruta} />
-                    ))}
-                </datalist>
-
-                <label className="inicio-admin-subir">
-                    <i className="bi bi-upload"></i>
-                    Subir imagen
-                    <input type="file" accept="image/*" onChange={elegirArchivo} hidden />
-                </label>
-
-                {noEncontrada && (
-                    <small className="inicio-campo-error">
-                        No se encontró esa imagen en src/assets/. Revisá el nombre o usá una URL.
-                    </small>
-                )}
-            </div>
-        </div>
-    );
-}
-
-const CONTROLES = {
-    texto: ControlTexto,
-    area: ControlArea,
-    icono: ControlIcono,
-    imagen: ControlImagen,
-};
-
-/* ============================================================================
-   7. VENTANA DE EDICIÓN
-   ========================================================================= */
-
-// Ventana para editar, agregar o confirmar la eliminación de un elemento.
-function ModalAdmin({ modal, onGuardar, onEliminar, onCerrar }) {
-    const config = TIPOS[modal.tipo];
-    const [datos, setDatos] = useState(modal.datos);
-    const [error, setError] = useState("");
-
-    // Escape cierra la ventana y se bloquea el scroll de la página mientras está abierta.
-    useEffect(() => {
-        const alPresionar = (evento) => {
-            if (evento.key === "Escape") onCerrar();
-        };
-        const overflowPrevio = document.body.style.overflow;
-
-        document.addEventListener("keydown", alPresionar);
-        document.body.style.overflow = "hidden";
-
-        return () => {
-            document.removeEventListener("keydown", alPresionar);
-            document.body.style.overflow = overflowPrevio;
-        };
-    }, [onCerrar]);
-
-    const cambiarCampo = (nombre, valor) => {
-        setDatos((anterior) => ({ ...anterior, [nombre]: valor }));
-        setError("");
-    };
-
-    const enviar = (evento) => {
-        evento.preventDefault();
-
-        const faltante = config.campos.find(
-            (campo) => campo.requerido && !String(datos[campo.nombre] ?? "").trim()
-        );
-
-        if (faltante) {
-            setError(`Completá el campo “${faltante.etiqueta}”.`);
-            return;
-        }
-
-        onGuardar(modal.tipo, modal.id, limpiarDatos(modal.tipo, datos));
-    };
-
-    const cerrarAlHacerClicFuera = (evento) => {
-        if (evento.target === evento.currentTarget) onCerrar();
-    };
-
-    // Confirmación de eliminación
-    if (modal.modo === "eliminar") {
-        return (
-            <div className="inicio-modal-fondo" onMouseDown={cerrarAlHacerClicFuera}>
-                <div
-                    className="inicio-modal inicio-modal-chico"
-                    role="alertdialog"
-                    aria-modal="true"
-                    aria-labelledby="inicio-modal-titulo"
-                >
-                    <div className="inicio-modal-cuerpo">
-                        <h2 id="inicio-modal-titulo" className="inicio-modal-titulo">
-                            Eliminar {config.singular}
-                        </h2>
-                        <p className="inicio-modal-texto">
-                            ¿Seguro que querés eliminar “{config.nombreDe(modal.datos)}”?
-                            Como los cambios todavía no se guardan, volverá a aparecer al recargar la página.
-                        </p>
-                    </div>
-
-                    <div className="inicio-modal-pie">
-                        <button type="button" className="inicio-btn-secundario" onClick={onCerrar}>
-                            Cancelar
-                        </button>
-                        <button
-                            type="button"
-                            className="inicio-btn-peligro"
-                            onClick={() => onEliminar(modal.tipo, modal.id)}
-                            autoFocus
-                        >
-                            <i className="bi bi-trash3-fill me-2"></i>
-                            Eliminar
-                        </button>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
-    // Formulario de edición / alta
-    const esNuevo = modal.id === null;
-
-    return (
-        <div className="inicio-modal-fondo" onMouseDown={cerrarAlHacerClicFuera}>
-            <form
-                className="inicio-modal"
-                role="dialog"
-                aria-modal="true"
-                aria-labelledby="inicio-modal-titulo"
-                onSubmit={enviar}
-                noValidate
-            >
-                <div className="inicio-modal-encabezado">
-                    <h2 id="inicio-modal-titulo" className="inicio-modal-titulo">
-                        {esNuevo ? "Agregar" : "Editar"} {config.singular}
-                    </h2>
-                    <button
-                        type="button"
-                        className="inicio-admin-btn"
-                        onClick={onCerrar}
-                        aria-label="Cerrar"
-                    >
-                        <i className="bi bi-x-lg"></i>
-                    </button>
-                </div>
-
-                <div className="inicio-modal-cuerpo">
-                    {config.campos.map((campo, indice) => {
-                        const id = `campo-${campo.nombre}`;
-                        const Control = CONTROLES[campo.tipo];
-
-                        return (
-                            <div className="inicio-campo" key={campo.nombre}>
-                                <label htmlFor={id}>{campo.etiqueta}</label>
-
-                                <Control
-                                    id={id}
-                                    valor={datos[campo.nombre] ?? ""}
-                                    onCambiar={(nuevo) => cambiarCampo(campo.nombre, nuevo)}
-                                    autoFocus={indice === 0}
-                                />
-
-                                {campo.ayuda && <small className="inicio-campo-ayuda">{campo.ayuda}</small>}
-                            </div>
-                        );
-                    })}
-
-                    {error && <p className="inicio-campo-error" role="alert">{error}</p>}
-                </div>
-
-                <div className="inicio-modal-pie">
-                    <button type="button" className="inicio-btn-secundario" onClick={onCerrar}>
-                        Cancelar
-                    </button>
-                    <button type="submit" className="inicio-btn-principal">
-                        <i className="bi bi-check-lg me-2"></i>
-                        {esNuevo ? "Agregar" : "Guardar cambios"}
-                    </button>
-                </div>
-            </form>
-        </div>
-    );
-}
-
-/* ============================================================================
-   8. PÁGINA
+   3. PÁGINA
    ========================================================================= */
 
 export default function Inicio() {
-    const { rol, alternarDemo } = useRol();
+    // Por ahora el modo administrador es solo un botón.
+    // Cuando exista el login, "admin" saldrá del usuario y el botón desaparece.
+    const [admin, setAdmin] = useState(false);
 
-    const puede = useCallback((accion) => puedeHacer(rol, accion), [rol]);
-
-    // Hay controles de edición visibles si el rol permite al menos una acción.
-    const editando = puede("crear") || puede("editar") || puede("eliminar");
-
-    // Por ahora el contenido vive solo en memoria: se pierde al recargar.
-    const [contenido, setContenido] = useState(CONTENIDO_INICIAL);
+    // El contenido se lee del navegador (data/inicio.js) y se vuelve a guardar en cada cambio.
+    // Así aparecen acá las tarjetas que se crean desde la página de una publicación.
+    const [contenido, setContenido] = useState(cargarInicio);
 
     // Ventana abierta: { modo: "editar" | "eliminar", tipo, id, datos } o null.
     const [modal, setModal] = useState(null);
 
-    const cerrarModal = useCallback(() => setModal(null), []);
-
-    // Si el rol pierde permisos con la ventana abierta, se cierra.
     useEffect(() => {
-        if (!editando) setModal(null);
-    }, [editando]);
+        if (!guardarInicio(contenido)) {
+            window.alert("No se pudo guardar: el navegador se quedó sin espacio. Probá con una imagen más chica.");
+        }
+    }, [contenido]);
+
+    const cerrarModal = () => setModal(null);
 
     const abrirNuevo = (tipo) =>
-        puede("crear") && setModal({ modo: "editar", tipo, id: null, datos: TIPOS[tipo].nuevo() });
+        setModal({ modo: "editar", tipo, id: null, datos: TIPOS[tipo].nuevo() });
 
     const abrirEditar = (tipo, item) =>
-        puede("editar") && setModal({ modo: "editar", tipo, id: item.id, datos: { ...item } });
+        setModal({ modo: "editar", tipo, id: item.id, datos: { ...item } });
 
     const abrirEliminar = (tipo, item) =>
-        puede("eliminar") && setModal({ modo: "eliminar", tipo, id: item.id, datos: item });
+        setModal({ modo: "eliminar", tipo, id: item.id, datos: item });
 
-    // Agrega (id === null) o modifica un elemento.
-    // Cuando haya backend, es acá donde va la llamada a la API.
+    // Cuando haya backend, es en estas tres funciones donde va la llamada a la API.
     const guardar = (tipo, id, datos) => {
-        if (!puede(id === null ? "crear" : "editar")) return;
-
         const { clave } = TIPOS[tipo];
 
         setContenido((anterior) => ({
             ...anterior,
             [clave]: id === null
-                ? [...anterior[clave], { ...datos, id: crearId(tipo) }]
+                ? [...anterior[clave], { ...datos, id: crearId(clave) }]
                 : anterior[clave].map((item) => (item.id === id ? { ...item, ...datos } : item)),
         }));
         setModal(null);
     };
 
     const eliminar = (tipo, id) => {
-        if (!puede("eliminar")) return;
-
         const { clave } = TIPOS[tipo];
 
         setContenido((anterior) => ({
@@ -746,18 +237,34 @@ export default function Inicio() {
         setModal(null);
     };
 
-    const alternarModoDemo = () => {
-        alternarDemo();
+    const alternarActiva = (tipo, item) => {
+        const { clave } = TIPOS[tipo];
+
+        setContenido((anterior) => ({
+            ...anterior,
+            [clave]: anterior[clave].map((otro) =>
+                otro.id === item.id ? { ...otro, activa: !estaActiva(otro) } : otro
+            ),
+        }));
+    };
+
+    const alternarAdmin = () => {
+        setAdmin((activo) => !activo);
         setModal(null);
     };
 
     const { secciones, novedades, construcciones } = contenido;
 
+    // Los visitantes solo ven las novedades activas; el administrador ve todas.
+    const novedadesVisibles = admin ? novedades : novedades.filter(estaActiva);
+
     return (
-        <EdicionContext.Provider value={{ editando, puede, abrirNuevo, abrirEditar, abrirEliminar }}>
+        <EdicionContext.Provider
+            value={{ admin, abrirNuevo, abrirEditar, abrirEliminar, alternarActiva }}
+        >
             <Header />
 
-            <main className={`inicio ${editando ? "inicio-modo-admin" : ""}`}>
+            <main className={`inicio ${admin ? "inicio-modo-admin" : ""}`}>
                 <section
                     className="inicio-hero"
                     style={HERO_URL ? { "--inicio-hero-imagen": `url("${HERO_URL}")` } : undefined}
@@ -797,7 +304,7 @@ export default function Inicio() {
 
                 <div className="container inicio-contenido">
                     {/* ---------- Secciones ---------- */}
-                    {(editando || secciones.length > 0) && (
+                    {(admin || secciones.length > 0) && (
                         <section className="inicio-seccion">
                             <h2 className="inicio-titulo">
                                 <span></span>
@@ -844,7 +351,7 @@ export default function Inicio() {
                     )}
 
                     {/* ---------- Novedades ---------- */}
-                    {(editando || novedades.length > 0) && (
+                    {(admin || novedadesVisibles.length > 0) && (
                         <section className="inicio-seccion">
                             <div className="inicio-titulo-fila">
                                 <h2 className="inicio-titulo">
@@ -859,9 +366,11 @@ export default function Inicio() {
                             </div>
 
                             <div className="row g-3">
-                                {novedades.map((novedad) => (
+                                {novedadesVisibles.map((novedad) => (
                                     <div className="col-12 col-md-6 col-lg-4" key={novedad.id}>
-                                        <article className="card inicio-card-novedad h-100">
+                                        <article
+                                            className={`card inicio-card-novedad h-100 ${estaActiva(novedad) ? "" : "inactiva"}`}
+                                        >
                                             <Controles tipo="novedad" item={novedad} />
 
                                             <Enlace to={novedad.enlace} className="inicio-novedad-imagen">
@@ -944,7 +453,7 @@ export default function Inicio() {
                                     </Enlace>
                                 </div>
 
-                                {construcciones.length === 0 && !editando && (
+                                {construcciones.length === 0 && !admin && (
                                     <p className="inicio-vacio">Todavía no hay construcciones para mostrar.</p>
                                 )}
 
@@ -990,38 +499,52 @@ export default function Inicio() {
                     </section>
                 </div>
 
-                {/* ---------- Panel flotante ----------
-                    El botón solo existe en modo demo. Con login real desaparece
-                    y los controles se muestran solos según el rol. */}
-                {(MODO_DEMO || editando) && (
-                    <div className="inicio-admin-panel">
-                        {editando && (
-                            <p className="inicio-admin-aviso">
-                                <i className="bi bi-info-circle-fill"></i>
-                                Los cambios no se guardan: se pierden al recargar.
-                            </p>
-                        )}
+                {/* ---------- Botón del modo administrador ---------- */}
+                <div className="admin-panel">
+                    {admin && (
+                        <p className="admin-aviso">
+                            <i className="bi bi-info-circle-fill"></i>
+                            Modo de ejemplo: los cambios se guardan solo en este navegador.
+                        </p>
+                    )}
 
-                        {MODO_DEMO && (
-                            <button
-                                type="button"
-                                className={`inicio-admin-toggle ${editando ? "activo" : ""}`}
-                                aria-pressed={editando}
-                                onClick={alternarModoDemo}
-                            >
-                                <i className={`bi ${editando ? "bi-shield-check" : "bi-shield-lock"}`}></i>
-                                {editando ? "Salir del modo administrador" : "Modo administrador"}
-                            </button>
-                        )}
-                    </div>
+                    <button
+                        type="button"
+                        className={`admin-toggle ${admin ? "activo" : ""}`}
+                        aria-pressed={admin}
+                        onClick={alternarAdmin}
+                    >
+                        <i className={`bi ${admin ? "bi-shield-check" : "bi-shield-lock"}`}></i>
+                        {admin ? "Salir del modo administrador" : "Modo administrador"}
+                    </button>
+                </div>
+
+                {modal && modal.modo === "eliminar" && (
+                    <ModalConfirmar
+                        key={`eliminar-${modal.id}`}
+                        titulo={`Eliminar ${TIPOS[modal.tipo].singular}`}
+                        mensaje={
+                            `¿Seguro que querés eliminar “${TIPOS[modal.tipo].nombreDe(modal.datos)}”? ` +
+                            "Esta acción no se puede deshacer." +
+                            (modal.datos.origenId
+                                ? " La publicación original no se borra: podés volver a destacarla cuando quieras."
+                                : "")
+                        }
+                        textoConfirmar="Eliminar"
+                        peligro
+                        onConfirmar={() => eliminar(modal.tipo, modal.id)}
+                        onCerrar={cerrarModal}
+                    />
                 )}
 
-                {modal && (
-                    <ModalAdmin
-                        key={`${modal.modo}-${modal.tipo}-${modal.id ?? "nuevo"}`}
-                        modal={modal}
-                        onGuardar={guardar}
-                        onEliminar={eliminar}
+                {modal && modal.modo === "editar" && (
+                    <ModalFormulario
+                        key={`editar-${modal.tipo}-${modal.id ?? "nuevo"}`}
+                        titulo={`${modal.id === null ? "Agregar" : "Editar"} ${TIPOS[modal.tipo].singular}`}
+                        campos={TIPOS[modal.tipo].campos}
+                        datos={modal.datos}
+                        textoGuardar={modal.id === null ? "Agregar" : "Guardar cambios"}
+                        onGuardar={(datos) => guardar(modal.tipo, modal.id, datos)}
                         onCerrar={cerrarModal}
                     />
                 )}

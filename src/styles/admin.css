@@ -1,0 +1,764 @@
+/* =========================================================
+   admin.css · Wiki-Craft
+   Estilos compartidos del modo administrador: panel flotante, botones sobre
+   las tarjetas, interruptor Visible/Oculta, ventanas y formularios.
+
+   Se importa desde Inicio y desde cualquier página que use <DestacarEnInicio />.
+   Es independiente de index.css: define sus propios tokens (--admin-*) en :root,
+   con los mismos valores que usa Inicio.
+   ========================================================= */
+
+:root {
+    --admin-dur: 480ms;
+    --admin-dur-corta: 250ms;
+    --admin-ease: cubic-bezier(0.22, 0.8, 0.24, 1);
+    --admin-radio: 22px;
+    --admin-radio-interno: 14px;
+    --admin-borde: 1.5px;
+    --admin-borde-color: color-mix(in srgb, var(--texto) 10%, transparent);
+    --admin-texto-suave: color-mix(in srgb, var(--texto) 72%, transparent);
+    --admin-texto-tenue: color-mix(in srgb, var(--texto) 62%, transparent);
+    --admin-verde-texto: color-mix(in srgb, var(--verde-hover) 78%, var(--texto));
+    --admin-sombra: 0 2px 14px -4px rgba(48, 47, 42, 0.12), 0 0 0 0 rgba(29, 181, 60, 0);
+    --admin-sombra-hover: 0 18px 40px -14px rgba(48, 47, 42, 0.3), 0 4px 14px -4px rgba(29, 181, 60, 0.2);
+}
+
+/* Contorno punteado que indica qué elementos se pueden editar. */
+.inicio-modo-admin .inicio-card-seccion,
+.inicio-modo-admin .inicio-card-novedad,
+.inicio-modo-admin .inicio-construccion {
+    outline: 2px dashed color-mix(in srgb, var(--verde) 45%, transparent);
+    outline-offset: 4px;
+}
+
+/* ---------- Panel flotante (abajo a la derecha) ---------- */
+
+.admin-panel {
+    position: fixed;
+    right: clamp(16px, 2.5vw, 32px);
+    bottom: clamp(16px, 2.5vw, 32px);
+    z-index: 900;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+    max-width: calc(100vw - 32px);
+}
+
+.admin-aviso {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    padding: 9px 16px;
+    border: var(--admin-borde) solid var(--verde-claro);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--blanco) 90%, transparent);
+    -webkit-backdrop-filter: blur(14px) saturate(1.3);
+    backdrop-filter: blur(14px) saturate(1.3);
+    box-shadow: var(--admin-sombra);
+    color: var(--admin-texto-suave);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    animation: admin-aparece var(--admin-dur) var(--admin-ease) backwards;
+}
+
+.admin-aviso i {
+    color: var(--verde);
+}
+
+.admin-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 48px;
+    padding: 0 22px;
+    border: var(--admin-borde) solid color-mix(in srgb, var(--texto) 16%, transparent);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--blanco) 90%, transparent);
+    -webkit-backdrop-filter: blur(14px) saturate(1.3);
+    backdrop-filter: blur(14px) saturate(1.3);
+    box-shadow: var(--admin-sombra);
+    color: var(--texto);
+    font: inherit;
+    font-size: 0.875rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition:
+        background-color var(--admin-dur-corta) var(--admin-ease),
+        border-color var(--admin-dur-corta) var(--admin-ease),
+        color var(--admin-dur-corta) var(--admin-ease),
+        box-shadow var(--admin-dur) var(--admin-ease),
+        transform var(--admin-dur) var(--admin-ease);
+}
+
+.admin-toggle:hover {
+    border-color: var(--verde);
+    box-shadow: var(--admin-sombra-hover);
+    color: var(--verde-hover);
+    transform: translateY(-2px);
+}
+
+.admin-toggle:active {
+    transform: translateY(0) scale(0.97);
+    transition-duration: 120ms;
+}
+
+.admin-toggle.activo {
+    border-color: var(--verde);
+    background: var(--verde);
+    color: var(--blanco);
+}
+
+.admin-toggle.activo:hover {
+    border-color: var(--verde-hover);
+    background: var(--verde-hover);
+    color: var(--blanco);
+}
+
+/* ---------- Botones sobre cada elemento ---------- */
+
+.admin-acciones {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 3;
+    display: flex;
+    gap: 6px;
+    animation: admin-aparece var(--admin-dur) var(--admin-ease) backwards;
+}
+
+.inicio-construccion-item .admin-acciones {
+    top: 6px;
+    right: 6px;
+}
+
+.admin-btn {
+    display: grid;
+    flex-shrink: 0;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border: var(--admin-borde) solid color-mix(in srgb, var(--texto) 12%, transparent);
+    border-radius: 50%;
+    background: var(--blanco);
+    box-shadow: 0 6px 14px -6px rgba(48, 47, 42, 0.35);
+    color: var(--texto);
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition:
+        background-color var(--admin-dur-corta) var(--admin-ease),
+        border-color var(--admin-dur-corta) var(--admin-ease),
+        color var(--admin-dur-corta) var(--admin-ease),
+        transform var(--admin-dur) var(--admin-ease);
+}
+
+.admin-btn:hover {
+    border-color: var(--verde);
+    background: var(--verde-claro);
+    color: var(--verde-hover);
+    transform: scale(1.08);
+}
+
+.admin-btn.peligro:hover {
+    border-color: var(--marron);
+    background: var(--marron);
+    color: var(--blanco);
+}
+
+.admin-btn:active {
+    transform: scale(0.94);
+    transition-duration: 120ms;
+}
+
+@keyframes admin-aparece {
+    from {
+        opacity: 0;
+        transform: translateY(8px) scale(0.96);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+/* ---------- Recuadro "Agregar" ---------- */
+
+.admin-agregar {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    height: 100%;
+    min-height: 200px;
+    padding: 20px;
+    border: 2px dashed color-mix(in srgb, var(--verde) 50%, transparent);
+    border-radius: var(--admin-radio);
+    background: color-mix(in srgb, var(--verde-claro) 35%, transparent);
+    color: var(--verde-hover);
+    font: inherit;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition:
+        background-color var(--admin-dur) var(--admin-ease),
+        border-color var(--admin-dur) var(--admin-ease),
+        color var(--admin-dur) var(--admin-ease),
+        transform var(--admin-dur) var(--admin-ease);
+}
+
+.admin-agregar i {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--verde-claro);
+    font-size: 1.1rem;
+    transition:
+        background-color var(--admin-dur) var(--admin-ease),
+        color var(--admin-dur) var(--admin-ease),
+        transform var(--admin-dur) var(--admin-ease);
+}
+
+.admin-agregar:hover {
+    border-style: solid;
+    border-color: var(--verde);
+    background: var(--verde-claro);
+    transform: translateY(-3px);
+}
+
+.admin-agregar:hover i {
+    background: var(--verde);
+    color: var(--blanco);
+    transform: rotate(90deg);
+}
+
+.admin-agregar.compacto {
+    min-height: 96px;
+    padding: 8px;
+    border-radius: var(--admin-radio-interno);
+    font-size: 0.8125rem;
+}
+
+.admin-agregar.compacto i {
+    width: 30px;
+    height: 30px;
+    font-size: 0.9rem;
+}
+
+/* ---------- Botones de las ventanas ---------- */
+
+.admin-boton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 46px;
+    padding: 11px 24px;
+    border: var(--admin-borde) solid transparent;
+    border-radius: 999px;
+    font: inherit;
+    font-size: 0.875rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition:
+        background-color var(--admin-dur-corta) var(--admin-ease),
+        border-color var(--admin-dur-corta) var(--admin-ease),
+        color var(--admin-dur-corta) var(--admin-ease),
+        box-shadow var(--admin-dur) var(--admin-ease),
+        transform var(--admin-dur) var(--admin-ease);
+}
+
+.admin-boton:hover {
+    transform: translateY(-2px);
+}
+
+.admin-boton:active {
+    transform: translateY(0) scale(0.97);
+    transition-duration: 120ms;
+}
+
+.admin-boton.principal {
+    border-color: var(--verde);
+    background: var(--verde);
+    color: var(--blanco);
+    box-shadow:
+        0 6px 16px -8px color-mix(in srgb, var(--verde) 55%, transparent),
+        0 0 0 0 color-mix(in srgb, var(--verde) 0%, transparent);
+}
+
+.admin-boton.principal:hover {
+    border-color: var(--verde-hover);
+    background: var(--verde-hover);
+    box-shadow:
+        0 12px 24px -8px color-mix(in srgb, var(--verde) 65%, transparent),
+        0 0 0 4px color-mix(in srgb, var(--verde) 16%, transparent);
+}
+
+.admin-boton.secundario {
+    border-color: color-mix(in srgb, var(--texto) 16%, transparent);
+    background: color-mix(in srgb, var(--blanco) 80%, transparent);
+    color: var(--texto);
+}
+
+.admin-boton.secundario:hover {
+    border-color: var(--verde);
+    background: var(--blanco);
+    color: var(--verde-hover);
+}
+
+.admin-boton.peligro {
+    border-color: var(--marron);
+    background: var(--marron);
+    color: var(--blanco);
+}
+
+.admin-boton.peligro:hover {
+    background: color-mix(in srgb, var(--marron) 82%, var(--texto));
+    box-shadow: 0 12px 24px -8px color-mix(in srgb, var(--marron) 65%, transparent);
+}
+
+.admin-obligatorio,
+.admin-campo-obligatorio {
+    color: var(--marron);
+}
+
+/* ---------- Interruptor Visible / Oculta (arriba a la izquierda de la tarjeta) ---------- */
+
+.admin-estado {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    z-index: 3;
+    animation: admin-aparece var(--admin-dur) var(--admin-ease) backwards;
+}
+
+.admin-switch {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 14px 5px 6px;
+    border: var(--admin-borde) solid color-mix(in srgb, var(--texto) 14%, transparent);
+    border-radius: 999px;
+    background: var(--blanco);
+    box-shadow: 0 6px 14px -6px rgba(48, 47, 42, 0.35);
+    color: var(--admin-texto-suave);
+    font: inherit;
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition:
+        background-color var(--admin-dur-corta) var(--admin-ease),
+        border-color var(--admin-dur-corta) var(--admin-ease),
+        color var(--admin-dur-corta) var(--admin-ease),
+        transform var(--admin-dur) var(--admin-ease);
+}
+
+.admin-switch:hover {
+    border-color: var(--verde);
+    transform: translateY(-1px);
+}
+
+.admin-switch:active {
+    transform: scale(0.96);
+    transition-duration: 120ms;
+}
+
+.admin-switch-pista {
+    position: relative;
+    flex-shrink: 0;
+    width: 34px;
+    height: 20px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--texto) 22%, transparent);
+    transition: background-color var(--admin-dur) var(--admin-ease);
+}
+
+.admin-switch-pista::after {
+    content: "";
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--blanco);
+    box-shadow: 0 1px 3px rgba(48, 47, 42, 0.35);
+    transition: transform var(--admin-dur) var(--admin-ease);
+}
+
+.admin-switch.activo {
+    border-color: color-mix(in srgb, var(--verde) 55%, transparent);
+    color: var(--admin-verde-texto);
+}
+
+.admin-switch.activo .admin-switch-pista {
+    background: var(--verde);
+}
+
+.admin-switch.activo .admin-switch-pista::after {
+    transform: translateX(14px);
+}
+
+/* Tarjeta oculta: se ve apagada, pero los controles siguen claros. */
+.inicio-card-novedad .inicio-novedad-imagen,
+.inicio-card-novedad .card-body {
+    transition:
+        opacity var(--admin-dur) var(--admin-ease),
+        filter var(--admin-dur) var(--admin-ease);
+}
+
+.inicio-card-novedad.inactiva {
+    border-style: dashed;
+}
+
+.inicio-card-novedad.inactiva .inicio-novedad-imagen,
+.inicio-card-novedad.inactiva .card-body {
+    opacity: 0.5;
+    filter: grayscale(0.7);
+}
+
+/* ---------- Botón "Destacar en Inicio" (página de cada publicación) ---------- */
+
+.admin-destacar {
+    margin: 20px 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px 16px;
+}
+
+.admin-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 16px;
+    border: var(--admin-borde) solid color-mix(in srgb, var(--marron) 35%, transparent);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--marron) 10%, transparent);
+    color: var(--marron);
+    font-size: 0.8125rem;
+    font-weight: 700;
+}
+
+.admin-chip.activa {
+    border-color: color-mix(in srgb, var(--verde) 45%, transparent);
+    background: var(--verde-claro);
+    color: var(--admin-verde-texto);
+}
+
+.admin-enlace {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--verde-hover);
+    font-size: 0.875rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: color var(--admin-dur-corta) var(--admin-ease), gap var(--admin-dur) var(--admin-ease);
+}
+
+.admin-enlace:hover {
+    gap: 10px;
+    color: var(--admin-verde-texto);
+}
+
+.admin-destacar .admin-campo-error {
+    flex-basis: 100%;
+}
+
+/* ---------- Ventana modal ---------- */
+
+.admin-modal-fondo {
+    position: fixed;
+    inset: 0;
+    z-index: 1100; /* por encima del header (1000) */
+    display: grid;
+    place-items: center;
+    padding: 16px;
+    background: color-mix(in srgb, var(--texto) 45%, transparent);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    animation: admin-modal-fondo-entrada var(--admin-dur-corta) var(--admin-ease) backwards;
+}
+
+.admin-modal {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 560px;
+    max-height: calc(100vh - 32px);
+    max-height: calc(100dvh - 32px);
+    overflow: hidden;
+    border: var(--admin-borde) solid var(--verde-claro);
+    border-radius: 28px;
+    background: var(--blanco);
+    box-shadow: 0 32px 64px -20px rgba(48, 47, 42, 0.45), 0 6px 18px -6px rgba(48, 47, 42, 0.2);
+    animation: admin-modal-entrada var(--admin-dur) var(--admin-ease) backwards;
+}
+
+.admin-modal-chico {
+    max-width: 440px;
+}
+
+.admin-modal-encabezado {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 20px 24px 0;
+}
+
+.admin-modal-titulo {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 800;
+}
+
+.admin-modal-cuerpo {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 20px 24px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+.admin-modal-texto {
+    margin: 0;
+    color: var(--admin-texto-suave);
+    font-size: 0.9375rem;
+    line-height: 1.6;
+}
+
+.admin-modal-pie {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 16px 24px 20px;
+    border-top: var(--admin-borde) solid var(--admin-borde-color);
+}
+
+@keyframes admin-modal-fondo-entrada {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+@keyframes admin-modal-entrada {
+    from {
+        opacity: 0;
+        transform: translateY(18px) scale(0.97);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+/* ---------- Campos del formulario (mismo estilo que el buscador del header) ---------- */
+
+.admin-campo {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.admin-campo label {
+    font-size: 0.8125rem;
+    font-weight: 700;
+}
+
+.admin-campo-control {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 44px;
+    padding: 10px 16px;
+    border: var(--admin-borde) solid color-mix(in srgb, var(--texto) 16%, transparent);
+    border-radius: var(--admin-radio-interno);
+    background-color: rgba(255, 255, 255, 0.65);
+    color: var(--texto);
+    font: inherit;
+    font-size: 0.94rem;
+    outline: none;
+    transition:
+        border-color var(--admin-dur-corta) var(--admin-ease),
+        background-color var(--admin-dur-corta) var(--admin-ease),
+        box-shadow var(--admin-dur-corta) var(--admin-ease);
+}
+
+textarea.admin-campo-control {
+    resize: vertical;
+    line-height: 1.5;
+}
+
+.admin-campo-control:hover {
+    border-color: color-mix(in srgb, var(--texto) 28%, transparent);
+}
+
+.admin-campo-control:focus {
+    border-color: var(--verde);
+    background-color: var(--blanco);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--verde) 16%, transparent);
+}
+
+.admin-campo-ayuda {
+    color: var(--admin-texto-tenue);
+    font-size: 0.75rem;
+}
+
+.admin-campo-error {
+    margin: 0;
+    padding: 10px 14px;
+    border-radius: var(--admin-radio-interno);
+    background: color-mix(in srgb, var(--marron) 12%, transparent);
+    color: var(--marron);
+    font-size: 0.875rem;
+    font-weight: 600;
+    animation: admin-aparece var(--admin-dur-corta) var(--admin-ease) backwards;
+}
+
+/* Selector de icono */
+.admin-iconos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.admin-icono {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: var(--admin-borde) solid color-mix(in srgb, var(--texto) 14%, transparent);
+    border-radius: var(--admin-radio-interno);
+    background: transparent;
+    color: var(--texto);
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition:
+        background-color var(--admin-dur-corta) var(--admin-ease),
+        border-color var(--admin-dur-corta) var(--admin-ease),
+        color var(--admin-dur-corta) var(--admin-ease),
+        transform var(--admin-dur) var(--admin-ease);
+}
+
+.admin-icono:hover {
+    border-color: var(--verde);
+    background: var(--verde-claro);
+    color: var(--verde-hover);
+    transform: translateY(-2px);
+}
+
+.admin-icono.activo {
+    border-color: var(--verde);
+    background: var(--verde);
+    color: var(--blanco);
+}
+
+/* Selector de imagen con vista previa */
+.admin-imagen {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.admin-imagen img {
+    flex-shrink: 0;
+    width: 104px;
+    height: 72px;
+    border-radius: var(--admin-radio-interno);
+    background: var(--verde-claro);
+    object-fit: cover;
+}
+
+.admin-imagen-controles {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+}
+
+.admin-subir {
+    display: inline-flex;
+    align-items: center;
+    align-self: flex-start;
+    gap: 8px;
+    padding: 8px 16px;
+    border: var(--admin-borde) solid color-mix(in srgb, var(--texto) 16%, transparent);
+    border-radius: 999px;
+    color: var(--texto);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition:
+        background-color var(--admin-dur-corta) var(--admin-ease),
+        border-color var(--admin-dur-corta) var(--admin-ease),
+        color var(--admin-dur-corta) var(--admin-ease);
+}
+
+.admin-subir:hover {
+    border-color: var(--verde);
+    background: var(--verde-claro);
+    color: var(--verde-hover);
+}
+
+@media (max-width: 575.98px) {
+    .admin-imagen {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .admin-imagen img {
+        width: 100%;
+        height: 140px;
+    }
+
+    .admin-modal-pie > * {
+        flex: 1 1 auto;
+    }
+
+    /* En móvil el aviso ocupa menos: solo el botón principal queda visible. */
+    .admin-aviso {
+        border-radius: 18px;
+    }
+}
+
+/* ---------- Foco visible (teclado) ---------- */
+
+.admin-panel button:focus-visible,
+.admin-estado button:focus-visible,
+.admin-acciones button:focus-visible,
+.admin-agregar:focus-visible,
+.admin-modal button:focus-visible,
+.admin-destacar button:focus-visible,
+.admin-enlace:focus-visible,
+.admin-subir:focus-within {
+    outline: 2px solid var(--verde);
+    outline-offset: 3px;
+}
+
+/* ---------- Menos movimiento ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+    .admin-panel *,
+    .admin-estado *,
+    .admin-acciones *,
+    .admin-agregar,
+    .admin-agregar *,
+    .admin-modal-fondo,
+    .admin-modal-fondo *,
+    .admin-destacar *,
+    .inicio-card-novedad .inicio-novedad-imagen,
+    .inicio-card-novedad .card-body {
+        animation: none !important;
+        transition-duration: 0.01ms !important;
+        transition-delay: 0s !important;
+    }
+}

@@ -7,6 +7,7 @@ import Header from '../components/header';
 import Footer from '../components/Footer';
 import '../styles/Publicacion.css';
 import { postsIniciales } from './comunidad';
+import DestacarEnInicio from '../components/admin/DestacarEnInicio';
 
 const CLAVE_POSTS = 'wikicraft_comunidad_posts_v1';
 const CLAVE_DENUNCIAS = 'wikicraft_comunidad_denuncias_v1';
@@ -190,6 +191,17 @@ function Publicacion() {
 
           {esPropia(post) && !editandoPost && (
             <div className="publicacion-acciones-propias">
+{/* TODO: mostrar solo si el usuario es administrador */}
+<DestacarEnInicio
+  publicacion={{
+    id: post.id,
+    descripcion: post.contenido,
+    imagen: post.imagen,
+    autor: post.usuario,
+    categoria: post.categoria,
+    enlace: `/publicacion/${post.id}`,
+  }}
+/>
               <span>Tu publicación</span>
               <button onClick={() => { setTextoPost(post.contenido); setEditandoPost(true); }}>✎ Editar</button>
               <button className="peligro" onClick={borrarPublicacion}>⌫ Eliminar</button>
