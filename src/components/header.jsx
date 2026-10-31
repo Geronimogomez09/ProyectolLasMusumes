@@ -4,7 +4,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 import "../styles/variables.css";
-import "../styles/header.css";
+import "../styles/Header.css";
 
 // Distancia de scroll necesaria para activar el header compacto.
 const LIMITE_SCROLL = 300;
@@ -13,6 +13,7 @@ const LIMITE_SCROLL = 300;
 const RUTAS_SIN_NAVBAR = [
     "/login",
     "/registro",
+    "/tienda",
     "/historia",
 ];
 
@@ -23,7 +24,6 @@ const ENLACES = [
     { nombre: "Música", ruta: "/musica" },
     { nombre: "Tienda", ruta: "/tienda" },
     { nombre: "Historia", ruta: "/historia" },
-    { nombre: "Nosotros", ruta: "/nosotros" },
     { nombre: "Versiones", ruta: "/versiones" },
 ];
 
@@ -99,13 +99,13 @@ function Header() {
             onMouseEnter={() => setHoverActivo(true)}
             onMouseLeave={() => setHoverActivo(false)}
         >
-            <nav className="header-bar" aria-label="Navegación principal">
-                <div className="header-container">
+            <nav className="navbar navbar-expand-lg">
+                <div className="container-fluid header-container">
 
                     {/* Logo y botón del menú móvil. */}
                     <div className="header-top-row">
                         <Link
-                            className="header-logo"
+                            className="navbar-brand header-logo"
                             to="/"
                             aria-label="Wiki-Craft, página principal"
                             onClick={() => {
@@ -118,7 +118,7 @@ function Header() {
                         </Link>
 
                         <button
-                            className="header-toggler"
+                            className="navbar-toggler header-toggler"
                             type="button"
                             aria-controls="navbarPrincipal"
                             aria-expanded={menuAbierto}

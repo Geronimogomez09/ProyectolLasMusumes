@@ -1,20 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rajdhani:wght@600;700&display=swap');
-
-@font-face {
-    font-family: 'MinecraftSeven';
-    src: url('/fonts/Minecraft.ttf') format('truetype');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-}
-
-@font-face {
-    font-family: 'Minecrafttitulo';
-    src: url('/fonts/MinecraftV.ttf') format('truetype');
-    font-style: normal;
-    font-display: swap;
-}
-
 /* =========================================
    GENERAL
 ========================================= */
@@ -26,22 +9,6 @@
     font-family: Arial, Helvetica, sans-serif;
 }
 
-.tienda {
-    font-family: 'Segoe UI', Roboto, sans-serif;
-}
-
-.tienda-main * {
-    font-family: inherit;
-}
-
-.tienda-main-detalle {
-    min-height: 100vh;
-    background-color: #fff;
-    background-image: url("/fondos/fondo-productos.png");
-    background-repeat: repeat;
-    background-position: center top;
-    background-size: 660px auto;
-}
 
 body {
     background: #eeeeee;
@@ -54,6 +21,72 @@ button {
 }
 
 
+/* =========================================
+   HEADER
+========================================= */
+
+.tienda-header {
+
+    height: 65px;
+
+    background: white;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    padding: 0 6%;
+
+    box-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.12);
+
+    position: sticky;
+
+    top: 0;
+
+    z-index: 100;
+
+}
+
+
+.logo {
+
+    font-size: 25px;
+
+    font-weight: bold;
+
+    color: #328c2d;
+
+}
+
+
+.tienda-header nav {
+
+    display: flex;
+
+    gap: 25px;
+
+}
+
+
+.tienda-header nav a {
+
+    text-decoration: none;
+
+    color: #333;
+
+    font-weight: bold;
+
+}
+
+
+.tienda-header nav a:hover {
+
+    color: #328c2d;
+
+}
 
 
 /* =========================================
@@ -196,12 +229,6 @@ button {
 
     font-weight: bold;
 
-    display: flex;
-
-    align-items: center;
-
-    gap: 8px;
-
     box-shadow:
         0 3px 10px rgba(0, 0, 0, 0.18);
 
@@ -217,398 +244,117 @@ button {
 
 .carrito-btn span {
 
-    margin-left: 0;
+    margin-left: 5px;
 
-}
-
-.carrito-btn-icono,
-.carrito-header-icono,
-.pago-header-icono,
-.pago-paso-icono,
-.pago-resumen-icono,
-.pago-producto-icono,
-.detalle-agregar-icono,
-.detalle-beneficio-icono,
-.imagen-vacia-icono {
-    width: 22px;
-    height: 22px;
-    object-fit: contain;
-    image-rendering: pixelated;
-    display: inline-block;
-}
-
-.minecraft-icon {
-    display: inline-block;
-    object-fit: contain;
-    image-rendering: pixelated;
-}
-
-.minecraft-check {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background: #45a24a;
-    color: #fff;
-    font-size: 14px;
-    font-weight: 900;
-    line-height: 1;
-    box-shadow: 0 2px 8px rgba(69, 162, 74, 0.35);
-}
-
-.minecraft-lock {
-    display: inline-block;
-    width: 20px;
-    height: 20px;
-    color: #2d6a35;
 }
 
 
 /* =========================================
    BANNER
 ========================================= */
-@keyframes tienda-entrada {
-  from {
-    opacity: 0;
-    transform: translateY(28px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
 
 .banner {
-  position: relative;
-  margin-top: calc(var(--header-alto, 80px) - 20px);
-  min-height: 640px;
-  background-color: #121417; /* Fondo oscuro tipo la foto */
-  display: flex;
-  justify-content: center;
-  align-items: stretch;
-  padding: 0;
-  overflow: hidden;
-  animation: tienda-entrada 700ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
-}
 
-.banner-pista {
-  position: absolute;
-  inset: 0 auto 0 0;
-  display: flex;
-  width: calc(100% * var(--cantidad-slides));
-  transition: transform 1.5s cubic-bezier(0.65, 0, 0.35, 1);
-  will-change: transform;
-}
+    min-height: 400px;
 
-.banner-pista.sin-transicion {
-  transition: none;
-}
-
-.banner-contenido {
-  position: relative;
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  flex: 0 0 calc(100% / var(--cantidad-slides));
-  width: calc(100% / var(--cantidad-slides));
-  min-width: 0;
-  padding: 40px 8%;
-}
-
-/* TEXTOS A LA IZQUIERDA */
-.banner-text {
-  position: absolute;
-  left: 8%;
-  z-index: 1;
-  width: min(500px, 58%);
-  color: white;
-  text-align: left;
-}
-
-.banner-text small {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 11px;
-  letter-spacing: 2px;
-  color: #ffffff;
-  display: block;
-  width: fit-content;
-  max-width: 100%;
-  margin-bottom: 12px;
-  padding: 8px 10px;
-  border-radius: 3px;
-  background: rgba(12, 16, 14, 0.72);
-  text-shadow: 1px 2px 3px rgba(0, 0, 0, 0.85);
-}
-
-.banner-text h1 {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 36px;
-  line-height: 1.2;
-  margin: 15px 0;
-  color: #ffffff;
-  text-transform: uppercase;
-  text-shadow: 3px 3px 0px #000;
-}
-
-.banner-text p {
-  font-family: 'Rajdhani', sans-serif;
-  font-size: 19px;
-  line-height: 1.4;
-  color: #ffffff;
-  width: fit-content;
-  max-width: 100%;
-  margin-bottom: 25px;
-  padding: 7px 10px;
-  border-radius: 3px;
-  background: rgba(12, 16, 14, 0.68);
-  text-shadow: 1px 2px 3px rgba(0, 0, 0, 0.85);
-}
-
-/* BOTÓN VERDE */
-.banner-btn {
-  border: none;
-    background: #328c2d;
-  color: #000000;
-  padding: 13px 28px;
-  border-radius: 3px;
-  font-family: 'Rajdhani', sans-serif;
-  font-weight: 700;
-  font-size: 16px;
-  letter-spacing: 1px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-    box-shadow: 0 4px 12px rgba(50, 140, 45, 0.35);
-}
-
-.banner-btn:hover {
-    background: #256c21;
-  transform: translateY(-2px);
-}
-
-/* IMAGEN / MODELOS A LA DERECHA */
-.banner-imagen-container {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  pointer-events: none;
-  overflow: hidden;
-}
-
-.banner-imagen-container::after {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    90deg,
-    rgba(18, 20, 23, 0.82) 0%,
-    rgba(18, 20, 23, 0.45) 16%,
-    rgba(18, 20, 23, 0.1) 28%,
-    rgba(18, 20, 23, 0) 40%,
-    rgba(18, 20, 23, 0) 100%
-  );
-  content: "";
-}
-
-.banner-img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
-}
-
-.tienda-catalogo > * {
-  animation: tienda-entrada 700ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
-}
-
-.tienda-catalogo > :nth-child(1) { animation-delay: 180ms; }
-.tienda-catalogo > :nth-child(2) { animation-delay: 300ms; }
-.tienda-catalogo > :nth-child(3) { animation-delay: 420ms; }
-.tienda-catalogo > :nth-child(4) { animation-delay: 540ms; }
-.tienda-catalogo > :nth-child(5) { animation-delay: 660ms; }
-
-.tienda-promo {
-    position: relative;
-    display: flex;
-    align-items: center;
-    min-height: clamp(360px, 42vw, 620px);
-    margin: 0;
-    padding: 48px clamp(28px, 5vw, 72px);
-    overflow: hidden;
-    background-color: #17130e;
-    background-image:
+    background:
         linear-gradient(
             90deg,
-            rgba(12, 10, 7, 1) 0%,
-            rgba(12, 10, 7, 1) 34%,
-            rgba(12, 10, 7, 0.9) 44%,
-            rgba(12, 10, 7, 0.48) 56%,
-            rgba(12, 10, 7, 0) 70%
+            rgba(0,0,0,0.05),
+            rgba(0,0,0,0.65)
         ),
-        url("/fondos/banner-peluche-creeper-limpio.png");
-    background-position: center, center 42%;
+        url("https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=1600&q=80");
+
     background-size: cover;
+
+    background-position: center;
+
+    display: flex;
+
+    justify-content: flex-end;
+
+    align-items: center;
+
+    padding: 50px 10%;
+
 }
 
-.tienda-promo__contenido {
-    position: relative;
-    z-index: 1;
-    max-width: 390px;
-    color: #fff;
+
+.banner-text {
+
+    color: white;
+
+    max-width: 430px;
+
 }
 
-.tienda-promo__contenido h2 {
-    margin-bottom: 18px;
-    font-family: 'Press Start 2P', monospace;
-    font-size: clamp(1.7rem, 3.4vw, 3rem);
-    line-height: 1.25;
-    text-transform: uppercase;
-    text-shadow: 3px 3px 0 #000;
+
+.banner-text small {
+
+    letter-spacing: 3px;
+
 }
 
-.tienda-promo__contenido p {
-    margin-bottom: 24px;
-    font-family: 'Rajdhani', sans-serif;
-    font-size: clamp(1.15rem, 2vw, 1.6rem);
-    font-weight: 700;
-    line-height: 1.35;
-    text-shadow: 1px 2px 4px #000;
+
+.banner-text h1 {
+
+    font-size: 48px;
+
+    line-height: 1;
+
+    margin: 15px 0;
+
 }
 
-.tienda-promo__boton {
-    border: 1px solid #78d77e;
-    padding: 13px 24px;
-    background: #087b39;
-    color: #fff;
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 1rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
-    transition: background-color 180ms ease, transform 180ms ease;
+
+.banner-text p {
+
+    line-height: 1.5;
+
+    margin-bottom: 20px;
+
 }
 
-.tienda-promo__boton:hover {
-    background: #09984a;
-    transform: translateY(-2px);
-}
 
-.tienda-promo__boton:focus-visible {
-    outline: 3px solid #fff;
-    outline-offset: 3px;
-}
+.banner-btn {
 
-.productos > .producto {
-  animation: tienda-entrada 700ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
-}
+    border: none;
 
-.productos > .producto:nth-child(1) { animation-delay: 450ms; }
-.productos > .producto:nth-child(2) { animation-delay: 510ms; }
-.productos > .producto:nth-child(3) { animation-delay: 570ms; }
-.productos > .producto:nth-child(4) { animation-delay: 630ms; }
-.productos > .producto:nth-child(5) { animation-delay: 690ms; }
-.productos > .producto:nth-child(6) { animation-delay: 750ms; }
-.productos > .producto:nth-child(7) { animation-delay: 810ms; }
-.productos > .producto:nth-child(n + 8) { animation-delay: 870ms; }
-
-@media (prefers-reduced-motion: reduce) {
-  .banner,
-  .tienda-catalogo > *,
-  .tienda-promo,
-  .productos > .producto {
-    animation: none;
-  }
-
-  .banner-pista {
-    transition-duration: 1ms;
-  }
-}
-
-/* FLECHAS DEL CARRUSEL */
-.carrusel-flecha {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  background: rgba(0, 0, 0, 0.6);
-  color: white;
-  border: none;
-  font-size: 22px;
-  padding: 12px 16px;
-  cursor: pointer;
-  z-index: 10;
-  border-radius: 4px;
-  transition: background 0.2s;
-}
-
-.carrusel-flecha:hover {
     background: #328c2d;
-  color: #000;
+
+    color: white;
+
+    padding: 13px 25px;
+
+    border-radius: 5px;
+
+    font-weight: bold;
+
 }
 
-.flecha-izq { left: 15px; }
-.flecha-der { right: 15px; }
 
-/* Píxeles verdes sobre la franja marrón inferior. */
-.franja-verde-pixel {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 20px;
-    background-color: #328c2d;
-  z-index: 5;
+.banner-btn:hover {
+
+    background: #256c21;
+
 }
 
-.pixeles-decoracion {
-  position: absolute;
-  top: -12px;
-  left: 20px;
-  display: flex;
-  gap: 4px;
-}
-
-.pixeles-decoracion span {
-  width: 12px;
-  height: 12px;
-    background-color: #328c2d;
-}
 
 /* =========================================
    TITULO PRODUCTOS
 ========================================= */
 
-.tienda-catalogo {
-    background-color: #fff;
-    background-image: url("/fondos/fondo-productos.png");
-    background-repeat: repeat;
-    background-position: center top;
-    background-size: 660px auto;
-}
-
 .titulo-productos {
 
-    background: var(--marron);
+    background: #328c2d;
 
     color: white;
-
-    font-family: 'Segoe UI', Roboto, sans-serif;
-
-    font-size: 1.4rem;
-
-    font-weight: 700;
-
-    line-height: 1.3;
 
     text-align: center;
 
     padding: 13px;
+
+    font-weight: bold;
 
 }
 
@@ -645,22 +391,6 @@ button {
     font-weight: bold;
 
     transition: 0.2s;
-
-    display: inline-flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-    gap: 8px;
-
-}
-
-.categoria-icono {
-    width: 38px;
-    height: 38px;
-    object-fit: contain;
-    flex: 0 0 auto;
 
 }
 
@@ -761,16 +491,8 @@ button {
 
 .imagen-vacia {
 
-    display: flex;
-    align-items: center;
-    justify-content: center;
     font-size: 70px;
 
-}
-
-.imagen-vacia-icono {
-    width: 72px;
-    height: 72px;
 }
 
 
@@ -1473,12 +1195,6 @@ button {
 
 }
 
-.carrito-header h2,
-.pago-resumen h2 {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
 
 .cerrar-carrito {
 
@@ -1925,17 +1641,8 @@ button {
 
     font-size: 15px;
 
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-
 }
 
-.detalle-agregar-icono {
-    width: 18px;
-    height: 18px;
-}
 
 .detalle-agregar:hover {
 
@@ -1997,42 +1704,6 @@ button {
 
     justify-content: center;
 
-}
-
-.detalle-beneficio-icono-wrap {
-    flex: 0 0 30px;
-    background: transparent !important;
-}
-
-.detalle-beneficio-icono {
-    width: 25px;
-    height: 25px;
-    object-fit: contain;
-    image-rendering: pixelated;
-
-}
-
-.detalle-beneficio-check {
-    display: block;
-    width: 28px;
-    height: 28px;
-}
-
-.detalle-beneficio-check circle {
-    fill: #328c2d;
-}
-
-.detalle-beneficio-check path {
-    fill: none;
-    stroke: #fff;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    stroke-width: 3;
-}
-
-.detalle-envio-icono {
-    color: #111;
-    image-rendering: auto;
 }
 
 
@@ -2252,6 +1923,39 @@ button {
 
 
 /* =========================================
+   FOOTER
+========================================= */
+
+.tienda footer {
+
+    background: #222;
+
+    color: white;
+
+    text-align: center;
+
+    padding: 30px;
+
+}
+
+
+.tienda footer h2 {
+
+    color: #5bbb54;
+
+    margin-bottom: 10px;
+
+}
+
+
+.tienda footer p {
+
+    color: #ccc;
+
+}
+
+
+/* =========================================
    RESPONSIVE
 ========================================= */
 
@@ -2268,6 +1972,12 @@ button {
 
     }
 
+
+    .tienda-header nav {
+
+        display: none;
+
+    }
 
 }
 
@@ -2306,7 +2016,11 @@ button {
         border-radius: 12px;
     }
 
-  
+    .tienda-header {
+
+        padding: 0 20px;
+
+    }
 
 
     .controles-tienda {
@@ -2536,12 +2250,6 @@ button {
     }
 
 
-}
-
-
-/* ==============================
-   VENTANA DE PAGO
-============================== */
 
 .pago-overlay {
     position: fixed;
@@ -3226,4 +2934,14 @@ button {
         flex-direction: column;
         align-items: center;
     }
+}
+    .detalle-relacionados-grid {
+
+        grid-template-columns:
+            1fr 1fr;
+
+        gap: 10px;
+
+    }
+
 }

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 
-import Header from '../components/header';
+import Header from "../components/header";
 import Footer from "../components/Footer";
 import TarjetaProducto from "../components/tiendaComponentes/TarjetaProducto";
 import ControlesTienda from "../components/tiendaComponentes/ControlesTienda";
@@ -714,9 +714,9 @@ export default function Tienda() {
         );
 
 
-         alert(
+        alert(
             `${producto.nombre} fue agregado al carrito.`
-         );
+        );
 
     }
 
@@ -897,46 +897,70 @@ export default function Tienda() {
                     {/* =========================
                         BANNER
                     ========================== */}
-                    <BannerTienda
-                        key={banners.length}
-                        irProductos={irProductos}
-                        abrirProducto={abrirProducto}
-                        slidesBanner={banners}
-                        productos={productos}
-                    />
+
+                    <section className="banner">
+
+                        <div className="banner-text">
+
+                            <small>
+                                NUEVA COLECCIÓN
+                            </small>
+
+                            <h1>
+                                Productos que
+                                <br />
+                                se mueven con vos
+                            </h1>
+
+                            <p>
+                                Ropa, tazas, sábanas,
+                                figuras, accesorios,
+                                decoración y mucho más.
+                            </p>
+
+                            <button
+                                className="banner-btn"
+                                onClick={irProductos}
+                            >
+                                VER PRODUCTOS
+                            </button>
+
+                        </div>
+
+                    </section>
+
 
                     {/* =========================
                         TITULO
                     ========================== */}
 
-                    <div className="tienda-catalogo">
-                        <div
-                            className="titulo-productos"
-                            id="productos"
-                        >
-                            TODOS LOS PRODUCTOS
-                        </div>
+                    <div
+                        className="titulo-productos"
+                        id="productos"
+                    >
+                        TODOS LOS PRODUCTOS
+                    </div>
 
 
                     {/* =========================
                         CATEGORIAS
                     ========================== */}
 
-                        <CategoriasTienda
-                            categoriaActiva={
-                                categoriaActiva
-                            }
-                            setCategoriaActiva={
-                                setCategoriaActiva
-                            }
-                        />
+                    <CategoriasTienda
+                        categoriaActiva={
+                            categoriaActiva
+                        }
+                        setCategoriaActiva={
+                            setCategoriaActiva
+                        }
+                    />
 
 
                     {/* =========================
                         PRODUCTOS
                     ========================== */}
 
-                        <section className="productos">
+                    <section className="productos">
 
                         {productosFiltrados.length === 0 ? (
 
@@ -973,47 +997,25 @@ export default function Tienda() {
 
                         )}
 
-                        </section>
-
-                        <section
-                            className="tienda-promo"
-                            aria-label="Promoción del peluche Creeper"
-                        >
-                            <div className="tienda-promo__contenido">
-                                <h2>Peluche Creeper</h2>
-                                <p>Un compañero para cada ocasión</p>
-                                <button
-                                    className="tienda-promo__boton"
-                                    type="button"
-                                    onClick={irProductos}
-                                >
-                                    Ver productos
-                                </button>
-                            </div>
-                        </section>
+                    </section>
 
 
                     {/* =========================
                         ADMINISTRADOR
                     ========================== */}
 
-                        {administradorAbierto && (
-                            <div className="tienda-administrador">
-                                <AdministrarProductos
-                                    productos={productos}
-                                    agregarProducto={agregarProducto}
-                                    modificarProducto={modificarProducto}
-                                    eliminarProducto={eliminarProducto}
-                                />
-                                <AdministrarBanners
-                                    banners={banners}
-                                    setBanners={setBanners}
-                                    productos={productos}
-                                />
-                            </div>
-                        )}
+                    <AdministrarProductos
+                        productos={productos}
+                        agregarProducto={
+                            agregarProducto
+                        }
+                        eliminarProducto={
+                            eliminarProducto
+                        }
+                    />
 
-                    </div>
+
+                    <Footer />
 
                 </main>
 
@@ -1039,42 +1041,24 @@ export default function Tienda() {
 
             )}
 
-            <Footer />
-
-            {!mostrandoDetalle && (
-                <div className="tienda-admin-flotante">
-                    {administradorAbierto && (
-                        <span className="tienda-admin-aviso">
-                            Los cambios se guardan en este navegador
-                        </span>
-                    )}
-                    <button
-                        className={`tienda-admin-toggle ${administradorAbierto ? "activo" : ""}`}
-                        type="button"
-                        aria-expanded={administradorAbierto}
-                        onClick={() => setAdministradorAbierto((abierto) => !abierto)}
-                    >
-                        <span aria-hidden="true">{administradorAbierto ? "✓" : "⚙"}</span>
-                        {administradorAbierto ? "Cerrar administrador" : "Modo administrador"}
-                    </button>
-                </div>
-            )}
 
             {/* =========================
                 CARRITO
             ========================== */}
 
-         <Carrito
-    abierto={carritoAbierto}
-    cerrarCarrito={() => setCarritoAbierto(false)}
-    carrito={carrito}
-    quitarCarrito={quitarCarrito}
-    vaciarCarrito={() => setCarrito([])}
-/>
+            <Carrito
+                abierto={carritoAbierto}
+                cerrarCarrito={() =>
+                    setCarritoAbierto(false)
+                }
+                carrito={carrito}
+                quitarCarrito={
+                    quitarCarrito
+                }
+            />
 
         </div>
 
     );
-    
 
 }
