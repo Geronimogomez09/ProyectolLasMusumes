@@ -13,7 +13,6 @@ const LIMITE_SCROLL = 300;
 const RUTAS_SIN_NAVBAR = [
     "/login",
     "/registro",
-    "/historia",
 ];
 
 // Enlaces que se muestran en la navegación principal.
@@ -274,21 +273,42 @@ function Header() {
                                             </li>
 
                                             <li>
-                                                <span className="profile-menu-item">
+                                                <Link
+                                                    to="/"
+                                                    className="profile-menu-item"
+                                                    onClick={cerrarMenu}
+                                                >
+                                                    Mi perfil
+                                                </Link>
+                                            </li>
+                                            <li>
+                                                <Link
+                                                    to="/"
+                                                    className="profile-menu-item"
+                                                    onClick={cerrarMenu}
+                                                >
                                                     Carrito
-                                                </span>
+                                                </Link>
                                             </li>
 
                                             <li>
-                                                <span className="profile-menu-item">
-                                                    Canciones guardadas
-                                                </span>
+                                                <Link
+                                                    to="/"
+                                                    className="profile-menu-item"
+                                                    onClick={cerrarMenu}
+                                                >
+                                                    Canciones favoritas
+                                                </Link>
                                             </li>
 
                                             <li>
-                                                <span className="profile-menu-item">
+                                                <Link
+                                                    to=""
+                                                    className="profile-menu-item"
+                                                    onClick={cerrarMenu}
+                                                >
                                                     Mis publicaciones
-                                                </span>
+                                                </Link>
                                             </li>
 
                                             <li>
@@ -319,7 +339,7 @@ function Header() {
 
                                             <li>
                                                 <Link
-                                                    to="/registro"
+                                                    to="/login"
                                                     className="profile-menu-item"
                                                     onClick={cerrarMenu}
                                                 >

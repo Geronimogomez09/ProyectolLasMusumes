@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import Header from '../components/header';
 import Footer from '../components/Footer';
+import BotonAdmin from '../components/botonAdmin';
+import { useAuth } from '../context/AuthContext';
 import TarjetaVersion from '../components/versionesComponentes/tarjeta-version';
 import AgregarVersion from '../components/versionesComponentes/agregar-version';
 import '../styles/versiones.css';
@@ -172,6 +174,11 @@ function Versiones({ versiones: versionesProp }) {
   // Estado para controlar qué versión se está editando
   const [versionEditando, setVersionEditando] = useState(null);
 
+  // Modo administrador: solo lo puede abrir un admin.
+  const { esAdmin } = useAuth();
+  const [modoAdminAbierto, setModoAdmin] = useState(false);
+  const modoAdmin = modoAdminAbierto && esAdmin;
+
   function toggleComentarios(id) {
     setComentariosAbiertos((prev) => ({ ...prev, [id]: !prev[id] }));
   }
@@ -263,12 +270,14 @@ function Versiones({ versiones: versionesProp }) {
 
         <main className="versiones-main">
           {/* ---------- AGREGAR / EDITAR VERSIÓN ---------- */}
-          <AgregarVersion
-            onAgregar={handleAgregarVersion}
-            versionAEditar={versionEditando}
-            onActualizar={handleActualizarVersion}
-            onCancelarEdicion={() => setVersionEditando(null)}
-          />
+          {modoAdmin && (
+            <AgregarVersion
+              onAgregar={handleAgregarVersion}
+              versionAEditar={versionEditando}
+              onActualizar={handleActualizarVersion}
+              onCancelarEdicion={() => setVersionEditando(null)}
+            />
+          )}
 
           {/* ---------- BÚSQUEDA + FILTROS ---------- */}
           <section
@@ -339,17 +348,22 @@ function Versiones({ versiones: versionesProp }) {
                 comentariosAbiertos={Boolean(comentariosAbiertos[version.id])}
                 onToggleComentarios={toggleComentarios}
                 onAgregarComentario={handleAgregarComentario}
-                onEditar={() => {
+                onEditar={modoAdmin ? () => {
                   setVersionEditando(version);
                   window.scrollTo({ top: 200, behavior: 'smooth' });
-                }}
-                onEliminar={() => handleEliminarVersion(version.id)}
+                } : undefined}
+                onEliminar={modoAdmin ? () => handleEliminarVersion(version.id) : undefined}
                 delay={0.2 + Math.min(index, 8) * 0.1}
               />
             ))}
           </section>
         </main>
       </div>
+      <BotonAdmin
+        activo={modoAdmin}
+        alAlternar={() => setModoAdmin((abierto) => !abierto)}
+        aviso="Podés agregar, editar y eliminar versiones."
+      />
       <Footer />
     </>
   );
