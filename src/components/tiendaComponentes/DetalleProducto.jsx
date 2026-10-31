@@ -8,14 +8,74 @@ export default function DetalleProducto({
     abrirProducto
 }) {
 
-    const [cantidad, setCantidad] = useState(1);
+    const [cantidadSeleccionada, setCantidadSeleccionada] = useState({
+        productoId: producto?.id,
+        valor: 1
+    });
+    const [imagenActiva, setImagenActiva] = useState(null);
+    const [imagenAmpliada, setImagenAmpliada] = useState(false);
+    const [zoomImagen, setZoomImagen] = useState(false);
+    const relacionadosRef = useRef(null);
+    const cantidad = cantidadSeleccionada.productoId === producto?.id
+        ? cantidadSeleccionada.valor
+        : 1;
 
+    const imagenesProducto = producto
+        ? [...new Set([
+            ...(Array.isArray(producto.imagenes) ? producto.imagenes : []),
+            producto.imagen
+        ].filter((imagen) => typeof imagen === "string" && imagen.trim()))]
+        : [];
+    const imagenPrincipal = imagenActiva?.productoId === producto?.id
+        && imagenesProducto.includes(imagenActiva.src)
+        ? imagenActiva.src
+        : imagenesProducto[0];
 
     useEffect(() => {
+        if (!imagenAmpliada) {
+            return undefined;
+        }
 
-        setCantidad(1);
+        function cerrarConEscape(evento) {
+            if (evento.key === "Escape") {
+                cerrarImagen();
+            }
+        }
 
-    }, [producto?.id]);
+        window.addEventListener("keydown", cerrarConEscape);
+        return () => window.removeEventListener("keydown", cerrarConEscape);
+    }, [imagenAmpliada]);
+
+    function cerrarImagen() {
+        setImagenAmpliada(false);
+        setZoomImagen(false);
+    }
+
+    useEffect(() => {
+        if (productos.length < 3) {
+            return undefined;
+        }
+
+        const interval = setInterval(() => {
+            const carrusel = relacionadosRef.current;
+            const tarjeta = carrusel?.querySelector(".detalle-relacionado");
+
+            if (!carrusel || !tarjeta) {
+                return;
+            }
+
+            const paso = tarjeta.getBoundingClientRect().width + 20;
+            const final = carrusel.scrollWidth - carrusel.clientWidth;
+
+            if (carrusel.scrollLeft + paso >= final - 1) {
+                carrusel.scrollTo({ left: 0, behavior: "smooth" });
+            } else {
+                carrusel.scrollBy({ left: paso, behavior: "smooth" });
+            }
+        }, 3500);
+
+        return () => clearInterval(interval);
+    }, [productos.length, producto?.id]);
 
 
     if (!producto) {
@@ -26,14 +86,32 @@ export default function DetalleProducto({
     const relacionados = productos
         .filter((p) => p.id !== producto.id)
         .slice(0, 4);
+    const relacionadosCarrusel = [...relacionados, ...relacionados];
+
+    function moverRelacionados(direccion) {
+        const carrusel = relacionadosRef.current;
+        const tarjeta = carrusel?.querySelector(".detalle-relacionado");
+
+        if (!carrusel || !tarjeta) {
+            return;
+        }
+
+        carrusel.scrollBy({
+            left: direccion * (tarjeta.getBoundingClientRect().width + 20),
+            behavior: "smooth"
+        });
+    }
 
 
     function disminuir() {
 
-        setCantidad(
-            (actual) =>
-                Math.max(1, actual - 1)
-        );
+        setCantidadSeleccionada((actual) => ({
+            productoId: producto.id,
+            valor: Math.max(
+                1,
+                (actual.productoId === producto.id ? actual.valor : 1) - 1
+            )
+        }));
 
     }
 
@@ -42,9 +120,10 @@ export default function DetalleProducto({
 
         if (cantidad < producto.stock) {
 
-            setCantidad(
-                (actual) => actual + 1
-            );
+            setCantidadSeleccionada((actual) => ({
+                productoId: producto.id,
+                valor: (actual.productoId === producto.id ? actual.valor : 1) + 1
+            }));
 
         }
 
@@ -70,12 +149,22 @@ export default function DetalleProducto({
 
                     <div className="detalle-imagen-principal">
 
-                        {producto.imagen ? (
+                        {imagenPrincipal ? (
 
-                            <img
-                                src={producto.imagen}
-                                alt={producto.nombre}
-                            />
+                            <button
+                                type="button"
+                                className="detalle-imagen-ampliar"
+                                onClick={() => {
+                                    setZoomImagen(false);
+                                    setImagenAmpliada(true);
+                                }}
+                                aria-label={`Ampliar imagen de ${producto.nombre}`}
+                            >
+                                <img
+                                    src={imagenPrincipal}
+                                    alt={producto.nombre}
+                                />
+                            </button>
 
                         ) : (
 
@@ -108,8 +197,7 @@ export default function DetalleProducto({
                             )}
 
                         </div>
-
-                    </div>
+                    )}
 
                 </div>
 
@@ -237,6 +325,38 @@ export default function DetalleProducto({
             </div>
 
 
+            {imagenAmpliada && imagenPrincipal && (
+                <div
+                    className="detalle-lightbox"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label={`Imagen ampliada de ${producto.nombre}`}
+                    onClick={cerrarImagen}
+                >
+                    <button
+                        type="button"
+                        className="detalle-lightbox-cerrar"
+                        onClick={cerrarImagen}
+                        aria-label="Cerrar imagen ampliada"
+                    >
+                        ×
+                    </button>
+                    <img
+                        src={imagenPrincipal}
+                        alt={producto.nombre}
+                        className={zoomImagen ? "con-zoom" : ""}
+                        onClick={(evento) => {
+                            evento.stopPropagation();
+                            setZoomImagen((zoomActual) => !zoomActual);
+                        }}
+                        aria-label={zoomImagen
+                            ? "Reducir imagen"
+                            : "Acercar imagen"}
+                    />
+                </div>
+            )}
+
+
             <div className="detalle-extra">
 
                 <h2>
@@ -305,6 +425,17 @@ export default function DetalleProducto({
                     También te puede interesar
                 </h2>
 
+                <div className="detalle-relacionados-carrusel">
+                    {relacionados.length > 0 && (
+                        <button
+                            className="detalle-relacionados-flecha"
+                            type="button"
+                            onClick={() => moverRelacionados(-1)}
+                            aria-label="Ver productos relacionados anteriores"
+                        >
+                            &#10094;
+                        </button>
+                    )}
 
                 <div className="detalle-relacionados-grid">
 
@@ -369,8 +500,16 @@ export default function DetalleProducto({
 
                         ))
 
+                    {relacionados.length > 0 && (
+                        <button
+                            className="detalle-relacionados-flecha"
+                            type="button"
+                            onClick={() => moverRelacionados(1)}
+                            aria-label="Ver productos relacionados siguientes"
+                        >
+                            &#10095;
+                        </button>
                     )}
-
                 </div>
 
             </div>

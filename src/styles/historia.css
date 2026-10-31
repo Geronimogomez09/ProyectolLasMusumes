@@ -1,0 +1,1145 @@
+/* ============================================================================
+   historia.css — Línea de tiempo del desarrollo de Minecraft
+
+   Esta página se apoya en inicio.css (se importa antes en Historia.jsx):
+     - Variables: --verde, --verde-claro, --marron, --fondo, --texto, --blanco
+       y todas las --inicio-* (duraciones, curvas, radios, sombras).
+     - Modo administrador: .inicio-admin-panel, .inicio-admin-toggle,
+       .inicio-admin-acciones, .inicio-admin-btn, .inicio-admin-agregar,
+       .inicio-modal-*, .inicio-campo-*, .inicio-btn-* y el selector de iconos.
+     - Detalles sueltos: .inicio-etiqueta, .inicio-titulo, .inicio-enlace.
+   Por eso acá solo está lo que es propio de esta página.
+
+   ÍNDICE
+    1. Fuentes y variables
+    2. Hero
+    3. Estructura (aside + línea)
+    4. Aside
+    5. Eras
+    6. Hitos y tarjetas
+    7. Animaciones de entrada
+    8. Extras del formulario de administrador
+    9. Responsive
+   ========================================================================= */
+
+
+/* ============================================================================
+   1. FUENTES Y VARIABLES
+   ========================================================================= */
+
+@font-face {
+    font-family: "MinecraftSeven";
+    src: url("/fonts/Minecraft.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Minecrafttitulo";
+    src: url("/fonts/MinecraftV.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+.historia {
+    /* Alto del header fijo (si tu header ya define --header-alto, se usa ese) */
+    --h-header: var(--header-alto, 76px);
+
+    /* Columnas de cada fila de la línea: [año] [nodo] [tarjeta] */
+    --h-col-fecha: 120px;
+    --h-col-nodo: 44px;
+
+    --h-fuente-pixel: "Minecrafttitulo", "MinecraftSeven", ui-monospace, monospace;
+
+    /* Lo actualiza el JS al hacer scroll (0 a 1). Llena la línea y la barra del aside. */
+    --progreso: 0;
+}
+
+@keyframes historia-entra {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: none; }
+}
+
+
+/* ============================================================================
+   2. HERO
+   ========================================================================= */
+
+.historia-hero {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    padding: calc(var(--h-header) + 56px) 24px 104px;
+    color: #f3fff5;
+    background:
+        radial-gradient(ellipse at 82% 8%, rgba(49, 111, 67, 0.5), transparent 55%),
+        linear-gradient(115deg, #0b100d 0%, #101c13 45%, #173b25 100%);
+}
+
+/* Franja de "suelo": un bloque de pasto repetido al borde inferior */
+.historia-hero::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 2;
+    height: 40px;
+    background: url("https://raw.githubusercontent.com/PrismarineJS/minecraft-assets/master/data/1.21.1/blocks/grass_block_side.png") repeat-x left bottom / 40px 40px;
+    image-rendering: pixelated;
+}
+
+.historia-hero-contenido {
+    position: relative;
+    z-index: 1;
+    max-width: 1180px;
+    margin: 0 auto;
+}
+
+/* Entrada en cascada, igual que el hero de inicio */
+.historia-hero-contenido > * {
+    animation: historia-entra var(--inicio-dur-lenta) var(--inicio-ease-suave) backwards;
+}
+.historia-hero-contenido > :nth-child(1) { animation-delay: 80ms; }
+.historia-hero-contenido > :nth-child(2) { animation-delay: 170ms; }
+.historia-hero-contenido > :nth-child(3) { animation-delay: 260ms; }
+.historia-hero-contenido > :nth-child(4) { animation-delay: 350ms; }
+.historia-hero-contenido > :nth-child(5) { animation-delay: 440ms; }
+
+.historia-eyebrow {
+    display: inline-block;
+    margin-bottom: 14px;
+    color: #c7f5d5;
+    font-size: 0.76rem;
+    font-weight: 800;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+}
+
+.historia-hero h1 {
+    max-width: 760px;
+    margin: 0 0 16px;
+    color: #f3fff5;
+    font-family: var(--h-fuente-pixel);
+    font-size: clamp(1.9rem, 4.6vw, 3.4rem);
+    font-weight: 800;
+    line-height: 1.3;
+    text-shadow: 0 3px 18px rgba(0, 0, 0, 0.55);
+    text-wrap: balance;
+}
+
+.historia-hero h1 span {
+    display: block;
+    color: color-mix(in srgb, var(--verde) 68%, white);
+}
+
+.historia-hero-contenido > p {
+    max-width: 560px;
+    margin: 0 0 28px;
+    color: #d8e8dc;
+    font-size: 1.02rem;
+    line-height: 1.7;
+}
+
+.historia-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px 36px;
+    margin-bottom: 30px;
+}
+
+.historia-stats div {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.historia-stats strong {
+    color: #c7f5d5;
+    font-family: var(--h-fuente-pixel);
+    font-size: 1.5rem;
+    font-weight: 400;
+}
+
+.historia-stats span {
+    color: #a1b2a5;
+    font-size: 0.8125rem;
+}
+
+/* Bloques que flotan despacio detrás del título */
+.historia-cubos {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.historia-cubo {
+    position: absolute;
+    width: var(--t);
+    height: var(--t);
+    opacity: 0.92;
+    filter: drop-shadow(0 16px 20px rgba(0, 0, 0, 0.45));
+    image-rendering: pixelated;
+    animation: historia-flotar var(--d, 7s) ease-in-out infinite alternate;
+}
+
+.historia-cubo:nth-child(1) { --t: 84px; --d: 7s;   top: 22%; right: 14%; }
+.historia-cubo:nth-child(2) { --t: 56px; --d: 6s;   top: 54%; right: 30%; animation-delay: -2s; }
+.historia-cubo:nth-child(3) { --t: 40px; --d: 8s;   top: 18%; right: 34%; animation-delay: -4s; }
+.historia-cubo:nth-child(4) { --t: 68px; --d: 9s;   top: 60%; right: 8%;  animation-delay: -1s; }
+.historia-cubo:nth-child(5) { --t: 34px; --d: 5.5s; top: 38%; right: 4%;  animation-delay: -3s; }
+
+@keyframes historia-flotar {
+    from { transform: translateY(0) rotate(-4deg); }
+    to   { transform: translateY(-18px) rotate(4deg); }
+}
+
+
+/* ============================================================================
+   3. ESTRUCTURA (aside + línea)
+   ========================================================================= */
+
+.historia-layout {
+    display: grid;
+    grid-template-columns: 288px minmax(0, 1fr);
+    gap: 48px;
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 56px 24px 112px;
+}
+
+.historia-linea {
+    position: relative;
+    min-width: 0;
+}
+
+/* Dos líneas superpuestas: el riel (tenue) y el relleno verde que crece con el scroll */
+.historia-linea::before,
+.historia-linea::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: calc(var(--h-col-fecha) + var(--h-col-nodo) / 2 - 1px);
+    width: 2px;
+    border-radius: 2px;
+}
+
+.historia-linea::before {
+    background: color-mix(in srgb, var(--verde) 20%, transparent);
+}
+
+.historia-linea::after {
+    background: linear-gradient(var(--verde), var(--verde-hover));
+    box-shadow: 0 0 14px color-mix(in srgb, var(--verde) 55%, transparent);
+    transform: scaleY(var(--progreso, 0));
+    transform-origin: top;
+    transition: transform 180ms var(--inicio-ease-suave);
+}
+
+/* Barra de progreso para pantallas chicas (el aside se oculta ahí) */
+.historia-mini {
+    position: sticky;
+    top: var(--h-header);
+    z-index: 40;
+    display: none;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 20px;
+    border-bottom: var(--inicio-borde) solid var(--verde-claro);
+    background: color-mix(in srgb, var(--blanco) 90%, transparent);
+    -webkit-backdrop-filter: blur(14px) saturate(1.3);
+    backdrop-filter: blur(14px) saturate(1.3);
+}
+
+.historia-mini strong {
+    overflow: hidden;
+    max-width: 55%;
+    font-size: 0.8125rem;
+    font-weight: 800;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.historia-mini .historia-aside-barra {
+    flex: 1;
+}
+
+
+/* ============================================================================
+   4. ASIDE
+   ========================================================================= */
+
+.historia-aside {
+    position: sticky;
+    top: calc(var(--h-header) + 20px);
+    align-self: start;
+}
+
+.historia-aside-panel {
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100vh - var(--h-header) - 40px);
+    max-height: calc(100dvh - var(--h-header) - 40px);
+    padding: 20px;
+    overflow: hidden;
+    border: var(--inicio-borde) solid var(--inicio-borde-color);
+    border-radius: var(--inicio-radio);
+    background: color-mix(in srgb, var(--blanco) 92%, transparent);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+    box-shadow: var(--inicio-sombra);
+}
+
+.historia-aside-etiqueta {
+    margin: 0;
+    color: var(--inicio-texto-tenue);
+    font-size: 0.6875rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+/* Zona actual: se vuelve a animar cada vez que cambia la era (por el key en React) */
+.historia-aside-zona {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    margin: 6px 0 14px;
+    animation: historia-entra var(--inicio-dur-media) var(--inicio-ease-suave) backwards;
+}
+
+.historia-aside-zona strong {
+    font-size: 1.0625rem;
+    font-weight: 800;
+    line-height: 1.3;
+}
+
+.historia-aside-zona span {
+    color: var(--inicio-verde-texto);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    line-height: 1.4;
+}
+
+.historia-aside-progreso {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.historia-aside-progreso em {
+    min-width: 34px;
+    color: var(--inicio-texto-suave);
+    font-size: 0.75rem;
+    font-style: normal;
+    font-weight: 700;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.historia-aside-barra {
+    position: relative;
+    flex: 1;
+    height: 6px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: var(--verde-claro);
+}
+
+.historia-aside-barra span {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(90deg, var(--verde), var(--verde-hover));
+    transform: scaleX(var(--progreso, 0));
+    transform-origin: left;
+    transition: transform 180ms var(--inicio-ease-suave);
+}
+
+.historia-aside-nav {
+    flex: 1;
+    min-height: 0;
+    margin-right: -8px;
+    padding-right: 8px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+}
+
+.historia-aside-eras,
+.historia-aside-eventos {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.historia-aside-eras {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+/* ---------- Era ---------- */
+
+.historia-aside-era {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 8px 10px;
+    border: 0;
+    border-radius: var(--inicio-radio-interno);
+    background: transparent;
+    color: var(--texto);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color var(--inicio-dur-corta) var(--inicio-ease);
+}
+
+.historia-aside-era:hover {
+    background: color-mix(in srgb, var(--verde-claro) 60%, transparent);
+}
+
+.historia-aside-eras > li[data-estado="activa"] > .historia-aside-era {
+    background: var(--verde-claro);
+}
+
+.historia-aside-num {
+    display: grid;
+    flex: 0 0 28px;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border: var(--inicio-borde) solid color-mix(in srgb, var(--texto) 14%, transparent);
+    border-radius: 8px;
+    background: var(--blanco);
+    font-size: 0.75rem;
+    font-weight: 800;
+    transition:
+        background-color var(--inicio-dur-media) var(--inicio-ease-suave),
+        border-color var(--inicio-dur-media) var(--inicio-ease-suave),
+        color var(--inicio-dur-media) var(--inicio-ease-suave);
+}
+
+.historia-aside-eras > li[data-estado="pasada"] .historia-aside-num {
+    border-color: var(--verde);
+    background: var(--verde-claro);
+    color: var(--inicio-verde-texto);
+}
+
+.historia-aside-eras > li[data-estado="activa"] .historia-aside-num {
+    border-color: var(--verde);
+    background: var(--verde);
+    color: var(--blanco);
+}
+
+.historia-aside-era-texto {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.historia-aside-era-texto b {
+    font-size: 0.875rem;
+    font-weight: 800;
+    line-height: 1.3;
+}
+
+.historia-aside-era-texto small {
+    color: var(--inicio-texto-tenue);
+    font-size: 0.75rem;
+}
+
+/* ---------- Hitos de la era activa (se despliegan con grid-template-rows) ---------- */
+
+.historia-aside-sub {
+    display: grid;
+    grid-template-rows: 0fr;
+    visibility: hidden;
+    transition:
+        grid-template-rows var(--inicio-dur-media) var(--inicio-ease-suave),
+        visibility 0s linear var(--inicio-dur-media);
+}
+
+.historia-aside-sub[data-abierto="true"] {
+    grid-template-rows: 1fr;
+    visibility: visible;
+    transition-delay: 0s;
+}
+
+.historia-aside-eventos {
+    position: relative;
+    min-height: 0;
+    margin-left: 24px;
+    padding: 4px 0 6px 18px;
+    overflow: hidden;
+}
+
+.historia-aside-eventos::before {
+    content: "";
+    position: absolute;
+    top: 8px;
+    bottom: 12px;
+    left: 4px;
+    width: 2px;
+    border-radius: 2px;
+    background: color-mix(in srgb, var(--verde) 22%, transparent);
+}
+
+.historia-aside-ev {
+    position: relative;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    width: 100%;
+    padding: 5px 8px 5px 0;
+    border: 0;
+    background: none;
+    color: var(--inicio-texto-suave);
+    font: inherit;
+    font-size: 0.8125rem;
+    text-align: left;
+    cursor: pointer;
+    transition:
+        color var(--inicio-dur-corta) var(--inicio-ease),
+        transform var(--inicio-dur-media) var(--inicio-ease-suave);
+}
+
+.historia-aside-ev:hover {
+    color: var(--texto);
+    transform: translateX(2px);
+}
+
+.historia-aside-punto {
+    position: absolute;
+    top: 0.7em;
+    left: -18px;
+    width: 10px;
+    height: 10px;
+    border: 2px solid color-mix(in srgb, var(--verde) 40%, transparent);
+    background: var(--blanco);
+    transition:
+        background-color var(--inicio-dur-media) var(--inicio-ease-suave),
+        border-color var(--inicio-dur-media) var(--inicio-ease-suave),
+        box-shadow var(--inicio-dur-media) var(--inicio-ease-suave);
+}
+
+.historia-aside-anio {
+    flex: 0 0 auto;
+    color: var(--inicio-verde-texto);
+    font-size: 0.75rem;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+}
+
+.historia-aside-titulo {
+    overflow: hidden;
+    min-width: 0;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.historia-aside-ev[data-estado="pasado"] .historia-aside-punto {
+    border-color: var(--verde);
+    background: var(--verde-claro);
+}
+
+.historia-aside-ev[data-estado="activo"] {
+    color: var(--texto);
+    font-weight: 700;
+}
+
+.historia-aside-ev[data-estado="activo"] .historia-aside-punto {
+    border-color: var(--verde);
+    background: var(--verde);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--verde) 18%, transparent);
+}
+
+.historia-aside-arriba {
+    align-self: flex-start;
+    margin-top: 14px;
+    padding: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+/* Las flechas de los botones suben/bajan en vez de avanzar de costado */
+.historia .historia-aside-arriba:hover i { transform: translateY(-3px); }
+
+
+/* ============================================================================
+   5. ERAS
+   ========================================================================= */
+
+.historia-linea > section + section {
+    margin-top: 24px;
+}
+
+.historia-evento,
+.historia-era {
+    position: relative;
+    display: grid;
+    grid-template-columns: var(--h-col-fecha) var(--h-col-nodo) minmax(0, 1fr);
+    scroll-margin-top: calc(var(--h-header) + 64px);
+}
+
+.historia-era {
+    align-items: center;
+    margin-bottom: 40px;
+}
+
+/* Ubicación explícita: así el diseño no se corre si falta alguna celda */
+.historia-fecha { grid-column: 1; }
+.historia-nodo  { grid-column: 2; }
+.historia-card,
+.historia-era-card,
+.historia-evento--agregar > .inicio-admin-agregar { grid-column: 3; }
+
+.historia-era-card {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 22px 26px;
+    border: var(--inicio-borde) solid var(--verde-claro);
+    border-radius: 28px;
+    background: linear-gradient(
+        110deg,
+        color-mix(in srgb, var(--verde-claro) 75%, var(--blanco)),
+        var(--blanco)
+    );
+    box-shadow: var(--inicio-sombra);
+    transition:
+        border-color var(--inicio-dur-media) var(--inicio-ease-suave),
+        box-shadow var(--inicio-dur-media) var(--inicio-ease-suave);
+}
+
+.historia-era-card:hover {
+    border-color: color-mix(in srgb, var(--verde) 55%, transparent);
+    box-shadow: var(--inicio-sombra-hover);
+}
+
+.historia-era-card > img {
+    flex: 0 0 52px;
+    width: 52px;
+    height: 52px;
+    object-fit: contain;
+    image-rendering: pixelated;
+    filter: drop-shadow(0 6px 8px rgba(48, 47, 42, 0.25));
+}
+
+.historia-era-card .inicio-etiqueta {
+    margin-bottom: 8px;
+}
+
+.historia .historia-era-card .inicio-titulo {
+    margin: 0 0 6px;
+    font-size: 1.375rem;
+}
+
+.historia-era-card p {
+    max-width: 520px;
+    margin: 0;
+    color: var(--inicio-texto-suave);
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+
+.historia-fecha--era {
+    padding: 0 16px 0 0;
+    color: var(--inicio-texto-tenue);
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.historia-nodo--era {
+    align-items: center;
+    padding-top: 0;
+}
+
+.historia-nodo--era b {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    background: var(--verde);
+    box-shadow: 4px 4px 0 var(--verde-claro), 0 0 0 5px var(--fondo);
+    color: var(--blanco);
+    font-family: var(--h-fuente-pixel);
+    font-size: 0.85rem;
+    font-weight: 400;
+}
+
+
+/* ============================================================================
+   6. HITOS Y TARJETAS
+   ========================================================================= */
+
+.historia-evento {
+    padding-bottom: 44px;
+}
+
+.historia-fecha {
+    padding: 22px 16px 0 0;
+    color: var(--inicio-verde-texto);
+    font-family: var(--h-fuente-pixel);
+    font-size: 1.05rem;
+    line-height: 1.4;
+    text-align: right;
+}
+
+/* ---------- Nodo sobre la línea ---------- */
+
+.historia-nodo {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    justify-content: center;
+    padding-top: 24px;
+}
+
+.historia-nodo i {
+    display: block;
+    width: 16px;
+    height: 16px;
+    border: 3px solid color-mix(in srgb, var(--verde) 35%, transparent);
+    background: var(--blanco);
+    box-shadow: 0 0 0 5px var(--fondo);
+    transition:
+        background-color var(--inicio-dur-media) var(--inicio-ease-suave),
+        border-color var(--inicio-dur-media) var(--inicio-ease-suave),
+        transform var(--inicio-dur-media) var(--inicio-ease-suave);
+}
+
+.historia-evento[data-estado="pasado"] .historia-nodo i {
+    border-color: var(--verde);
+    background: var(--verde-claro);
+}
+
+.historia-evento[data-estado="activo"] .historia-nodo i {
+    border-color: var(--verde);
+    background: var(--verde);
+    transform: scale(1.35) rotate(45deg);
+    animation: historia-pulso 2.2s var(--inicio-ease-suave) infinite;
+}
+
+@keyframes historia-pulso {
+    0%   { box-shadow: 0 0 0 5px var(--fondo), 0 0 0 5px rgba(29, 181, 60, 0.45); }
+    100% { box-shadow: 0 0 0 5px var(--fondo), 0 0 0 16px rgba(29, 181, 60, 0); }
+}
+
+/* ---------- Tarjeta ---------- */
+
+.historia-card {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    border: var(--inicio-borde) solid var(--inicio-borde-color);
+    border-radius: var(--inicio-radio);
+    background: var(--blanco);
+    box-shadow: var(--inicio-sombra);
+    transition:
+        transform var(--inicio-dur-media) var(--inicio-ease-suave),
+        border-color var(--inicio-dur-media) var(--inicio-ease-suave),
+        box-shadow var(--inicio-dur-media) var(--inicio-ease-suave);
+}
+
+.historia-card:hover {
+    border-color: color-mix(in srgb, var(--verde) 55%, transparent);
+    box-shadow: var(--inicio-sombra-hover);
+    transform: translateY(-3px);
+}
+
+.historia-card--destacada {
+    border-color: color-mix(in srgb, var(--verde) 45%, transparent);
+}
+
+/* ---------- Imagen ---------- */
+
+.historia-media {
+    position: relative;
+    display: grid;
+    place-items: center;
+    height: 176px;
+    overflow: hidden;
+    isolation: isolate;
+    background: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--verde-claro) 80%, var(--blanco)),
+        var(--verde-claro)
+    );
+}
+
+/* Damero muy suave detrás de la textura */
+.historia-media::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-image: conic-gradient(
+        rgba(29, 181, 60, 0.09) 25%,
+        transparent 0 50%,
+        rgba(29, 181, 60, 0.09) 0 75%,
+        transparent 0
+    );
+    background-size: 36px 36px;
+}
+
+.historia-media img {
+    width: auto;
+    height: 120px;
+    object-fit: contain;
+    filter: drop-shadow(0 10px 14px rgba(48, 47, 42, 0.3));
+    image-rendering: pixelated;
+    transition: transform var(--inicio-dur-lenta) var(--inicio-ease-suave);
+}
+
+.historia-card:hover .historia-media img {
+    transform: scale(1.08) rotate(-2deg);
+}
+
+.historia-media--foto {
+    height: 210px;
+}
+
+.historia-media--foto img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: none;
+    image-rendering: auto;
+}
+
+.historia-card:hover .historia-media--foto img {
+    transform: scale(1.04);
+}
+
+/* Bloque de respaldo cuando la imagen no carga (pasto arriba, tierra abajo) */
+.historia-media-vacia {
+    display: block;
+    width: 88px;
+    height: 88px;
+    background:
+        linear-gradient(var(--verde) 0 26%, transparent 26%),
+        repeating-conic-gradient(#8b5e3c 0 25%, #7a573a 0 50%) 0 0 / 22px 22px;
+    box-shadow: inset 0 0 0 4px rgba(0, 0, 0, 0.14), 0 10px 14px -6px rgba(48, 47, 42, 0.35);
+}
+
+.historia-chip,
+.historia-version {
+    position: absolute;
+    z-index: 2;
+    max-width: calc(100% - 24px);
+    overflow: hidden;
+    border-radius: 999px;
+    font-size: 0.6875rem;
+    font-weight: 800;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.historia-chip {
+    top: 12px;
+    left: 12px;
+    padding: 6px 12px;
+    background: color-mix(in srgb, var(--blanco) 88%, transparent);
+    color: var(--inicio-verde-texto);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+}
+
+.historia-chip[data-tipo="Lanzamiento"] { background: var(--verde); color: var(--blanco); }
+.historia-chip[data-tipo="Hito"]        { background: var(--marron); color: var(--blanco); }
+.historia-chip[data-tipo="Plataforma"]  { background: color-mix(in srgb, var(--texto) 82%, var(--verde)); color: var(--blanco); }
+.historia-chip[data-tipo="Empresa"]     { background: var(--texto); color: var(--blanco); }
+
+.historia-version {
+    bottom: 12px;
+    left: 12px;
+    padding: 5px 11px;
+    background: color-mix(in srgb, var(--texto) 78%, transparent);
+    color: var(--blanco);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+}
+
+/* ---------- Texto ---------- */
+
+.historia-card-cuerpo {
+    display: flex;
+    flex-direction: column;
+    padding: 18px 22px 20px;
+}
+
+.historia-card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 12px;
+    margin-bottom: 6px;
+    color: var(--inicio-texto-tenue);
+    font-size: 0.75rem;
+}
+
+.historia-estrella {
+    color: var(--inicio-verde-texto);
+    font-weight: 800;
+}
+
+.historia .historia-card-cuerpo h3 {
+    margin: 0 0 8px;
+    font-size: 1.125rem;
+    font-weight: 800;
+    line-height: 1.3;
+}
+
+.historia-card-cuerpo > p {
+    margin: 0 0 12px;
+    color: var(--inicio-texto-suave);
+    font-size: 0.9rem;
+    line-height: 1.65;
+}
+
+/* ---------- Detalles desplegables ---------- */
+
+.historia-detalle {
+    display: grid;
+    grid-template-rows: 0fr;
+    opacity: 0;
+    transition:
+        grid-template-rows var(--inicio-dur-media) var(--inicio-ease-suave),
+        opacity var(--inicio-dur-media) var(--inicio-ease-suave);
+}
+
+.historia-detalle[data-abierto="true"] {
+    grid-template-rows: 1fr;
+    opacity: 1;
+}
+
+.historia-detalle > ul {
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    list-style: none;
+}
+
+.historia-detalle li {
+    position: relative;
+    padding-left: 22px;
+    color: var(--inicio-texto-suave);
+    font-size: 0.875rem;
+    line-height: 1.55;
+}
+
+.historia-detalle li + li { margin-top: 8px; }
+.historia-detalle li:last-child { margin-bottom: 16px; }
+
+/* El cuadradito verde es el mismo guiño al píxel que usa .inicio-titulo */
+.historia-detalle li::before {
+    content: "";
+    position: absolute;
+    top: 0.55em;
+    left: 0;
+    width: 8px;
+    height: 8px;
+    background: var(--verde);
+    box-shadow: 3px 3px 0 var(--verde-claro);
+}
+
+/* Botón "Ver detalles": reusa .inicio-enlace (línea verde que se dibuja) */
+.historia-mas {
+    padding: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.historia .historia-mas i {
+    font-style: normal;
+    transition: transform var(--inicio-dur-media) var(--inicio-ease-suave);
+}
+
+.historia .historia-mas:hover i                       { transform: translateY(2px); }
+.historia .historia-mas[aria-expanded="true"] i       { transform: rotate(180deg); }
+.historia .historia-mas[aria-expanded="true"]:hover i { transform: rotate(180deg) translateY(2px); }
+
+
+/* ============================================================================
+   7. ANIMACIONES DE ENTRADA
+   Cada bloque nace invisible y el JS le agrega data-visible cuando llega a la pantalla.
+   (Se usa un atributo y no una clase para que React no lo pise al volver a dibujar.)
+   ========================================================================= */
+
+.historia-revelar {
+    opacity: 0;
+    transform: translateY(28px);
+    transition:
+        opacity var(--inicio-dur-lenta) var(--inicio-ease-suave),
+        transform var(--inicio-dur-lenta) var(--inicio-ease-suave);
+}
+
+.historia-revelar[data-visible] {
+    opacity: 1;
+    transform: none;
+}
+
+/* Contorno punteado en modo administrador (igual que las demás tarjetas) */
+.inicio-modo-admin .historia-card {
+    outline: 2px dashed color-mix(in srgb, var(--verde) 45%, transparent);
+    outline-offset: 4px;
+}
+
+.historia-evento--agregar {
+    padding-bottom: 12px;
+}
+
+.historia-evento--agregar > .inicio-admin-agregar {
+    min-height: 104px;
+}
+
+
+/* ============================================================================
+   8. EXTRAS DEL FORMULARIO DE ADMINISTRADOR
+   ========================================================================= */
+
+.historia-form-fila {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+/* Vista previa de la imagen: las texturas se ven nítidas, las fotos llenan el recuadro */
+.inicio-admin-imagen .historia-preview {
+    display: grid;
+    flex-shrink: 0;
+    place-items: center;
+    width: 104px;
+    height: 72px;
+    overflow: hidden;
+    border-radius: var(--inicio-radio-interno);
+    background: var(--verde-claro);
+}
+
+.inicio-admin-imagen .historia-preview img {
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+    object-fit: contain;
+    image-rendering: pixelated;
+}
+
+.inicio-admin-imagen .historia-preview[data-ajuste="foto"] img {
+    object-fit: cover;
+    image-rendering: auto;
+}
+
+.inicio-admin-imagen .historia-media-vacia {
+    width: 44px;
+    height: 44px;
+}
+
+.historia-check {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.875rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.historia-check input {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--verde);
+}
+
+select.inicio-campo-control {
+    cursor: pointer;
+}
+
+
+/* ============================================================================
+   9. RESPONSIVE
+   ========================================================================= */
+
+@media (max-width: 1100px) {
+    .historia { --h-col-fecha: 92px; }
+
+    .historia-layout {
+        grid-template-columns: 252px minmax(0, 1fr);
+        gap: 36px;
+    }
+}
+
+/* El aside se oculta y aparece la barra fija con la era actual */
+@media (max-width: 960px) {
+    .historia-layout {
+        grid-template-columns: minmax(0, 1fr);
+        padding: 40px 20px 96px;
+    }
+
+    .historia-aside { display: none; }
+    .historia-mini  { display: flex; }
+
+    .historia-cubos { opacity: 0.5; }
+}
+
+/* En celulares desaparece la columna del año: la fecha ya está dentro de la tarjeta */
+@media (max-width: 640px) {
+    .historia {
+        --h-col-fecha: 0px;
+        --h-col-nodo: 30px;
+    }
+
+    .historia-fecha { display: none; }
+
+    .historia-hero {
+        padding: calc(var(--h-header) + 36px) 20px 88px;
+    }
+
+    .historia-cubos { opacity: 0.3; }
+
+    .historia-era-card {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 20px;
+    }
+
+    .historia-media { height: 152px; }
+    .historia-media img { height: 100px; }
+    .historia-media--foto { height: 180px; }
+
+    .historia-card-cuerpo { padding: 16px 18px 18px; }
+
+    .historia-form-fila { grid-template-columns: 1fr; }
+}
+
+
+/* ============================================================================
+   MENOS MOVIMIENTO
+   inicio.css ya apaga animaciones y transiciones dentro de .inicio;
+   acá solo se asegura que nada quede invisible.
+   ========================================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+    .historia-revelar {
+        opacity: 1;
+        transform: none;
+    }
+}

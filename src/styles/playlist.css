@@ -1,0 +1,77 @@
+/* ========================================
+   CANCIONES DE ÁLBUMES Y PLAYLISTS
+   Reutilizan el diseño compartido de musica.css
+
+.album-songs,
+.playlist-songs {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  margin-top: 30px;
+  padding: 0;
+  overflow: visible;
+  border: 1px solid var(--music-border);
+  border-radius: 12px;
+  background: rgba(13, 21, 15, 0.45);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+  box-sizing: border-box;
+}
+
+.album-songs .song-row,
+.playlist-songs .song-row {
+  display: grid;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.album-songs .song-info,
+.playlist-songs .song-info {
+  min-width: 0;
+}
+
+.album-songs .song-info strong,
+.playlist-songs .song-info strong {
+  overflow-wrap: anywhere;
+  white-space: normal;
+  text-overflow: clip;
+}
+
+.album-songs .song-info span,
+.playlist-songs .song-info span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.album-songs .song-row.is-blocked,
+.playlist-songs .song-row.is-blocked {
+  opacity: 1;
+}
+
+.album-songs .song-row.is-blocked .song-index,
+.album-songs .song-row.is-blocked .song-cover-button,
+.album-songs .song-row.is-blocked .song-info,
+.album-songs .song-row.is-blocked .song-favorite,
+.album-songs .song-row.is-blocked .song-duration,
+.playlist-songs .song-row.is-blocked .song-index,
+.playlist-songs .song-row.is-blocked .song-cover-button,
+.playlist-songs .song-row.is-blocked .song-info,
+.playlist-songs .song-row.is-blocked .song-favorite,
+.playlist-songs .song-row.is-blocked .song-duration {
+  opacity: 0.48;
+}
+
+.album-songs .song-menu,
+.playlist-songs .song-menu {
+  flex-shrink: 0;
+}
+
+.album-songs .song-row:hover,
+.playlist-songs .song-row:hover {
+  box-shadow: none;
+}

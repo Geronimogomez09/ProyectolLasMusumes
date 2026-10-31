@@ -15,15 +15,12 @@ import FeaturedSongs from "../components/music/FeaturedSongs";
 import PlaylistCard from "../components/music/PlaylistCard";
 import ComposerCard from "../components/music/ComposerCard";
 import SongPanel from "../components/music/SongPanel";
-import MusicPlayer from "../components/music/MusicPlayer";
 
 import "../styles/musica.css";
 
 export default function Musica() {
   const navigate = useNavigate();
 
-  const [favorites, setFavorites] = useState([]);
-  const [blockedSongs, setBlockedSongs] = useState([]);
   const [selectedSong, setSelectedSong] = useState(null);
   const [currentSong, setCurrentSong] = useState(null);
 
@@ -202,9 +199,9 @@ export default function Musica() {
                     song={song}
                     index={index}
                     composer={getComposer(song)}
-                    isFavorite={favorites.includes(song.id)}
-                    isBlocked={blockedSongs.includes(song.id)}
-                    onPlay={playSong}
+                    isFavorite={isFavorite(song)}
+                    isBlocked={isBlocked(song)}
+                    onPlay={(item) => playSong(item, availableSongs)}
                     onOpen={setSelectedSong}
                     onToggleFavorite={toggleFavorite}
                     onToggleBlocked={toggleBlocked}
@@ -400,7 +397,7 @@ export default function Musica() {
           }
           onClose={() => setSelectedSong(null)}
           onPlay={(song) => {
-            playSong(song);
+            playSong(song, availableSongs);
             setSelectedSong(null);
           }}
           onToggleFavorite={toggleFavorite}

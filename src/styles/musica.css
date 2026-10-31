@@ -48,6 +48,16 @@
   margin-bottom: 25px;
 }
 
+.section-title h2,
+.song-panel h2,
+.playlist-card-title,
+.album-card strong,
+.composer-card strong {
+  font-family: "MinecraftSeven", "Segoe UI", sans-serif;
+  letter-spacing: 0;
+  line-height: 1.55;
+}
+
 .section-title h2 {
   margin: 0;
 }
@@ -64,7 +74,25 @@
   flex-direction: column;
 }
 
-.song-row {
+/* Si la lista también tiene .songs-list, no duplica la caja.
+   La misma lista constituye la caja externa. */
+
+.music-page .album-songs.songs-list,
+.music-page .playlist-songs.songs-list {
+  border: 1px solid var(--music-border);
+  border-radius: 12px;
+  background: rgba(13, 21, 15, 0.45);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+}
+
+/* ==========================================================================
+   FILAS DE CANCIONES
+   Orden: número | cover | información | favorito | duración | menú
+   ========================================================================== */
+
+.song-row,
+.music-page .album-songs .song-row,
+.music-page .playlist-songs .song-row {
   display: grid;
   grid-template-columns:
     35px
@@ -86,10 +114,16 @@
   background: rgba(0, 0, 0, 0.04);
 }
 
+/* Número */
+
 .song-index {
   opacity: 0.5;
   text-align: center;
 }
+
+/* ==========================================================================
+   COVERS
+   ========================================================================== */
 
 .song-cover-button {
   width: 55px;
@@ -100,9 +134,17 @@
   cursor: pointer;
 }
 
+.song-cover-button img,
 .song-cover {
+  display: block;
   width: 100%;
+  min-width: 0;
+  max-width: 100%;
   height: 100%;
+  min-height: 0;
+  max-height: 100%;
+  margin: 0;
+  padding: 0;
   object-fit: cover;
 }
 
@@ -136,6 +178,10 @@
   opacity: 0.6;
   font-size: 0.85rem;
 }
+
+/* ==========================================================================
+   FAVORITOS
+   ========================================================================== */
 
 .song-favorite,
 .song-menu-button {
@@ -448,6 +494,70 @@
 
   box-shadow: 0 -8px 30px rgba(0,0,0,0.08);
 }
+
+
+/* Reproductor minimizado cuando se abren los detalles */
+.music-player.details-open {
+  right: 452px;
+  left: auto;
+  bottom: 12px;
+  width: min(420px, calc(100% - 470px));
+  min-height: 78px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 4px;
+  padding: 8px 14px;
+  border: 1px solid rgba(170, 239, 188, 0.3);
+  border-radius: 14px;
+  background: linear-gradient(120deg, #101c13, #245b38);
+  animation: none;
+}
+
+/* Oculta la información de la canción y el volumen */
+.music-player.details-open .player-song,
+.music-player.details-open .player-volume {
+  display: none;
+}
+
+/* Compacta los controles */
+.music-player.details-open .player-main {
+  gap: 3px;
+}
+
+.music-player.details-open .player-controls {
+  gap: 8px;
+}
+
+.music-player.details-open .player-controls button {
+  min-width: 30px;
+  min-height: 30px;
+  padding: 4px;
+}
+
+.music-player.details-open .player-controls .player-play {
+  width: 34px;
+  height: 34px;
+}
+
+.music-player.details-open .player-icon {
+  width: 17px;
+  height: 17px;
+}
+
+.music-player.details-open .player-play .player-icon {
+  width: 19px;
+  height: 19px;
+}
+
+.music-player.details-open .player-progress {
+  gap: 6px;
+  font-size: 0.65rem;
+}
+
+.music-player.details-open .player-close {
+  top: 3px;
+  right: 5px;
+}
+
 
 .player-song {
   display: flex;

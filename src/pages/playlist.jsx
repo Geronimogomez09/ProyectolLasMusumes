@@ -14,6 +14,18 @@ import "../styles/playlist.css";
 function Playlist() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [selectedSong, setSelectedSong] = useState(null);
+
+  const {
+    favoriteSongs,
+    playSong,
+    playCollection,
+    isBlocked,
+    isFavorite,
+    toggleFavorite,
+    toggleBlocked,
+    songDurations,
+  } = useMusic();
 
   const playlist = playlists.find(
     (item) => item.id === Number(id)

@@ -1,0 +1,148 @@
+/* Fuentes Minecraft: los archivos deben estar en public/fonts/. */
+@font-face {
+  font-family: 'MinecraftSeven';
+  src: url('/fonts/Minecraft.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Minecrafttitulo';
+  src: url('/fonts/MinecraftV.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Página individual de publicación — identidad visual inspirada en el dashboard de moderación */
+.publicacion-main {
+  --pub-verde: #229944;
+  --pub-verde-oscuro: #183b24;
+  --pub-texto-suave: #738174;
+  min-height: 70vh;
+  box-sizing: border-box;
+  padding: clamp(104px, 10vh, 132px) max(1rem, calc((100% - 980px) / 2)) 4rem;
+  background:
+    radial-gradient(circle at 8% 15%, rgba(44, 166, 73, .07), transparent 24rem),
+    radial-gradient(circle at 92% 38%, rgba(255, 204, 77, .08), transparent 22rem),
+    linear-gradient(145deg, #f2f6f1 0%, #f8f8f3 55%, #eef5ed 100%);
+}
+.publicacion-page-header { max-width: 980px; margin: 0 auto 1.25rem; animation: pub-entrada .45s ease both; }
+.publicacion-breadcrumb { display: flex; align-items: center; gap: .55rem; margin: 0 0 1.1rem; color: #7b867a; font-size: .84rem; }
+.publicacion-breadcrumb a { color: #218a3d; text-decoration: none; font-weight: 750; font-family: 'MinecraftSeven'; }
+.publicacion-breadcrumb a:hover { text-decoration: underline; }
+.publicacion-eyebrow { margin: 0 0 .45rem; color: #299747; font-size: .7rem; letter-spacing: .16em; font-weight: 850; text-transform: uppercase; }
+.publicacion-page-header h1 { margin: 0; color: #193a23; font-family: 'Minecrafttitulo'; font-size: clamp(1.8rem, 4vw, 2.6rem); line-height: 1.12; font-weight: 850; letter-spacing: -.035em; }
+.publicacion-page-subtitulo { margin: .55rem 0 0; color: #718072; font-size: .96rem; line-height: 1.55; }
+
+.publicacion-detalle { position: relative; max-width: 980px; margin: 0 auto; overflow: visible; background: rgba(255,255,255,.96); border: 1px solid #dfe8de; border-radius: 22px; padding: clamp(1rem, 3vw, 2rem); box-shadow: 0 18px 48px rgba(29, 61, 33, .075); animation: pub-entrada .5s .04s ease both; }
+.publicacion-autor { display: flex; align-items: center; gap: .8rem; min-width: 0; padding-bottom: 1.15rem; border-bottom: 1px solid #e9eee7; }
+.publicacion-avatar { flex: 0 0 46px; width: 46px; height: 46px; border-radius: 15px; display: grid; place-items: center; color: #fff; font-weight: 850; box-shadow: 0 5px 12px rgba(25, 59, 35, .12); }
+.publicacion-autor__datos { display: flex; flex: 1; flex-direction: column; gap: .22rem; min-width: 0; }
+.publicacion-autor__datos strong { color: #1e4229; font-size: .97rem; overflow-wrap: anywhere; }
+.publicacion-autor__datos span { color: #7b8579; font-size: .81rem; }
+.publicacion-categoria { max-width: 28%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-left: auto; border: 1px solid #d8eedb; border-radius: 999px; background: #eef9ee; color: #267d3b; padding: .42rem .75rem; font-size: .74rem; font-weight: 800; text-transform: capitalize; }
+.publicacion-icon-action { flex: 0 0 auto; display: grid; place-items: center; width: 34px; height: 34px; border: 1px solid transparent; border-radius: 10px; background: transparent; cursor: pointer; transition: background .18s, transform .18s, border-color .18s; }
+.publicacion-denunciar { color: #997322; font-size: 1.05rem; }
+.publicacion-denunciar:hover { background: #fff7df; border-color: #f0e0b1; transform: translateY(-1px); }
+
+.publicacion-contenido { padding: 1.5rem 0; color: #303d32; font-size: clamp(1rem, 2vw, 1.12rem); line-height: 1.8; white-space: pre-wrap; overflow-wrap: anywhere; }
+.publicacion-contenido small { color: #8a9488; font-size: .73rem; }
+.publicacion-imagen { display: block; max-width: 100%; max-height: 620px; object-fit: contain; border: 1px solid #e8eee5; border-radius: 16px; margin: 0 auto 1.25rem; }
+.publicacion-acciones-propias { display: flex; align-items: center; gap: .45rem; flex-wrap: wrap; border-top: 1px solid #edf1eb; padding: .8rem 0; }
+.publicacion-acciones-propias span { margin-right: auto; color: #758174; font-size: .78rem; font-weight: 650; }
+.publicacion-acciones-propias button, .publicacion-edicion button { border: 1px solid #dce7da; border-radius: 9px; padding: .45rem .75rem; background: #f7faf5; color: #2d713c; font-size: .82rem; font-weight: 750; cursor: pointer; transition: transform .18s, background .18s, box-shadow .18s; }
+.publicacion-acciones-propias button:hover, .publicacion-edicion button:hover { transform: translateY(-1px); background: #eaf6e8; box-shadow: 0 4px 12px rgba(36, 117, 54, .09); }
+.publicacion-acciones-propias .peligro { color: #b44843; border-color: #f0d9d6; background: #fff9f8; }
+.publicacion-acciones-propias .peligro:hover { background: #fff0ee; }
+
+.publicacion-interacciones { padding: 1rem 0; border-top: 1px solid #edf1eb; border-bottom: 1px solid #edf1eb; }
+.publicacion-reacciones { display: flex; align-items: center; gap: .45rem; flex-wrap: wrap; }
+.publicacion-reacciones button { min-height: 38px; display: inline-flex; align-items: center; justify-content: center; gap: .38rem; border: 1px solid #e0e8de; border-radius: 999px; background: #fbfcf9; padding: .38rem .68rem; color: #3d4b3e; font-size: .86rem; cursor: pointer; transition: transform .18s, border-color .18s, background .18s, box-shadow .18s; }
+.publicacion-reacciones button:hover { transform: translateY(-2px); border-color: #9bcca2; box-shadow: 0 5px 12px rgba(32, 105, 48, .08); }
+.publicacion-reacciones button.activa { background: #eaf7e9; border-color: #69b779; color: #23783a; }
+.publicacion-reacciones img { width: 21px; height: 21px; object-fit: contain; }
+.publicacion-like span:first-child { font-size: 1.02rem; }
+.publicacion-reaccion-picker-wrap { position: relative; }
+.publicacion-reacciones .publicacion-agregar-reaccion { border-style: dashed; background: #fff; color: #547258; }
+.publicacion-agregar-reaccion span { font-size: .8rem; }
+.publicacion-reaccion-picker { position: absolute; z-index: 20; left: 0; bottom: calc(100% + 8px); display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .35rem; width: min(320px, calc(100vw - 3rem)); max-height: 260px; overflow-y: auto; padding: .65rem; border: 1px solid #dfe8dc; border-radius: 15px; background: #fff; box-shadow: 0 14px 36px rgba(25, 51, 26, .17); animation: pub-entrada .16s ease both; }
+.publicacion-reacciones .publicacion-reaccion-picker__item { min-width: 0; display: flex; flex-direction: column; gap: .25rem; border: 1px solid transparent; border-radius: 9px; padding: .45rem .2rem; background: #f8faf6; }
+.publicacion-reaccion-picker__item img { width: 25px; height: 25px; }
+.publicacion-reaccion-picker__item span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .6rem; }
+.publicacion-emoji-fallback { display: inline-grid; place-items: center; width: 21px; height: 21px; font-size: 1rem; line-height: 1; text-align: center; overflow-wrap: normal; }
+.publicacion-interacciones__nota { display: block; margin-top: .55rem; color: #8a9488; font-size: .75rem; }
+
+.publicacion-comentarios { padding-top: 1.55rem; }
+.publicacion-comentarios__titulo { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; padding-bottom: .95rem; border-bottom: 1px solid #e9eee7; }
+.publicacion-comentarios__titulo span { color: #299747; font-size: .68rem; letter-spacing: .15em; font-weight: 850; }
+.publicacion-comentarios__titulo h2 { margin: .3rem 0 0; color: #1c3823; font-size: 1.35rem; font-weight: 800; }
+.publicacion-comentarios__titulo p { margin: .25rem 0 0; color: #7d887c; font-size: .82rem; }
+.publicacion-comentarios__titulo b { flex: 0 0 auto; display: grid; place-items: center; min-width: 36px; height: 36px; border-radius: 12px; background: #edf7eb; color: #2d803e; font-size: .88rem; }
+
+.publicacion-edicion { padding: 1rem 0; }
+.publicacion-edicion textarea { width: 100%; box-sizing: border-box; border: 1px solid #dbe5d8; border-radius: 12px; padding: .85rem; resize: vertical; font: inherit; line-height: 1.5; }
+.publicacion-edicion textarea:focus { outline: 2px solid #a7d6ac; border-color: #5ca96d; }
+.publicacion-edicion div { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: .6rem; }
+.publicacion-edicion button.secundario { background: #fff; color: #59645a; }
+.publicacion-no-encontrada { max-width: 650px; margin: 0 auto; padding: clamp(2rem, 5vw, 3.5rem) 1.5rem; text-align: center; background: #fff; border: 1px solid #dfe8de; border-radius: 22px; box-shadow: 0 18px 48px rgba(29, 61, 33, .075); }
+.publicacion-no-encontrada__icono { display: inline-grid; place-items: center; width: 54px; height: 54px; margin-bottom: 1rem; border-radius: 16px; background: #e7f7e9; font-size: 1.8rem; }
+.publicacion-no-encontrada h1 { margin: 0; color: #1b3823; font-size: clamp(1.4rem, 4vw, 1.8rem); }
+.publicacion-no-encontrada p:not(.publicacion-eyebrow) { color: #687568; }
+.publicacion-volver { display: inline-block; margin-top: .7rem; padding: .7rem 1rem; background: #27813d; color: #fff; border-radius: 10px; text-decoration: none; font-weight: 750; transition: background .18s, transform .18s; }
+.publicacion-volver:hover { background: #1d6c31; color: #fff; transform: translateY(-1px); }
+
+.publicacion-admin-toggle { position: fixed; right: 1.5rem; bottom: 1.25rem; z-index: 90; display: inline-flex; align-items: center; gap: .55rem; max-width: calc(100vw - 1.5rem); border: 1px solid #13bd3b; border-radius: 999px; padding: .78rem 1.1rem; background: rgba(255,255,255,.96); color: #079a2a; font-weight: 800; font-size: .88rem; box-shadow: 0 8px 28px rgba(21, 63, 28, .14); cursor: pointer; transition: transform .2s, box-shadow .2s, background .2s; }
+.publicacion-admin-toggle:hover { transform: translateY(-2px); box-shadow: 0 12px 30px rgba(21, 63, 28, .2); }
+.publicacion-admin-toggle.activo { background: #e7fbe9; }
+.publicacion-admin-toggle__punto { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.publicacion-admin-toggle__flecha { font-size: 1rem; }
+
+@keyframes pub-entrada { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+@media (max-width: 760px) {
+  .publicacion-main { padding: 108px 1rem 6rem; }
+  .publicacion-detalle { border-radius: 18px; }
+  .publicacion-page-header { margin-bottom: 1rem; }
+  .publicacion-categoria { max-width: 24%; }
+}
+@media (max-width: 520px) {
+  .publicacion-main { padding: 100px .65rem 5.5rem; }
+  .publicacion-detalle { padding: 1rem; border-radius: 15px; }
+  .publicacion-autor { gap: .55rem; align-items: flex-start; }
+  .publicacion-avatar { flex-basis: 40px; width: 40px; height: 40px; border-radius: 12px; }
+  .publicacion-autor__datos { padding-top: .15rem; }
+  .publicacion-autor__datos span { font-size: .74rem; }
+  .publicacion-categoria { display: none; }
+  .publicacion-icon-action { margin-left: auto; }
+  .publicacion-contenido { padding: 1.15rem 0; font-size: 1rem; line-height: 1.7; }
+  .publicacion-acciones-propias span { flex-basis: 100%; }
+  .publicacion-reacciones button { min-height: 36px; padding: .35rem .55rem; }
+  .publicacion-reacciones .publicacion-agregar-reaccion span { display: none; }
+  .publicacion-reaccion-picker { grid-template-columns: repeat(4, minmax(0, 1fr)); left: auto; right: 0; }
+  .publicacion-admin-toggle { right: .65rem; bottom: .65rem; padding: .7rem .9rem; font-size: .8rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .publicacion-page-header, .publicacion-detalle, .publicacion-reaccion-picker { animation: none; }
+  .publicacion-admin-toggle, .publicacion-acciones-propias button, .publicacion-reacciones button, .publicacion-volver { transition: none; }
+}
+
+
+/* Tipografía Minecraft aplicada únicamente a títulos, subtítulos y nombre de usuario. */
+.publicacion-main .publicacion-page-header h1,
+.publicacion-main .publicacion-no-encontrada h1 {
+  font-family: 'Minecrafttitulo', sans-serif;
+  letter-spacing: 0.015em;
+}
+
+.publicacion-main .publicacion-page-subtitulo,
+.publicacion-main .publicacion-comentarios__titulo h2,
+.publicacion-main .publicacion-comentarios__titulo > div > span,
+.publicacion-main .publicacion-eyebrow {
+  font-family: 'MinecraftSeven', sans-serif;
+}
+
+.publicacion-main .publicacion-autor__datos strong {
+  font-family: 'MinecraftSeven', sans-serif;
+}

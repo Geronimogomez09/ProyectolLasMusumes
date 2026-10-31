@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
 function SongRow({
   song,
@@ -9,8 +10,17 @@ function SongRow({
   onPlay,
   onOpen,
   onToggleFavorite,
-  onToggleBlocked,
 }) {
+  const navigate = useNavigate();
+
+  const openSongDetails = () => {
+    if (onOpen) {
+      onOpen(song);
+    } else {
+      navigate(`/musica/cancion/${song.id}`);
+    }
+  };
+
   return (
     <div className={`song-row ${isBlocked ? "is-blocked" : ""}`}>
       <span className="song-index">
@@ -34,7 +44,7 @@ function SongRow({
 
       <button
         className="song-info"
-        onClick={() => onOpen(song)}
+        onClick={openSongDetails}
       >
         <strong>{song.title}</strong>
 

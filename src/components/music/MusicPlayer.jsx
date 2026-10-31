@@ -16,6 +16,17 @@ function MusicPlayer({
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(1);
 
+  const { isBlocked } = useMusic();
+
+  // Si una canción está bloqueada, no debe poder reproducirse.
+  useEffect(() => {
+    if (currentSong && isBlocked(currentSong)) {
+      audioRef.current?.pause();
+      setIsPlaying(false);
+    }
+  }, [currentSong, isBlocked]);
+
+  // Cambiar de canción carga su audio y comienza la reproducción.
   useEffect(() => {
     if (!currentSong || !audioRef.current) {
       return;
@@ -135,7 +146,7 @@ function MusicPlayer({
 
         <div>
           <strong>{currentSong.title}</strong>
-          <span>{currentSong.composerName}</span>
+          <span>{currentSong.composerName || "Minecraft"}</span>
         </div>
       </div>
 
