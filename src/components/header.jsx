@@ -1,5 +1,8 @@
+
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+
 import "../styles/variables.css";
 import "../styles/header.css";
 
@@ -25,61 +28,81 @@ const ENLACES = [
 ];
 
 function Header() {
-    // Obtiene la ruta actual para detectar enlaces activos y controlar
-    // cuándo se debe ocultar el header.
     const location = useLocation();
 
-    // Estados que controlan el tamaño del header, el hover y los menús.
+    // Datos de autenticación.
+    const { usuario, cerrarSesion } = useAuth();
+
+    // Estados del header y sus menús.
     const [encogido, setEncogido] = useState(false);
     const [hoverActivo, setHoverActivo] = useState(false);
     const [menuAbierto, setMenuAbierto] = useState(false);
     const [perfilAbierto, setPerfilAbierto] = useState(false);
 
-    // Detecta el desplazamiento y actualiza el estado del header.
+    // Detecta el desplazamiento.
     useEffect(() => {
         const actualizarHeader = () => {
             setEncogido(window.scrollY > LIMITE_SCROLL);
         };
 
         actualizarHeader();
-        window.addEventListener("scroll", actualizarHeader, { passive: true });
 
-        // Elimina el evento cuando el componente deja de utilizarse.
-        return () => window.removeEventListener("scroll", actualizarHeader);
+        window.addEventListener("scroll", actualizarHeader, {
+            passive: true,
+        });
+
+        return () => {
+            window.removeEventListener("scroll", actualizarHeader);
+        };
     }, []);
 
-    // Cierra ambos menús cuando cambia la ruta.
+    // Cierra los menús cuando cambia la ruta.
     useEffect(() => {
         setMenuAbierto(false);
         setPerfilAbierto(false);
     }, [location.pathname]);
 
-    // Comprueba si la ruta actual coincide con alguna de las rutas excluidas.
-    // También contempla las páginas que se encuentran dentro de esas rutas.
+    // Comprueba si se debe ocultar el header.
     const ocultarNavbar = RUTAS_SIN_NAVBAR.some(
-        (ruta) => location.pathname === ruta || location.pathname.startsWith(`${ruta}/`)
+        (ruta) =>
+            location.pathname === ruta ||
+            location.pathname.startsWith(`${ruta}/`)
     );
 
-    // Oculta completamente el header en las páginas excluidas.
     if (ocultarNavbar) return null;
 
-    // El header se compacta al hacer scroll, excepto cuando el cursor está
-    // encima o alguno de los menús permanece abierto.
-    const headerCompacto = encogido && !menuAbierto && !perfilAbierto;
+    // Control del header compacto.
+    const headerCompacto =
+        encogido && !menuAbierto && !perfilAbierto && !hoverActivo;
 
-    // Cierra el menú de navegación cuando se selecciona un enlace.
+    // Cierra el menú de navegación.
     const cerrarMenu = () => {
         setMenuAbierto(false);
     };
 
+    // Cierra la sesión del usuario.
+    const manejarCerrarSesion = async () => {
+        try {
+            await cerrarSesion();
+            setPerfilAbierto(false);
+            setMenuAbierto(false);
+        } catch (error) {
+            console.error("Error al cerrar sesión:", error);
+        }
+    };
+
     return (
         <header
-            className={`header ${headerCompacto ? "shrink" : ""} ${menuAbierto ? "menu-open" : ""}`}
+            className={`header ${headerCompacto ? "shrink" : ""} ${
+                menuAbierto ? "menu-open" : ""
+            }`}
+            onMouseEnter={() => setHoverActivo(true)}
+            onMouseLeave={() => setHoverActivo(false)}
         >
             <nav className="header-bar" aria-label="Navegación principal">
                 <div className="header-container">
 
-                    {/* Fila superior que contiene el logo y el botón del menú móvil. */}
+                    {/* Logo y botón del menú móvil. */}
                     <div className="header-top-row">
                         <Link
                             className="header-logo"
@@ -91,34 +114,38 @@ function Header() {
                             }}
                         >
                             WIKI<span className="header-logo-separator">-</span>
-                            <span className="h1-craft" >CRAFT</span>
+                            <span className="h1-craft">CRAFT</span>
                         </Link>
 
-                        {/* Botón hamburguesa que abre o cierra la navegación en móvil.
-                            El icono (tres líneas -> X) se dibuja con CSS. */}
                         <button
                             className="header-toggler"
                             type="button"
                             aria-controls="navbarPrincipal"
                             aria-expanded={menuAbierto}
-                            aria-label={menuAbierto ? "Cerrar menú" : "Abrir menú"}
-                            onClick={() => setMenuAbierto((abierto) => !abierto)}
+                            aria-label={
+                                menuAbierto ? "Cerrar menú" : "Abrir menú"
+                            }
+                            onClick={() =>
+                                setMenuAbierto((abierto) => !abierto)
+                            }
                         >
-                            <span className="header-toggler-icon" aria-hidden="true" />
+                            <span
+                                className="header-toggler-icon"
+                                aria-hidden="true"
+                            />
                         </button>
                     </div>
 
-                    {/* Contenido desplegable del header.
-                        La clase show controla su visibilidad en el menú responsive.
-                        header-content-inner es necesario para animar la altura en móvil. */}
+                    {/* Contenido del header. */}
                     <div
-                        className={`header-content ${menuAbierto ? "show" : ""}`}
+                        className={`header-content ${
+                            menuAbierto ? "show" : ""
+                        }`}
                         id="navbarPrincipal"
                     >
                         <div className="header-content-inner">
 
-                            {/* Buscador visual que, por ahora, evita el envío del formulario
-                                y no realiza búsquedas. */}
+                            {/* Buscador. */}
                             <form
                                 className="header-search"
                                 role="search"
@@ -149,20 +176,27 @@ function Header() {
                                 </button>
                             </form>
 
-                            {/* Enlaces principales de navegación.
-                                El enlace correspondiente a la ruta actual recibe la clase active. */}
+                            {/* Navegación principal. */}
                             <ul className="header-nav">
                                 {ENLACES.map((enlace) => {
-                                    const activo = enlace.ruta === "/"
-                                        ? location.pathname === "/"
-                                        : location.pathname === enlace.ruta || location.pathname.startsWith(`${enlace.ruta}/`);
+                                    const activo =
+                                        enlace.ruta === "/"
+                                            ? location.pathname === "/"
+                                            : location.pathname === enlace.ruta ||
+                                              location.pathname.startsWith(
+                                                  `${enlace.ruta}/`
+                                              );
 
                                     return (
                                         <li key={enlace.ruta}>
                                             <Link
-                                                className={`header-link ${activo ? "active" : ""}`}
+                                                className={`header-link ${
+                                                    activo ? "active" : ""
+                                                }`}
                                                 to={enlace.ruta}
-                                                aria-current={activo ? "page" : undefined}
+                                                aria-current={
+                                                    activo ? "page" : undefined
+                                                }
                                                 onClick={cerrarMenu}
                                             >
                                                 {enlace.nombre}
@@ -172,22 +206,37 @@ function Header() {
                                 })}
                             </ul>
 
-                            {/* Perfil con menú desplegable controlado por React.
-                                En escritorio solo se ve el avatar y la flecha;
-                                en móvil también se muestra el texto "Perfil". */}
-                            <div className={`header-profile ${perfilAbierto ? "profile-open" : ""}`}>
+                            {/* Perfil y autenticación. */}
+                            <div
+                                className={`header-profile ${
+                                    perfilAbierto ? "profile-open" : ""
+                                }`}
+                            >
                                 <button
                                     className="profile-button"
                                     type="button"
-                                    aria-label="Mostrar menú visual del perfil"
+                                    aria-label="Mostrar menú de perfil"
                                     aria-expanded={perfilAbierto}
                                     aria-controls="menuPerfil"
-                                    title="Menú de perfil (solo diseño visual)"
-                                    onClick={() => setPerfilAbierto((abierto) => !abierto)}
+                                    onClick={() =>
+                                        setPerfilAbierto(
+                                            (abierto) => !abierto
+                                        )
+                                    }
                                 >
-                                    {/* Para usar una imagen: <img src={...} alt="" /> dentro del avatar. */}
-                                    <span className="profile-avatar" aria-hidden="true">P</span>
-                                    <span className="profile-text">Perfil</span>
+                                    <span
+                                        className="profile-avatar"
+                                        aria-hidden="true"
+                                    >
+                                        {usuario?.email
+                                            ?.charAt(0)
+                                            .toUpperCase() || "P"}
+                                    </span>
+
+                                    <span className="profile-text">
+                                        {usuario ? "Mi perfil" : "Perfil"}
+                                    </span>
+
                                     <svg
                                         className="profile-chevron"
                                         xmlns="http://www.w3.org/2000/svg"
@@ -203,36 +252,85 @@ function Header() {
                                     </svg>
                                 </button>
 
-                                {/* Opciones visuales del perfil.
-                                    La clase show controla la visibilidad del menú. */}
                                 <ul
-                                    className={`profile-menu ${perfilAbierto ? "show" : ""}`}
+                                    className={`profile-menu ${
+                                        perfilAbierto ? "show" : ""
+                                    }`}
                                     id="menuPerfil"
-                                    aria-label="Opciones visuales del perfil"
+                                    aria-label="Opciones del perfil"
                                 >
-                                    <li>
-                                        <span className="profile-menu-title">Mi cuenta</span>
-                                    </li>
-                                    <li>
-                                        <span className="profile-menu-item">Configuración</span>
-                                    </li>
-                                    <li>
-                                        <span className="profile-menu-item">Carrito</span>
-                                    </li>
-                                    <li>
-                                        <span className="profile-menu-item">Canciones guardadas</span>
-                                    </li>
-                                    <li>
-                                        <span className="profile-menu-item">Mis publicaciones</span>
-                                    </li>
-                                    <li>
-                                        <hr className="profile-menu-divider" />
-                                    </li>
-                                    <li>
-                                        <span className="profile-menu-item profile-logout">Cerrar sesión</span>
-                                    </li>
+                                    {usuario ? (
+                                        <>
+                                            <li>
+                                                <span className="profile-menu-title">
+                                                    {usuario.email}
+                                                </span>
+                                            </li>
+
+                                            <li>
+                                                <span className="profile-menu-item">
+                                                    Configuración
+                                                </span>
+                                            </li>
+
+                                            <li>
+                                                <span className="profile-menu-item">
+                                                    Carrito
+                                                </span>
+                                            </li>
+
+                                            <li>
+                                                <span className="profile-menu-item">
+                                                    Canciones guardadas
+                                                </span>
+                                            </li>
+
+                                            <li>
+                                                <span className="profile-menu-item">
+                                                    Mis publicaciones
+                                                </span>
+                                            </li>
+
+                                            <li>
+                                                <hr className="profile-menu-divider" />
+                                            </li>
+
+                                            <li>
+                                                <button
+                                                    type="button"
+                                                    className="profile-menu-item profile-logout"
+                                                    onClick={manejarCerrarSesion}
+                                                >
+                                                    Cerrar sesión
+                                                </button>
+                                            </li>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <li>
+                                                <Link
+                                                    to="/login"
+                                                    className="profile-menu-item"
+                                                    onClick={cerrarMenu}
+                                                >
+                                                    Iniciar sesión
+                                                </Link>
+                                            </li>
+
+                                            <li>
+                                                <Link
+                                                    to="/registro"
+                                                    className="profile-menu-item"
+                                                    onClick={cerrarMenu}
+                                                >
+                                                    Crear cuenta
+                                                </Link>
+                                            </li>
+                                        </>
+                                    )}
                                 </ul>
                             </div>
+
                         </div>
                     </div>
                 </div>
