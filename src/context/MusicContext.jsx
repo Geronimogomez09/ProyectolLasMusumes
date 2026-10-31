@@ -5,10 +5,17 @@ import React, {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 
 import { songs, composers } from "../data/musicData";
+import { useAuth } from "./AuthContext";
+import {
+  COLECCIONES,
+  actualizarDocumento,
+  escucharDocumento,
+} from "../services/firestore";
 
 const MusicContext = createContext(null);
 
@@ -22,6 +29,10 @@ const readStorage = (key, fallback) => {
 };
 
 export function MusicProvider({ children }) {
+  const { usuario } = useAuth();
+  const uid = usuario?.uid;
+  const uidPrevio = useRef(null);
+
   const [favorites, setFavorites] = useState(
     () => readStorage("wikicraft_music_favorites", [])
   );
@@ -29,6 +40,24 @@ export function MusicProvider({ children }) {
   const [blockedSongs, setBlockedSongs] = useState(
     () => readStorage("wikicraft_music_blocked", [])
   );
+
+  // Con sesión iniciada, los favoritos viven en la cuenta (usuarios/{uid}.favoritos).
+  // Si la cuenta todavía no tiene favoritos guardados, se conservan los locales.
+  useEffect(() => {
+    if (!uid) {
+      if (uidPrevio.current) setFavorites([]); // se cerró sesión: no mostrar los del usuario anterior
+      uidPrevio.current = null;
+      return undefined;
+    }
+
+    uidPrevio.current = uid;
+
+    return escucharDocumento(COLECCIONES.usuarios, uid, (perfil) => {
+      if (Array.isArray(perfil?.favoritos)) {
+        setFavorites(perfil.favoritos.map(Number));
+      }
+    });
+  }, [uid]);
 
   const [currentSong, setCurrentSong] = useState(null);
   const [queue, setQueue] = useState([]);
@@ -133,19 +162,30 @@ export function MusicProvider({ children }) {
     [favorites]
   );
 
-  const toggleFavorite = useCallback((songOrId) => {
-    const id = Number(
-      typeof songOrId === "object" ? songOrId?.id : songOrId
-    );
+  const toggleFavorite = useCallback(
+    (songOrId) => {
+      const id = Number(
+        typeof songOrId === "object" ? songOrId?.id : songOrId
+      );
 
-    if (!id) return;
+      if (!id) return;
 
-    setFavorites((previous) =>
-      previous.includes(id)
-        ? previous.filter((item) => item !== id)
-        : [...previous, id]
-    );
-  }, []);
+      const next = favorites.includes(id)
+        ? favorites.filter((item) => item !== id)
+        : [...favorites, id];
+
+      setFavorites(next);
+
+      if (uid) {
+        actualizarDocumento(COLECCIONES.usuarios, uid, {
+          favoritos: next,
+        }).catch((error) =>
+          console.error("No se pudieron guardar los favoritos:", error)
+        );
+      }
+    },
+    [favorites, uid]
+  );
 
   const toggleBlocked = useCallback((songOrId) => {
     const id = Number(
