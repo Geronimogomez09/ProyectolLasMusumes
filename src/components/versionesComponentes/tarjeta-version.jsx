@@ -1,6 +1,10 @@
 import ListaComentarios from '../comunidadComponentes/lista-comentarios';
 import '../../styles/tarjeta-version.css';
 
+// Cada entrada acá define qué campo del objeto `version` se muestra, con qué
+// título y qué ícono. Si el array de ese campo viene vacío, la sección ni
+// se renderiza (por eso un hotfix sin bloques nuevos no muestra "Nuevos
+// bloques" vacío).
 const SECCIONES = [
   { campo: 'nuevasFunciones', titulo: 'Nuevas funciones', icono: '🆕' },
   { campo: 'cambios', titulo: 'Cambios', icono: '🔄' },
@@ -10,13 +14,15 @@ const SECCIONES = [
   { campo: 'nuevosBiomas', titulo: 'Nuevos biomas', icono: '🗺️' },
 ];
 
+// version: ver forma completa en versiones.jsx (postsIniciales/versionesIniciales)
+// comentariosAbiertos: bool — si está abierta la sección de comentarios
+// onToggleComentarios, onAgregarComentario: delegados al padre (igual que en Comunidad)
+// delay: segundos para el animationDelay de la cascada
 function TarjetaVersion({
   version,
   comentariosAbiertos,
   onToggleComentarios,
   onAgregarComentario,
-  onEditar,
-  onEliminar,
   delay = 0,
 }) {
   return (
@@ -38,6 +44,8 @@ function TarjetaVersion({
             e.target.nextElementSibling.style.display = 'flex';
           }}
         />
+        {/* Fallback: si todavía no pusiste la imagen en public/images/versiones/,
+            se ve el número de versión en vez de un ícono roto */}
         <div className="version-card__imagen-fallback" style={{ display: 'none' }}>
           <span>{version.numero}</span>
         </div>
@@ -45,30 +53,18 @@ function TarjetaVersion({
 
       <div className="version-card__cuerpo">
         <div className="version-card__encabezado">
-          <div>
-            <h3>
-              {version.numero} · {version.nombre}
-            </h3>
-            <div className="version-card__ediciones">
-              {version.edicion.map((ed) => (
-                <span
-                  key={ed}
-                  className={`edicion-badge edicion-badge--${ed.toLowerCase()}`}
-                >
-                  {ed}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          {/* BOTONES DE EDICIÓN Y ELIMINACIÓN */}
-          <div className="version-card__acciones">
-            <button className="btn-accion btn-accion--editar" onClick={onEditar} title="Editar versión">
-              ✏️ Editar
-            </button>
-            <button className="btn-accion btn-accion--eliminar" onClick={onEliminar} title="Eliminar versión">
-              🗑️ Eliminar
-            </button>
+          <h3>
+            {version.numero} · {version.nombre}
+          </h3>
+          <div className="version-card__ediciones">
+            {version.edicion.map((ed) => (
+              <span
+                key={ed}
+                className={`edicion-badge edicion-badge--${ed.toLowerCase()}`}
+              >
+                {ed}
+              </span>
+            ))}
           </div>
         </div>
 
