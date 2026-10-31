@@ -1,3 +1,5 @@
+import MinecraftIcon from "./MinecraftIcon";
+
 export default function ControlesTienda({
     busqueda,
     setBusqueda,
@@ -69,7 +71,11 @@ export default function ControlesTienda({
                 type="button"
                 onClick={abrirCarrito}
             >
-                🛒
+                <MinecraftIcon
+                    name="carrito"
+                    alt="Carrito"
+                    className="carrito-btn-icono"
+                />
                 <span>
                     {cantidadCarrito}
                 </span>

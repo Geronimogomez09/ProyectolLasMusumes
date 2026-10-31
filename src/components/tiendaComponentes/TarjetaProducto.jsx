@@ -1,3 +1,5 @@
+import MinecraftIcon from "./MinecraftIcon";
+
 export default function TarjetaProducto({
     producto,
     abrirProducto,
@@ -23,7 +25,11 @@ export default function TarjetaProducto({
                 ) : (
 
                     <div className="imagen-vacia">
-                        🛍️
+                        <MinecraftIcon
+                            name="producto"
+                            alt="Producto"
+                            className="imagen-vacia-icono"
+                        />
                     </div>
 
                 )}

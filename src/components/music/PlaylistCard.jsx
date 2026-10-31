@@ -1,3 +1,4 @@
+
 import React from "react";
 
 function PlaylistCard({
@@ -14,7 +15,7 @@ function PlaylistCard({
       >
         <img
           src={playlist.cover}
-          alt={playlist.name}
+          alt={playlist.title}
         />
       </button>
 
@@ -23,7 +24,7 @@ function PlaylistCard({
           className="playlist-card-title"
           onClick={() => onOpen(playlist)}
         >
-          {playlist.name}
+          {playlist.title}
         </button>
 
         <p>{playlist.description}</p>
