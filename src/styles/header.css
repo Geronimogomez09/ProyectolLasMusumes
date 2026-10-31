@@ -451,10 +451,29 @@ main {
     min-height: 80px;
   }
 
-  .header-logo {
-    position: relative;
-    z-index: 2;
-  }
+
+/* Botón de cerrar sesión */
+.profile-logout {
+    width: 100%;
+    border: none;
+    background: none;
+    text-align: left;
+    cursor: pointer;
+    font: inherit;
+}
+
+/* Evita que los enlaces del perfil pierdan su apariencia */
+.profile-menu-item {
+    display: block;
+    text-decoration: none;
+}
+
+/* Evita que el correo largo rompa el menú */
+.profile-menu-title {
+    overflow-wrap: anywhere;
+}
+
+/* Estas reglas se aplican en pantallas de escritorio de 1100 píxeles o más. El menú pasa a una sola fila y deja de comportarse como un desplegable móvil. */
 
   /* Centra el botón hamburguesa sin depender del ancho del logo */
   .header-top-row .navbar-toggler {
