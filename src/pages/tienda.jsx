@@ -7,6 +7,7 @@ import ControlesTienda from "../components/tiendaComponentes/ControlesTienda";
 import CategoriasTienda from "../components/tiendaComponentes/CategoriasTienda";
 import AdministrarProductos from "../components/tiendaComponentes/AdministrarProductos";
 import Carrito from "../components/tiendaComponentes/Carrito";
+import BotonAdmin from '../components/botonAdmin';
 import DetalleProducto from "../components/tiendaComponentes/DetalleProducto";
 
 import { productosIniciales } from "../data/productos";
@@ -1042,22 +1043,11 @@ export default function Tienda() {
             <Footer />
 
             {!mostrandoDetalle && (
-                <div className="tienda-admin-flotante">
-                    {administradorAbierto && (
-                        <span className="tienda-admin-aviso">
-                            Los cambios se guardan en este navegador
-                        </span>
-                    )}
-                    <button
-                        className={`tienda-admin-toggle ${administradorAbierto ? "activo" : ""}`}
-                        type="button"
-                        aria-expanded={administradorAbierto}
-                        onClick={() => setAdministradorAbierto((abierto) => !abierto)}
-                    >
-                        <span aria-hidden="true">{administradorAbierto ? "✓" : "⚙"}</span>
-                        {administradorAbierto ? "Cerrar administrador" : "Modo administrador"}
-                    </button>
-                </div>
+                <BotonAdmin
+                    activo={administradorAbierto}
+                    alAlternar={() => setAdministradorAbierto((abierto) => !abierto)}
+                    aviso="Los cambios se guardan en Firebase."
+                />
             )}
 
             {/* =========================

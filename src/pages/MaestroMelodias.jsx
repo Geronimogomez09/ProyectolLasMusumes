@@ -1,4 +1,6 @@
 import React, { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import BotonAdmin from '../components/botonAdmin';
 import Header from '../components/header';
 import Footer from '../components/Footer';
 import { songs, composers, albums } from '../data/musicData';
@@ -12,6 +14,7 @@ const emptySong = {
 };
 
 function MaestroMelodias() {
+  const navigate = useNavigate();
   const [catalog, setCatalog] = useState(() =>
     songs.map((song) => ({
       ...song,
@@ -481,6 +484,7 @@ function MaestroMelodias() {
         </aside>
       </main>
 
+      <BotonAdmin activo alAlternar={() => navigate('/musica')} />
       <Footer />
     </>
   );

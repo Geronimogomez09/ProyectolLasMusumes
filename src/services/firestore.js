@@ -1,5 +1,7 @@
 import {
   addDoc,
+  arrayRemove,
+  arrayUnion,
   collection,
   deleteDoc,
   doc,
@@ -12,6 +14,7 @@ import {
   setDoc,
   updateDoc,
   where,
+  writeBatch,
 } from "firebase/firestore";
 import {
   deleteObject,
@@ -146,4 +149,48 @@ export async function eliminarArchivo(url) {
     // Si el archivo ya no existe, no impedimos eliminar/actualizar el documento.
     if (error.code !== "storage/object-not-found") throw error;
   }
+}
+
+// ------------------------- ESCUCHA EN TIEMPO REAL (EXTRA) -------------------------
+
+// Escucha un único documento. Llama al callback con null si no existe.
+export function escucharDocumento(nombreColeccion, id, callback, alError = console.error) {
+  return onSnapshot(
+    doc(db, nombreColeccion, String(id)),
+    (resultado) => callback(resultado.exists() ? { id: resultado.id, ...resultado.data() } : null),
+    alError
+  );
+}
+
+// Escucha los documentos de una colección donde `campo` sea igual a `valor`
+// (por ejemplo, las publicaciones de un autor).
+export function escucharPorCampo(nombreColeccion, campo, valor, callback, alError = console.error) {
+  return onSnapshot(
+    query(collection(db, nombreColeccion), where(campo, "==", valor)),
+    (resultado) => callback(resultado.docs.map((documento) => ({ id: documento.id, ...documento.data() }))),
+    alError
+  );
+}
+
+// Carga varios documentos de una sola vez (datos de ejemplo iniciales).
+// Cada item debe traer su `id`; se usa como ID del documento.
+export async function importarDocumentos(nombreColeccion, items) {
+  const lote = writeBatch(db);
+
+  items.forEach(({ id, ...datos }) => {
+    lote.set(doc(db, nombreColeccion, String(id)), {
+      ...datos,
+      fechaCreacion: serverTimestamp(),
+      fechaActualizacion: serverTimestamp(),
+    });
+  });
+
+  await lote.commit();
+}
+
+// Agrega o quita un valor de un array del documento (favoritos, etc.).
+export async function alternarEnArray(nombreColeccion, id, campo, valor, agregar) {
+  await updateDoc(doc(db, nombreColeccion, String(id)), {
+    [campo]: agregar ? arrayUnion(valor) : arrayRemove(valor),
+  });
 }
