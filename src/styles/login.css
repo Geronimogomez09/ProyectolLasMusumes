@@ -1,0 +1,355 @@
+/* =========================================================
+   login.css · Iniciar sesión y registrarse · Wiki-Craft
+
+   Estilo "Minecraft moderno / pixel art UI": tarjeta redondeada con
+   franja de pasto pixelada, títulos con fuente pixelada, campos suaves
+   y movimiento progresivo. Usa la paleta de variables.css.
+
+   Para cambiar la fuente pixelada, definí --fuente-logo en variables.css
+   (la misma del logo del header).
+   ========================================================= */
+
+.acceso {
+    --acceso-ease: cubic-bezier(0.22, 0.8, 0.24, 1);
+    --acceso-dur: 480ms;
+    --acceso-dur-corta: 250ms;
+    --acceso-borde: color-mix(in srgb, var(--texto) 16%, transparent);
+    --acceso-texto-suave: color-mix(in srgb, var(--texto) 72%, transparent);
+    --acceso-texto-tenue: color-mix(in srgb, var(--texto) 58%, transparent);
+    --acceso-verde-texto: color-mix(in srgb, var(--verde-hover) 78%, var(--texto));
+
+    position: relative;
+    min-height: 100vh;
+    overflow: hidden;
+    background-color: var(--fondo);
+    /* Cuadrícula muy tenue, como el piso de un mapa. */
+    background-image:
+        radial-gradient(ellipse at 15% 0%, color-mix(in srgb, var(--verde) 14%, transparent), transparent 55%),
+        linear-gradient(color-mix(in srgb, var(--texto) 5%, transparent) 1px, transparent 1px),
+        linear-gradient(90deg, color-mix(in srgb, var(--texto) 5%, transparent) 1px, transparent 1px);
+    background-size: auto, 32px 32px, 32px 32px;
+    color: var(--texto);
+}
+
+.acceso .container {
+    position: relative;
+    z-index: 1;
+    padding-block: 32px;
+}
+
+/* ---------- Bloques de Minecraft que flotan despacio ---------- */
+
+.acceso::before,
+.acceso::after {
+    content: "";
+    position: absolute;
+    z-index: 0;
+    border-radius: 4px;
+    /* Pasto arriba, tierra abajo, con una textura de píxeles muy suave. */
+    background:
+        conic-gradient(rgba(0, 0, 0, 0.1) 25%, transparent 0 50%, rgba(0, 0, 0, 0.1) 0 75%, transparent 0) 0 0 / 25% 25%,
+        linear-gradient(var(--verde) 0 30%, color-mix(in srgb, var(--marron) 72%, var(--blanco)) 30% 100%);
+    box-shadow:
+        inset 0 0 0 3px rgba(0, 0, 0, 0.14),
+        0 18px 28px -12px rgba(0, 0, 0, 0.45);
+    opacity: 0.85;
+    pointer-events: none;
+    animation: acceso-flotar 7s ease-in-out infinite alternate;
+}
+
+.acceso::before {
+    top: 14%;
+    left: 8%;
+    width: 64px;
+    height: 64px;
+    --giro: 6deg;
+}
+
+.acceso::after {
+    right: 9%;
+    bottom: 12%;
+    width: 44px;
+    height: 44px;
+    --giro: -8deg;
+    animation-delay: -3s;
+}
+
+@keyframes acceso-flotar {
+    from {
+        transform: translateY(-12px) rotate(var(--giro));
+    }
+    to {
+        transform: translateY(12px) rotate(calc(var(--giro) * -1));
+    }
+}
+
+/* =========================================================
+   Tarjeta
+   ========================================================= */
+
+.acceso-tarjeta {
+    position: relative;
+    overflow: hidden;
+    border: 1.5px solid var(--verde-claro);
+    border-radius: 28px;
+    background: var(--blanco);
+    box-shadow:
+        0 32px 64px -24px rgba(48, 47, 42, 0.35),
+        0 6px 18px -6px rgba(29, 181, 60, 0.18);
+    animation: acceso-entrada 700ms var(--acceso-ease) backwards;
+}
+
+/* Franja de pasto pixelada arriba, igual que la del footer. */
+.acceso-tarjeta::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    height: 16px;
+    background:
+        linear-gradient(var(--verde), var(--verde)) 0 0 / 100% 8px no-repeat,
+        repeating-linear-gradient(90deg, var(--verde) 0 16px, transparent 16px 44px) 0 8px / 100% 8px no-repeat;
+}
+
+@keyframes acceso-entrada {
+    from {
+        opacity: 0;
+        transform: translateY(18px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+/* Cada vez que se cambia de vista, la sección nueva aparece suavemente. */
+.acceso-seccion {
+    padding: clamp(36px, 5vw, 52px) clamp(24px, 5vw, 48px) clamp(28px, 5vw, 44px);
+    animation: acceso-entrada 500ms var(--acceso-ease) backwards;
+}
+
+.acceso-titulo {
+    margin: 0 0 28px;
+    font-family: var(--fuente-logo, "Press Start 2P", ui-monospace, monospace);
+    font-size: clamp(1rem, 2.4vw, 1.35rem);
+    font-weight: 400;
+    line-height: 1.4;
+    text-align: center;
+    color: var(--verde);
+}
+
+/* =========================================================
+   Campos
+   ========================================================= */
+
+.acceso-campo {
+    margin-bottom: 18px;
+}
+
+.acceso-campo label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 0.8125rem;
+    font-weight: 700;
+}
+
+.acceso-input {
+    box-sizing: border-box;
+    display: block;
+    width: 100%;
+    height: 48px;
+    padding: 0 16px;
+    border: 1.5px solid var(--acceso-borde);
+    border-radius: 14px;
+    background-color: rgba(255, 255, 255, 0.65);
+    color: var(--texto);
+    font: inherit;
+    font-size: 0.95rem;
+    outline: none;
+    transition:
+        border-color var(--acceso-dur-corta) var(--acceso-ease),
+        background-color var(--acceso-dur-corta) var(--acceso-ease),
+        box-shadow var(--acceso-dur-corta) var(--acceso-ease);
+}
+
+.acceso-input::placeholder {
+    color: var(--acceso-texto-tenue);
+}
+
+.acceso-input:hover {
+    border-color: color-mix(in srgb, var(--texto) 30%, transparent);
+}
+
+.acceso-input:focus {
+    border-color: var(--verde);
+    background-color: var(--blanco);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--verde) 16%, transparent);
+}
+
+/* Aviso de campo inválido (solo después de que se intentó enviar). */
+.acceso-input:user-invalid {
+    border-color: var(--marron);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--marron) 14%, transparent);
+}
+
+select.acceso-input {
+    padding-right: 40px;
+    appearance: none;
+    -webkit-appearance: none;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23302f2a' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 6l5 5 5-5'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    background-size: 16px;
+}
+
+/* El campo del rol no se escribe: se ve como una etiqueta verde. */
+.acceso-rol {
+    border-color: color-mix(in srgb, var(--verde) 45%, transparent);
+    background-color: var(--verde-claro);
+    color: var(--acceso-verde-texto);
+    font-weight: 700;
+    cursor: default;
+    animation: acceso-destello 600ms var(--acceso-ease);
+}
+
+@keyframes acceso-destello {
+    from {
+        box-shadow: 0 0 0 0 color-mix(in srgb, var(--verde) 45%, transparent);
+        transform: scale(0.98);
+    }
+    to {
+        box-shadow: 0 0 0 10px color-mix(in srgb, var(--verde) 0%, transparent);
+        transform: none;
+    }
+}
+
+/* =========================================================
+   Botones
+   ========================================================= */
+
+.acceso-btn,
+.acceso-btn-admin,
+.acceso-btn-secundario {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+    transition:
+        background-color var(--acceso-dur-corta) var(--acceso-ease),
+        border-color var(--acceso-dur-corta) var(--acceso-ease),
+        color var(--acceso-dur-corta) var(--acceso-ease),
+        box-shadow var(--acceso-dur) var(--acceso-ease),
+        transform var(--acceso-dur) var(--acceso-ease);
+}
+
+.acceso-btn:active,
+.acceso-btn-admin:active,
+.acceso-btn-secundario:active {
+    transform: translateY(0) scale(0.97);
+    transition-duration: 120ms;
+}
+
+/* Botón principal: Entrar / Crear Cuenta */
+.acceso-btn {
+    width: 100%;
+    min-height: 52px;
+    margin-top: 6px;
+    padding: 12px 24px;
+    border: 1.5px solid var(--verde);
+    background: var(--verde);
+    box-shadow:
+        0 6px 16px -8px color-mix(in srgb, var(--verde) 55%, transparent),
+        0 0 0 0 color-mix(in srgb, var(--verde) 0%, transparent);
+    color: var(--blanco);
+    font-size: 0.95rem;
+}
+
+.acceso-btn:hover {
+    border-color: var(--verde-hover);
+    background: var(--verde-hover);
+    box-shadow:
+        0 12px 24px -8px color-mix(in srgb, var(--verde) 65%, transparent),
+        0 0 0 4px color-mix(in srgb, var(--verde) 16%, transparent);
+    transform: translateY(-2px);
+}
+
+/* Modo Administrador: usa el marrón de la paleta para distinguirlo. */
+.acceso-btn-admin {
+    width: 100%;
+    min-height: 40px;
+    margin-top: 10px;
+    padding: 8px 18px;
+    border: 1.5px solid color-mix(in srgb, var(--marron) 55%, transparent);
+    background: color-mix(in srgb, var(--marron) 8%, transparent);
+    color: var(--marron);
+    font-size: 0.8125rem;
+}
+
+.acceso-btn-admin:hover {
+    border-color: var(--marron);
+    background: var(--marron);
+    color: var(--blanco);
+    transform: translateY(-2px);
+}
+
+/* Cambiar entre iniciar sesión y registrarse */
+.acceso-cambio {
+    margin-top: 24px;
+    text-align: center;
+}
+
+.acceso-cambio p {
+    margin: 0 0 10px;
+    color: var(--acceso-texto-suave);
+    font-size: 0.9rem;
+}
+
+.acceso-btn-secundario {
+    min-height: 38px;
+    padding: 6px 20px;
+    border: 1.5px solid var(--acceso-borde);
+    background: transparent;
+    color: var(--texto);
+    font-size: 0.8125rem;
+}
+
+.acceso-btn-secundario:hover {
+    border-color: var(--verde);
+    background: var(--verde-claro);
+    color: var(--verde-hover);
+    transform: translateY(-2px);
+}
+
+/* Foco visible con teclado */
+.acceso button:focus-visible {
+    outline: 2px solid var(--verde);
+    outline-offset: 3px;
+}
+
+/* =========================================================
+   Pantallas chicas y menos movimiento
+   ========================================================= */
+
+@media (max-width: 575.98px) {
+    .acceso::before,
+    .acceso::after {
+        opacity: 0.5;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .acceso *,
+    .acceso *::before,
+    .acceso *::after,
+    .acceso::before,
+    .acceso::after {
+        animation: none !important;
+        transition-duration: 0.01ms !important;
+        transition-delay: 0s !important;
+    }
+}
