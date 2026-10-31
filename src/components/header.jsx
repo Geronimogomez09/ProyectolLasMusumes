@@ -319,7 +319,7 @@ function Header() {
 
                                             <li>
                                                 <Link
-                                                    to="/registro"
+                                                    to="/login"
                                                     className="profile-menu-item"
                                                     onClick={cerrarMenu}
                                                 >

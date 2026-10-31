@@ -3,7 +3,6 @@ import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Inicio from "./pages/index";
-import Registro from "./pages/registro";
 import Tienda from "./pages/tienda";
 import Login from "./pages/login";
 import Comunidad from "./pages/comunidad";
@@ -66,7 +65,6 @@ function AppRoutes() {
         <>
             <Routes>
                 <Route path="/" element={<Inicio />} />
-                <Route path="/registro" element={<Registro />} />
                 <Route path="/tienda" element={<Tienda />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/comunidad" element={<Comunidad />} />
