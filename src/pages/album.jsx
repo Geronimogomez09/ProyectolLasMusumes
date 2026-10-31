@@ -6,6 +6,7 @@ import { useMusic } from "../context/MusicContext";
 import SongRow from "../components/music/SongRow";
 import SongPanel from "../components/music/SongPanel";
 import "../styles/album.css";
+import "../styles/musica.css";
 
 function Album() {
   const { id } = useParams();
@@ -90,16 +91,27 @@ function Album() {
           </p>
           <p>{album.description}</p>
 
-          <div>
-            <button>
-              ▶ Reproducir
+          <div className="album-actions">
+            <button
+              type="button"
+              className="album-primary-action"
+              disabled={!playableSongs.length}
+              onClick={() => playCollection(albumSongs)}
+            >
+              ▶ <span>Reproducir</span>
             </button>
 
-            <button>
-              🔀 Aleatorio
+            <button
+              type="button"
+              className="album-secondary-action"
+              disabled={!playableSongs.length}
+              onClick={() =>
+                playCollection(albumSongs, { shuffle: true })
+              }
+            >
+              ⤨ <span>Aleatorio</span>
             </button>
           </div>
-
         </div>
       </section>
 

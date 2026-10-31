@@ -50,11 +50,11 @@ export const productosIniciales = [
 
 export const categorias = [
     ["Todas", "Todos"],
-    ["Ropa", "👕 Ropa"],
-    ["Tazas", "☕ Tazas"],
-    ["Sábanas", "🛏️ Sábanas"],
-    ["Figuras", "🧸 Figuras"],
-    ["Accesorios", "🎒 Accesorios"],
-    ["Decoración", "🏠 Decoración"],
-    ["Otros", "✨ Otros"]
+    ["Ropa", "Ropa"],
+    ["Tazas", "Tazas"],
+    ["Sábanas", "Sábanas"],
+    ["Figuras", "Figuras"],
+    ["Accesorios", "Accesorios"],
+    ["Decoración", "Decoración"],
+    ["Otros", "Otros"]
 ];
