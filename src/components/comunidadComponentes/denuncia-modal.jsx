@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import './denuncia-modal.css';
+import '../../styles/denuncia-modal.css';
 
 const MOTIVOS_DENUNCIA = [
   'Spam o publicidad',
