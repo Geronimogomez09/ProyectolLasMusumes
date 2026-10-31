@@ -2,7 +2,7 @@ import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Inicio from "./pages/index";
-import Registro from "./pages/signup";
+import Registro from "./pages/registro";
 import Tienda from "./pages/tienda";
 import Login from "./pages/login";
 import Comunidad from "./pages/comunidad";
