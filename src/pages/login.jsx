@@ -7,6 +7,7 @@ import {
     updateProfile
 } from "firebase/auth";
 import { auth } from "../services/firebase";
+import { crearPerfilUsuario } from "../services/firestore";
 import "../styles/login.css";
 
 const PAISES = ["Argentina", "México", "Colombia", "España", "Chile", "Otro"];

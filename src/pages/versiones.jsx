@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { escucharVersiones, guardarVersion, borrarVersion, crearDocumento } from '../services/firestore';
 import Header from '../components/header';
 import Footer from '../components/Footer';
 import BotonAdmin from '../components/botonAdmin';
@@ -33,7 +34,6 @@ const versionesIniciales = [
     nuevasCriaturas: ['Warden', 'Rana', 'Renacuajo', 'Allay'],
     nuevosBiomas: ['Deep Dark', 'Pantano de Mangle'],
     destacada: false,
-    comentarios: [],
   },
   {
     id: 2,
@@ -56,15 +56,6 @@ const versionesIniciales = [
     nuevasCriaturas: ['Sniffer', 'Camello'],
     nuevosBiomas: ['Bosque de cerezos'],
     destacada: false,
-    comentarios: [
-      {
-        id: 201,
-        usuario: 'PicapiedraXd',
-        inicial: 'P',
-        colorAvatar: '#7a5c3e',
-        texto: 'El sniffer me parece la criatura más tierna que agregaron en años :esmeralda:',
-      },
-    ],
   },
   {
     id: 3,
@@ -87,22 +78,6 @@ const versionesIniciales = [
     nuevasCriaturas: ['Breeze', 'Bogged'],
     nuevosBiomas: [],
     destacada: false,
-    comentarios: [
-      {
-        id: 301,
-        usuario: 'Nether_Kaiser',
-        inicial: 'N',
-        colorAvatar: '#b3462c',
-        texto: 'El Mace con Density rompe cualquier mob de un golpe si caés desde suficiente altura',
-      },
-      {
-        id: 302,
-        usuario: 'ModderaEterna',
-        inicial: 'M',
-        colorAvatar: '#4a6fa5',
-        texto: 'El Crafter todavía no lo vi bien aprovechado, alguien armó algo piola con él? :diamante:',
-      },
-    ],
   },
   {
     id: 4,
@@ -128,7 +103,6 @@ const versionesIniciales = [
     nuevasCriaturas: [],
     nuevosBiomas: [],
     destacada: true,
-    comentarios: [],
   },
   {
     id: 5,
@@ -149,66 +123,54 @@ const versionesIniciales = [
     nuevasCriaturas: ['Sulfur Cube', 'Arañas de cueva (ahora también en superficie, en este bioma)'],
     nuevosBiomas: ['Cuevas de Azufre'],
     destacada: true,
-    comentarios: [
-      {
-        id: 501,
-        usuario: 'Vale_ObsidianaBUILDER',
-        inicial: 'V',
-        colorAvatar: '#2f8f5b',
-        texto: 'El azufre y el cinabrio combinan re bien para una build temática infernal :tnt:',
-      },
-    ],
   },
 ];
 
 const EDICIONES_FILTRO = ['Todas', 'Java', 'Bedrock'];
 
 function Versiones({ versiones: versionesProp }) {
+  const { esAdmin } = useAuth();
   const [versiones, setVersiones] = useState(versionesProp || versionesIniciales);
+  const migracionIniciada = useRef(false);
+
+  useEffect(() => escucharVersiones(async (items) => {
+    if (items.length === 0 && esAdmin && !migracionIniciada.current) {
+      migracionIniciada.current = true;
+
+      try {
+        await Promise.all(
+          versionesIniciales.map(({ id, ...v }) =>
+            crearDocumento('versiones', v, `legacy-${id}`)
+          )
+        );
+      } catch (e) {
+        console.error('No se pudieron migrar las versiones iniciales:', e);
+      }
+
+      return;
+    }
+
+    if (items.length) {
+      setVersiones(items.map(({ comentarios, ...version }) => version));
+    }
+  }), [esAdmin]);
+
   const [busqueda, setBusqueda] = useState('');
   const [edicionFiltro, setEdicionFiltro] = useState('Todas');
   const [fechaDesde, setFechaDesde] = useState('');
   const [fechaHasta, setFechaHasta] = useState('');
-  const [comentariosAbiertos, setComentariosAbiertos] = useState({});
-  
+
   // Estado para controlar qué versión se está editando
   const [versionEditando, setVersionEditando] = useState(null);
 
   // Modo administrador: solo lo puede abrir un admin.
-  const { esAdmin } = useAuth();
   const [modoAdminAbierto, setModoAdmin] = useState(false);
   const modoAdmin = modoAdminAbierto && esAdmin;
-
-  function toggleComentarios(id) {
-    setComentariosAbiertos((prev) => ({ ...prev, [id]: !prev[id] }));
-  }
-
-  function handleAgregarComentario(versionId, comentario) {
-    setVersiones((prev) =>
-      prev.map((v) =>
-        v.id === versionId
-          ? {
-              ...v,
-              comentarios: [
-                ...v.comentarios,
-                {
-                  id: Date.now(),
-                  usuario: 'Vos',
-                  inicial: 'V',
-                  colorAvatar: '#3d9970',
-                  texto: comentario.texto,
-                },
-              ],
-            }
-          : v
-      )
-    );
-  }
 
   function handleAgregarVersion(nuevaVersion) {
     setVersiones((prev) => {
       const id = Math.max(0, ...prev.map((v) => v.id)) + 1;
-      return [...prev, { ...nuevaVersion, id, comentarios: [] }];
+      return [...prev, { ...nuevaVersion, id }];
     });
   }
 
@@ -217,13 +179,15 @@ function Versiones({ versiones: versionesProp }) {
     setVersiones((prev) =>
       prev.map((v) => (v.id === versionActualizada.id ? versionActualizada : v))
     );
-    setVersionEditando(null); // Limpiamos el modo edición
+
+    setVersionEditando(null);
   }
 
   // Función para eliminar una versión con confirmación
   function handleEliminarVersion(id) {
     if (window.confirm('¿Estás seguro de que querés eliminar esta versión?')) {
       setVersiones((prev) => prev.filter((v) => v.id !== id));
+
       if (versionEditando && versionEditando.id === id) {
         setVersionEditando(null);
       }
@@ -238,6 +202,7 @@ function Versiones({ versiones: versionesProp }) {
     .filter((v) => !fechaHasta || v.fecha <= fechaHasta)
     .filter((v) => {
       if (!textoBusqueda) return true;
+
       const bolsaDeTexto = [
         v.nombre,
         v.numero,
@@ -251,6 +216,7 @@ function Versiones({ versiones: versionesProp }) {
       ]
         .join(' ')
         .toLowerCase();
+
       return bolsaDeTexto.includes(textoBusqueda);
     })
     .sort((a, b) => (a.fecha < b.fecha ? 1 : -1));
@@ -258,13 +224,21 @@ function Versiones({ versiones: versionesProp }) {
   return (
     <>
       <Header />
+
       <div className="versiones-page">
         {/* ---------- HERO ---------- */}
-        <header className="versiones-hero cascada-item" style={{ animationDelay: '0s' }}>
+        <header
+          className="versiones-hero cascada-item"
+          style={{ animationDelay: '0s' }}
+        >
           <div className="versiones-hero__overlay" />
+
           <div className="versiones-hero__contenido">
             <h1>Versiones</h1>
-            <p>Todo el historial de actualizaciones de Minecraft, Java y Bedrock, en un solo lugar.</p>
+            <p>
+              Todo el historial de actualizaciones de Minecraft, Java y Bedrock,
+              en un solo lugar.
+            </p>
           </div>
         </header>
 
@@ -296,7 +270,9 @@ function Versiones({ versiones: versionesProp }) {
               {EDICIONES_FILTRO.map((ed) => (
                 <button
                   key={ed}
-                  className={`filtro-pill ${edicionFiltro === ed ? 'filtro-pill--activo' : ''}`}
+                  className={`filtro-pill ${
+                    edicionFiltro === ed ? 'filtro-pill--activo' : ''
+                  }`}
                   onClick={() => setEdicionFiltro(ed)}
                 >
                   {ed}
@@ -313,6 +289,7 @@ function Versiones({ versiones: versionesProp }) {
                   onChange={(e) => setFechaDesde(e.target.value)}
                 />
               </label>
+
               <label>
                 Hasta
                 <input
@@ -321,6 +298,7 @@ function Versiones({ versiones: versionesProp }) {
                   onChange={(e) => setFechaHasta(e.target.value)}
                 />
               </label>
+
               {(fechaDesde || fechaHasta) && (
                 <button
                   className="btn-limpiar-fechas"
@@ -338,32 +316,41 @@ function Versiones({ versiones: versionesProp }) {
           {/* ---------- GRILLA DE VERSIONES ---------- */}
           <section className="versiones-lista">
             {versionesFiltradas.length === 0 && (
-              <p className="versiones-lista__vacio">No encontramos versiones con esos filtros.</p>
+              <p className="versiones-lista__vacio">
+                No encontramos versiones con esos filtros.
+              </p>
             )}
 
             {versionesFiltradas.map((version, index) => (
               <TarjetaVersion
                 key={version.id}
                 version={version}
-                comentariosAbiertos={Boolean(comentariosAbiertos[version.id])}
-                onToggleComentarios={toggleComentarios}
-                onAgregarComentario={handleAgregarComentario}
-                onEditar={modoAdmin ? () => {
-                  setVersionEditando(version);
-                  window.scrollTo({ top: 200, behavior: 'smooth' });
-                } : undefined}
-                onEliminar={modoAdmin ? () => handleEliminarVersion(version.id) : undefined}
+                onEditar={
+                  modoAdmin
+                    ? () => {
+                        setVersionEditando(version);
+                        window.scrollTo({ top: 200, behavior: 'smooth' });
+                      }
+                    : undefined
+                }
+                onEliminar={
+                  modoAdmin
+                    ? () => handleEliminarVersion(version.id)
+                    : undefined
+                }
                 delay={0.2 + Math.min(index, 8) * 0.1}
               />
             ))}
           </section>
         </main>
       </div>
+
       <BotonAdmin
         activo={modoAdmin}
         alAlternar={() => setModoAdmin((abierto) => !abierto)}
         aviso="Podés agregar, editar y eliminar versiones."
       />
+
       <Footer />
     </>
   );

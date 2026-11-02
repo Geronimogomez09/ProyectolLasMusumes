@@ -6,7 +6,7 @@ import Inicio from "./pages/index";
 import Tienda from "./pages/tienda";
 import Login from "./pages/login";
 import Comunidad from "./pages/comunidad";
-import Publicacion from "./pages/publicacion";
+import Publicacion from "./pages/Publicacion";
 import Versiones from "./pages/versiones";
 import Historia from "./pages/historia";
 import Musica from "./pages/musica";
@@ -64,20 +64,20 @@ function AppRoutes() {
     return (
         <>
             <Routes>
-                <Route path="/" element={<Inicio />} />
-                <Route path="/tienda" element={<Tienda />} />
+                <Route path="/" element={<RutaProtegida><Inicio /></RutaProtegida>} />
+                <Route path="/tienda" element={<RutaProtegida><Tienda /></RutaProtegida>} />
                 <Route path="/login" element={<Login />} />
-                <Route path="/comunidad" element={<Comunidad />} />
-                <Route path="/publicacion/:id" element={<Publicacion />} />
-                <Route path="/versiones" element={<Versiones />} />
-                <Route path="/historia" element={<Historia />} />
-                <Route path="/musica" element={<Musica />} />
-                <Route path="/musica/cancion/:id" element={<Cancion />} />
-                <Route path="/musica/playlist/:id" element={<Playlist />} />
-                <Route path="/musica/album/:id" element={<Album />} />
-                <Route path="/musica/compositor/:id" element={<Compositor />} />
+                <Route path="/comunidad" element={<RutaProtegida><Comunidad /></RutaProtegida>} />
+                <Route path="/publicacion/:id" element={<RutaProtegida><Publicacion /></RutaProtegida>} />
+                <Route path="/versiones" element={<RutaProtegida><Versiones /></RutaProtegida>} />
+                <Route path="/historia" element={<RutaProtegida><Historia /></RutaProtegida>} />
+                <Route path="/musica" element={<RutaProtegida><Musica /></RutaProtegida>} />
+                <Route path="/musica/cancion/:id" element={<RutaProtegida><Cancion /></RutaProtegida>} />
+                <Route path="/musica/playlist/:id" element={<RutaProtegida><Playlist /></RutaProtegida>} />
+                <Route path="/musica/album/:id" element={<RutaProtegida><Album /></RutaProtegida>} />
+                <Route path="/musica/compositor/:id" element={<RutaProtegida><Compositor /></RutaProtegida>} />
                 <Route path="/musica/maestro" element={<RutaProtegida soloAdmin><MaestroMelodias /></RutaProtegida>}/>
-                <Route path="/nosotros" element={<Nosotros />} />
+                <Route path="/nosotros" element={<RutaProtegida><Nosotros /></RutaProtegida>} />
             </Routes>
 
             <GlobalMusicPlayer />
