@@ -3,13 +3,11 @@ import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
     signInWithEmailAndPassword,
-    createUserWithEmailAndPassword
+    createUserWithEmailAndPassword,
+    updateProfile
 } from "firebase/auth";
 import { auth } from "../services/firebase";
 import "../styles/login.css";
-
-// Roles visuales del botón "Modo Administrador".
-const ROLES = ["usuario", "editor 1", "editor 2", "editor 3"];
 
 const PAISES = ["Argentina", "México", "Colombia", "España", "Chile", "Otro"];
 
@@ -41,14 +39,8 @@ export default function Login() {
         pathname === "/registro" ? "registro" : "login"
     );
 
-    const [indiceRol, setIndiceRol] = useState(0);
     const [error, setError] = useState("");
     const [cargando, setCargando] = useState(false);
-
-    // Cambia el rol mostrado en pantalla.
-    const cambiarRol = () => {
-        setIndiceRol((actual) => (actual + 1) % ROLES.length);
-    };
 
     // Iniciar sesión con Firebase.
     const entrar = async (evento) => {
@@ -76,7 +68,7 @@ export default function Login() {
         }
     };
 
-    // Crear una cuenta con Firebase.
+    // Crear una cuenta normal con Firebase.
     const registrarse = async (evento) => {
         evento.preventDefault();
         setError("");
@@ -98,7 +90,17 @@ export default function Login() {
         setCargando(true);
 
         try {
-            await createUserWithEmailAndPassword(auth, email, password);
+            const credenciales = await createUserWithEmailAndPassword(
+                auth,
+                email,
+                password
+            );
+
+            // Guardar el nombre como nombre de perfil de Firebase.
+            await updateProfile(credenciales.user, {
+                displayName: nombre
+            });
+
             navigate("/");
         } catch (err) {
             setError(traducirErrorFirebase(err.code));
@@ -280,29 +282,6 @@ export default function Login() {
                                                     id="regBirthDate"
                                                     required
                                                 />
-                                            </div>
-
-                                            <div className="acceso-campo">
-                                                <label htmlFor="roleInput">
-                                                    Rol
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    className="acceso-input acceso-rol"
-                                                    id="roleInput"
-                                                    key={ROLES[indiceRol]}
-                                                    value={ROLES[indiceRol]}
-                                                    readOnly
-                                                />
-
-                                                <button
-                                                    type="button"
-                                                    id="adminModeBtn"
-                                                    className="acceso-btn-admin"
-                                                    onClick={cambiarRol}
-                                                >
-                                                    Modo Administrador
-                                                </button>
                                             </div>
 
                                             <button

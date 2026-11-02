@@ -5,6 +5,7 @@ import DenunciaModal from '../components/comunidadComponentes/denuncia-modal';
 import { EMOJIS_MINECRAFT, renderizarTextoConEmojis } from '../components/comunidadComponentes/emojis-minecraft';
 import Header from '../components/header';
 import Footer from '../components/Footer';
+import BotonAdmin from '../components/botonAdmin';
 import '../styles/Publicacion.css';
 import { postsIniciales } from './comunidad';
 
@@ -243,9 +244,7 @@ function Publicacion() {
         </article>
       </main>
 
-      <button className="publicacion-admin-toggle" type="button" onClick={() => navigate('/comunidad?admin=1')} aria-label="Abrir panel de administración">
-        <span className="publicacion-admin-toggle__punto" />Modo administrador <span className="publicacion-admin-toggle__flecha">↗</span>
-      </button>
+      <BotonAdmin alAlternar={() => navigate('/comunidad?admin=1')} />
       {denunciaObjetivo && <DenunciaModal tipoContenido={denunciaObjetivo.tipo} onConfirmar={confirmarDenuncia} onCancelar={() => setDenunciaObjetivo(null)} />}
       <Footer />
     </>

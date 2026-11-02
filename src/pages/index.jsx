@@ -2,31 +2,19 @@ import { createContext, useCallback, useContext, useEffect, useState } from "rea
 import { Link } from "react-router-dom";
 import Header from "../components/header.jsx";
 import Footer from "../components/Footer.jsx";
+import BotonAdmin from "../components/botonAdmin";
+import { useAuth } from "../context/AuthContext";
 import "../styles/index.css";
 
 /* ============================================================================
    1. IMÁGENES
-   ----------------------------------------------------------------------------
-   Todo lo que sea imagen (fotos E iconos) pasa por el mismo buscador.
-   Vite solo procesa las imágenes que se importan, por eso se usa import.meta.glob
-   sobre TODA la carpeta src/assets (cualquier subcarpeta).
-
-   Un campo "imagen" puede contener cualquiera de estas cosas:
-     - un nombre de archivo ............ "granja.jpg"
-     - una ruta dentro de assets ....... "index/granja.jpg"
-     - una ruta vieja .................. "../assets/index/granja.jpg"
-     - una URL externa ................. "https://sitio.com/foto.png"
-     - una ruta de /public ............. "/fotos/portada.png"
-     - una imagen subida (blob / data)
-   ========================================================================= */
+   ============================================================================ */
 
 const ARCHIVOS = import.meta.glob(
     "../assets/**/*.{png,jpg,jpeg,webp,gif,avif,svg}",
     { eager: true, import: "default" }
 );
 
-// BIBLIOTECA["index/castillo.jpg"] y BIBLIOTECA["castillo.jpg"] -> URL final.
-// RUTAS es la lista de rutas relativas, útil para sugerencias en el formulario.
 const BIBLIOTECA = {};
 const RUTAS = [];
 
@@ -36,19 +24,19 @@ for (const [ruta, url] of Object.entries(ARCHIVOS)) {
 
     RUTAS.push(relativa);
     BIBLIOTECA[relativa] = url;
-    if (!(nombre in BIBLIOTECA)) BIBLIOTECA[nombre] = url; // si hay repetidos, gana el primero
+    if (!(nombre in BIBLIOTECA)) BIBLIOTECA[nombre] = url;
 }
 
-// Carpeta (dentro de src/assets) donde viven los iconos de las secciones.
 const CARPETA_ICONOS = "emojis";
 
 const ICONOS = RUTAS
     .filter((ruta) => ruta.startsWith(`${CARPETA_ICONOS}/`))
     .map((ruta) => ruta.split("/").pop());
 
-const SUGERENCIAS_IMAGEN = RUTAS.filter((ruta) => !ruta.startsWith(`${CARPETA_ICONOS}/`));
+const SUGERENCIAS_IMAGEN = RUTAS.filter(
+    (ruta) => !ruta.startsWith(`${CARPETA_ICONOS}/`)
+);
 
-// Imagen de reemplazo (cuadrícula verde pixelada) para cuando falta un archivo.
 const PLACEHOLDER = `data:image/svg+xml,${encodeURIComponent(
     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 20" shape-rendering="crispEdges">' +
     '<rect width="32" height="20" fill="#dcefdc"/>' +
@@ -61,8 +49,6 @@ const PLACEHOLDER = `data:image/svg+xml,${encodeURIComponent(
 
 const ES_URL = /^(blob:|data:|https?:\/\/|\/\/|\/)/;
 
-// Devuelve la URL final o undefined si no se encuentra.
-// "carpeta" da prioridad a una subcarpeta (se usa para los iconos).
 function buscarImagen(valor, carpeta) {
     if (!valor) return undefined;
     if (ES_URL.test(valor)) return valor;
@@ -87,7 +73,6 @@ function resolverImagen(valor, carpeta) {
     return url ?? PLACEHOLDER;
 }
 
-// Si una imagen falla al cargar, se reemplaza una sola vez por el placeholder.
 function aPlaceholder(evento) {
     const img = evento.currentTarget;
     if (img.dataset.fallback) return;
@@ -107,23 +92,24 @@ function Imagen({ nombre, carpeta, alt = "", ...resto }) {
     );
 }
 
-// Los iconos son imágenes de la carpeta de iconos.
 function Icono({ nombre, alt = "", ...resto }) {
-    return <Imagen nombre={nombre} carpeta={CARPETA_ICONOS} alt={alt} {...resto} />;
+    return (
+        <Imagen
+            nombre={nombre}
+            carpeta={CARPETA_ICONOS}
+            alt={alt}
+            {...resto}
+        />
+    );
 }
 
-// Imagen del hero: si existe en src/assets se usa; si no, el CSS usa su ruta de respaldo.
 const HERO_URL = ["hero.jpg", "hero.jpeg", "hero.png", "hero.webp"]
     .map((nombre) => BIBLIOTECA[nombre])
     .find(Boolean);
 
 /* ============================================================================
    2. ROLES Y PERMISOS
-   ----------------------------------------------------------------------------
-   Cada usuario tiene un rol numérico. Cada acción exige un rol mínimo.
-   Para cambiar quién puede qué, solo se tocan estas dos tablas.
-   (Ajustá los números para que coincidan con los de tu base de datos.)
-   ========================================================================= */
+   ============================================================================ */
 
 const ROLES = {
     VISITANTE: 0,
@@ -140,30 +126,9 @@ const PERMISOS = {
 
 const puedeHacer = (rol, accion) => rol >= PERMISOS[accion];
 
-// Mientras no exista el login, el rol lo controla el botón flotante.
-// Cuando esté el login: poné MODO_DEMO en false y usá el rol real en useRol().
-const MODO_DEMO = true;
-
-function useRol() {
-    const [rolDemo, setRolDemo] = useState(ROLES.VISITANTE);
-
-    // const { usuario } = useAuth();
-    // const rolReal = Number(usuario?.rol ?? ROLES.VISITANTE);
-    const rolReal = ROLES.VISITANTE;
-
-    return {
-        rol: MODO_DEMO ? rolDemo : rolReal,
-        alternarDemo: () =>
-            setRolDemo((actual) => (actual >= ROLES.ADMIN ? ROLES.VISITANTE : ROLES.ADMIN)),
-    };
-}
-
 /* ============================================================================
    3. CONTENIDO INICIAL
-   ----------------------------------------------------------------------------
-   En "imagen" va cualquiera de los formatos de la sección 1.
-   En "icono" va el nombre de un archivo de src/assets/emojis/.
-   ========================================================================= */
+   ============================================================================ */
 
 const CONTENIDO_INICIAL = {
     secciones: [
@@ -192,6 +157,7 @@ const CONTENIDO_INICIAL = {
             icono: "note_block.png",
         },
     ],
+
     novedades: [
         {
             id: "novedad-granja",
@@ -224,6 +190,7 @@ const CONTENIDO_INICIAL = {
             enlace: "/musica",
         },
     ],
+
     construcciones: [
         { id: "construccion-castillo", nombre: "Castillo medieval", imagen: "castillo.png" },
         { id: "construccion-casa", nombre: "Casa moderna", imagen: "casamoderna.jpg" },
@@ -233,17 +200,15 @@ const CONTENIDO_INICIAL = {
 
 /* ============================================================================
    4. TIPOS DE CONTENIDO
-   ----------------------------------------------------------------------------
-   Para agregar un CAMPO nuevo: una línea en "campos".
-   Para agregar un TIPO nuevo: una entrada acá + su sección en la página.
-   Para agregar un tipo de CONTROL nuevo (ej. fecha): un componente en CONTROLES.
-
-   Cada campo puede tener "limpiar": una función que normaliza el valor al guardar.
-   ========================================================================= */
+   ============================================================================ */
 
 function fechaHoy() {
     return new Date()
-        .toLocaleDateString("es-AR", { day: "numeric", month: "short", year: "numeric" })
+        .toLocaleDateString("es-AR", {
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+        })
         .replace(/\./g, "");
 }
 
@@ -269,9 +234,16 @@ const TIPOS = {
             { nombre: "icono", etiqueta: "Icono", tipo: "icono" },
             { nombre: "imagen", etiqueta: "Imagen", tipo: "imagen" },
         ],
-        nuevo: () => ({ titulo: "", descripcion: "", imagen: "", enlace: "/comunidad", icono: ICONOS[0] ?? "" }),
+        nuevo: () => ({
+            titulo: "",
+            descripcion: "",
+            imagen: "",
+            enlace: "/comunidad",
+            icono: ICONOS[0] ?? "",
+        }),
         nombreDe: (item) => item.titulo,
     },
+
     novedad: {
         clave: "novedades",
         singular: "novedad",
@@ -284,9 +256,18 @@ const TIPOS = {
             CAMPO_ENLACE,
             { nombre: "imagen", etiqueta: "Imagen", tipo: "imagen" },
         ],
-        nuevo: () => ({ categoria: "", titulo: "", fecha: fechaHoy(), autor: "", descripcion: "", imagen: "", enlace: "/comunidad" }),
+        nuevo: () => ({
+            categoria: "",
+            titulo: "",
+            fecha: fechaHoy(),
+            autor: "",
+            descripcion: "",
+            imagen: "",
+            enlace: "/comunidad",
+        }),
         nombreDe: (item) => item.titulo,
     },
+
     construccion: {
         clave: "construcciones",
         singular: "construcción",
@@ -303,7 +284,6 @@ function crearId(tipo) {
     return `${tipo}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
 }
 
-// Deja los datos listos para guardar: sin espacios sobrantes y con cada "limpiar" aplicado.
 function limpiarDatos(tipo, datos) {
     const limpios = { ...datos };
 
@@ -319,10 +299,7 @@ function limpiarDatos(tipo, datos) {
 
 /* ============================================================================
    5. CONTEXTO DE EDICIÓN
-   ----------------------------------------------------------------------------
-   Reparte permisos y acciones a toda la página, así cada elemento solo escribe
-   <Controles /> o <Agregar /> y no repite condiciones de admin.
-   ========================================================================= */
+   ============================================================================ */
 
 const EdicionContext = createContext({
     editando: false,
@@ -334,7 +311,6 @@ const EdicionContext = createContext({
 
 const useEdicion = () => useContext(EdicionContext);
 
-// Link que no navega mientras se está editando, para no perder cambios sin guardar.
 function Enlace({ onClick, ...props }) {
     const { editando } = useEdicion();
 
@@ -349,9 +325,9 @@ function Enlace({ onClick, ...props }) {
     );
 }
 
-// Botones de editar y eliminar sobre cada elemento (según permisos).
 function Controles({ tipo, item }) {
     const { puede, abrirEditar, abrirEliminar } = useEdicion();
+
     const puedeEditar = puede("editar");
     const puedeEliminar = puede("eliminar");
 
@@ -372,6 +348,7 @@ function Controles({ tipo, item }) {
                     <i className="bi bi-pencil-fill"></i>
                 </button>
             )}
+
             {puedeEliminar && (
                 <button
                     type="button"
@@ -387,8 +364,6 @@ function Controles({ tipo, item }) {
     );
 }
 
-// Recuadro punteado para agregar un elemento nuevo (según permisos).
-// "columna" es la clase de la columna de Bootstrap que lo envuelve.
 function Agregar({ tipo, texto, columna, compacto = false }) {
     const { puede, abrirNuevo } = useEdicion();
 
@@ -410,10 +385,7 @@ function Agregar({ tipo, texto, columna, compacto = false }) {
 
 /* ============================================================================
    6. CONTROLES DEL FORMULARIO
-   ----------------------------------------------------------------------------
-   Cada tipo de campo es un componente con las mismas props:
-   { id, valor, onCambiar, autoFocus }.
-   ========================================================================= */
+   ============================================================================ */
 
 function ControlTexto({ id, valor, onCambiar, autoFocus }) {
     return (
@@ -440,7 +412,6 @@ function ControlArea({ id, valor, onCambiar }) {
     );
 }
 
-// Elige un icono entre los archivos de la carpeta de iconos.
 function ControlIcono({ id, valor, onCambiar }) {
     if (ICONOS.length === 0) {
         return (
@@ -451,7 +422,12 @@ function ControlIcono({ id, valor, onCambiar }) {
     }
 
     return (
-        <div id={id} className="inicio-admin-iconos" role="radiogroup" aria-label="Icono">
+        <div
+            id={id}
+            className="inicio-admin-iconos"
+            role="radiogroup"
+            aria-label="Icono"
+        >
             {ICONOS.map((icono) => {
                 const nombre = icono.replace(/\.[^.]+$/, "");
                 const activo = valor === icono;
@@ -475,20 +451,25 @@ function ControlIcono({ id, valor, onCambiar }) {
     );
 }
 
-// Acepta un nombre, una ruta, una URL, o una imagen subida desde el dispositivo.
 function ControlImagen({ id, valor, onCambiar }) {
     const esSubida = /^(blob:|data:)/.test(valor);
     const noEncontrada = Boolean(valor) && !buscarImagen(valor);
 
     const elegirArchivo = (evento) => {
         const archivo = evento.target.files?.[0];
+
         if (archivo) onCambiar(URL.createObjectURL(archivo));
+
         evento.target.value = "";
     };
 
     return (
         <div className="inicio-admin-imagen">
-            <Imagen nombre={valor} alt="Vista previa de la imagen" loading="eager" />
+            <Imagen
+                nombre={valor}
+                alt="Vista previa de la imagen"
+                loading="eager"
+            />
 
             <div className="inicio-admin-imagen-controles">
                 <input
@@ -501,6 +482,7 @@ function ControlImagen({ id, valor, onCambiar }) {
                     onChange={(e) => onCambiar(e.target.value)}
                     autoComplete="off"
                 />
+
                 <datalist id={`${id}-sugerencias`}>
                     {SUGERENCIAS_IMAGEN.map((ruta) => (
                         <option key={ruta} value={ruta} />
@@ -510,7 +492,12 @@ function ControlImagen({ id, valor, onCambiar }) {
                 <label className="inicio-admin-subir">
                     <i className="bi bi-upload"></i>
                     Subir imagen
-                    <input type="file" accept="image/*" onChange={elegirArchivo} hidden />
+                    <input
+                        type="file"
+                        accept="image/*"
+                        onChange={elegirArchivo}
+                        hidden
+                    />
                 </label>
 
                 {noEncontrada && (
@@ -532,19 +519,19 @@ const CONTROLES = {
 
 /* ============================================================================
    7. VENTANA DE EDICIÓN
-   ========================================================================= */
+   ============================================================================ */
 
-// Ventana para editar, agregar o confirmar la eliminación de un elemento.
 function ModalAdmin({ modal, onGuardar, onEliminar, onCerrar }) {
     const config = TIPOS[modal.tipo];
+
     const [datos, setDatos] = useState(modal.datos);
     const [error, setError] = useState("");
 
-    // Escape cierra la ventana y se bloquea el scroll de la página mientras está abierta.
     useEffect(() => {
         const alPresionar = (evento) => {
             if (evento.key === "Escape") onCerrar();
         };
+
         const overflowPrevio = document.body.style.overflow;
 
         document.addEventListener("keydown", alPresionar);
@@ -557,7 +544,11 @@ function ModalAdmin({ modal, onGuardar, onEliminar, onCerrar }) {
     }, [onCerrar]);
 
     const cambiarCampo = (nombre, valor) => {
-        setDatos((anterior) => ({ ...anterior, [nombre]: valor }));
+        setDatos((anterior) => ({
+            ...anterior,
+            [nombre]: valor,
+        }));
+
         setError("");
     };
 
@@ -565,7 +556,9 @@ function ModalAdmin({ modal, onGuardar, onEliminar, onCerrar }) {
         evento.preventDefault();
 
         const faltante = config.campos.find(
-            (campo) => campo.requerido && !String(datos[campo.nombre] ?? "").trim()
+            (campo) =>
+                campo.requerido &&
+                !String(datos[campo.nombre] ?? "").trim()
         );
 
         if (faltante) {
@@ -573,17 +566,23 @@ function ModalAdmin({ modal, onGuardar, onEliminar, onCerrar }) {
             return;
         }
 
-        onGuardar(modal.tipo, modal.id, limpiarDatos(modal.tipo, datos));
+        onGuardar(
+            modal.tipo,
+            modal.id,
+            limpiarDatos(modal.tipo, datos)
+        );
     };
 
     const cerrarAlHacerClicFuera = (evento) => {
         if (evento.target === evento.currentTarget) onCerrar();
     };
 
-    // Confirmación de eliminación
     if (modal.modo === "eliminar") {
         return (
-            <div className="inicio-modal-fondo" onMouseDown={cerrarAlHacerClicFuera}>
+            <div
+                className="inicio-modal-fondo"
+                onMouseDown={cerrarAlHacerClicFuera}
+            >
                 <div
                     className="inicio-modal inicio-modal-chico"
                     role="alertdialog"
@@ -591,9 +590,13 @@ function ModalAdmin({ modal, onGuardar, onEliminar, onCerrar }) {
                     aria-labelledby="inicio-modal-titulo"
                 >
                     <div className="inicio-modal-cuerpo">
-                        <h2 id="inicio-modal-titulo" className="inicio-modal-titulo">
+                        <h2
+                            id="inicio-modal-titulo"
+                            className="inicio-modal-titulo"
+                        >
                             Eliminar {config.singular}
                         </h2>
+
                         <p className="inicio-modal-texto">
                             ¿Seguro que querés eliminar “{config.nombreDe(modal.datos)}”?
                             Como los cambios todavía no se guardan, volverá a aparecer al recargar la página.
@@ -601,9 +604,14 @@ function ModalAdmin({ modal, onGuardar, onEliminar, onCerrar }) {
                     </div>
 
                     <div className="inicio-modal-pie">
-                        <button type="button" className="inicio-btn-secundario" onClick={onCerrar}>
+                        <button
+                            type="button"
+                            className="inicio-btn-secundario"
+                            onClick={onCerrar}
+                        >
                             Cancelar
                         </button>
+
                         <button
                             type="button"
                             className="inicio-btn-peligro"
@@ -619,11 +627,13 @@ function ModalAdmin({ modal, onGuardar, onEliminar, onCerrar }) {
         );
     }
 
-    // Formulario de edición / alta
     const esNuevo = modal.id === null;
 
     return (
-        <div className="inicio-modal-fondo" onMouseDown={cerrarAlHacerClicFuera}>
+        <div
+            className="inicio-modal-fondo"
+            onMouseDown={cerrarAlHacerClicFuera}
+        >
             <form
                 className="inicio-modal"
                 role="dialog"
@@ -633,9 +643,13 @@ function ModalAdmin({ modal, onGuardar, onEliminar, onCerrar }) {
                 noValidate
             >
                 <div className="inicio-modal-encabezado">
-                    <h2 id="inicio-modal-titulo" className="inicio-modal-titulo">
+                    <h2
+                        id="inicio-modal-titulo"
+                        className="inicio-modal-titulo"
+                    >
                         {esNuevo ? "Agregar" : "Editar"} {config.singular}
                     </h2>
+
                     <button
                         type="button"
                         className="inicio-admin-btn"
@@ -653,28 +667,48 @@ function ModalAdmin({ modal, onGuardar, onEliminar, onCerrar }) {
 
                         return (
                             <div className="inicio-campo" key={campo.nombre}>
-                                <label htmlFor={id}>{campo.etiqueta}</label>
+                                <label htmlFor={id}>
+                                    {campo.etiqueta}
+                                </label>
 
                                 <Control
                                     id={id}
                                     valor={datos[campo.nombre] ?? ""}
-                                    onCambiar={(nuevo) => cambiarCampo(campo.nombre, nuevo)}
+                                    onCambiar={(nuevo) =>
+                                        cambiarCampo(campo.nombre, nuevo)
+                                    }
                                     autoFocus={indice === 0}
                                 />
 
-                                {campo.ayuda && <small className="inicio-campo-ayuda">{campo.ayuda}</small>}
+                                {campo.ayuda && (
+                                    <small className="inicio-campo-ayuda">
+                                        {campo.ayuda}
+                                    </small>
+                                )}
                             </div>
                         );
                     })}
 
-                    {error && <p className="inicio-campo-error" role="alert">{error}</p>}
+                    {error && (
+                        <p className="inicio-campo-error" role="alert">
+                            {error}
+                        </p>
+                    )}
                 </div>
 
                 <div className="inicio-modal-pie">
-                    <button type="button" className="inicio-btn-secundario" onClick={onCerrar}>
+                    <button
+                        type="button"
+                        className="inicio-btn-secundario"
+                        onClick={onCerrar}
+                    >
                         Cancelar
                     </button>
-                    <button type="submit" className="inicio-btn-principal">
+
+                    <button
+                        type="submit"
+                        className="inicio-btn-principal"
+                    >
                         <i className="bi bi-check-lg me-2"></i>
                         {esNuevo ? "Agregar" : "Guardar cambios"}
                     </button>
@@ -685,41 +719,74 @@ function ModalAdmin({ modal, onGuardar, onEliminar, onCerrar }) {
 }
 
 /* ============================================================================
-   8. PÁGINA
-   ========================================================================= */
+   8. PÁGINA DE INICIO
+   ============================================================================ */
 
 export default function Inicio() {
-    const { rol, alternarDemo } = useRol();
+    const { usuario, esAdmin } = useAuth();
 
-    const puede = useCallback((accion) => puedeHacer(rol, accion), [rol]);
+    // Estado del modo de edición: solo los administradores pueden activarlo.
+    const [modoAdminAbierto, setModoAdmin] = useState(false);
 
-    // Hay controles de edición visibles si el rol permite al menos una acción.
-    const editando = puede("crear") || puede("editar") || puede("eliminar");
+    const rol = esAdmin && modoAdminAbierto
+        ? ROLES.ADMIN
+        : usuario
+            ? ROLES.USUARIO
+            : ROLES.VISITANTE;
 
-    // Por ahora el contenido vive solo en memoria: se pierde al recargar.
+    const puede = useCallback(
+        (accion) => esAdmin && modoAdminAbierto && puedeHacer(rol, accion),
+        [rol, esAdmin, modoAdminAbierto]
+    );
+
+    const editando = esAdmin && modoAdminAbierto;
+
     const [contenido, setContenido] = useState(CONTENIDO_INICIAL);
-
-    // Ventana abierta: { modo: "editar" | "eliminar", tipo, id, datos } o null.
     const [modal, setModal] = useState(null);
 
     const cerrarModal = useCallback(() => setModal(null), []);
 
-    // Si el rol pierde permisos con la ventana abierta, se cierra.
+    // Si el usuario deja de ser administrador, se cierra la edición.
     useEffect(() => {
-        if (!editando) setModal(null);
-    }, [editando]);
+        if (!esAdmin) {
+            setModoAdmin(false);
+            setModal(null);
+        }
+    }, [esAdmin]);
 
-    const abrirNuevo = (tipo) =>
-        puede("crear") && setModal({ modo: "editar", tipo, id: null, datos: TIPOS[tipo].nuevo() });
+    const abrirNuevo = (tipo) => {
+        if (!puede("crear")) return;
 
-    const abrirEditar = (tipo, item) =>
-        puede("editar") && setModal({ modo: "editar", tipo, id: item.id, datos: { ...item } });
+        setModal({
+            modo: "editar",
+            tipo,
+            id: null,
+            datos: TIPOS[tipo].nuevo(),
+        });
+    };
 
-    const abrirEliminar = (tipo, item) =>
-        puede("eliminar") && setModal({ modo: "eliminar", tipo, id: item.id, datos: item });
+    const abrirEditar = (tipo, item) => {
+        if (!puede("editar")) return;
 
-    // Agrega (id === null) o modifica un elemento.
-    // Cuando haya backend, es acá donde va la llamada a la API.
+        setModal({
+            modo: "editar",
+            tipo,
+            id: item.id,
+            datos: { ...item },
+        });
+    };
+
+    const abrirEliminar = (tipo, item) => {
+        if (!puede("eliminar")) return;
+
+        setModal({
+            modo: "eliminar",
+            tipo,
+            id: item.id,
+            datos: item,
+        });
+    };
+
     const guardar = (tipo, id, datos) => {
         if (!puede(id === null ? "crear" : "editar")) return;
 
@@ -729,8 +796,13 @@ export default function Inicio() {
             ...anterior,
             [clave]: id === null
                 ? [...anterior[clave], { ...datos, id: crearId(tipo) }]
-                : anterior[clave].map((item) => (item.id === id ? { ...item, ...datos } : item)),
+                : anterior[clave].map((item) =>
+                    item.id === id
+                        ? { ...item, ...datos }
+                        : item
+                ),
         }));
+
         setModal(null);
     };
 
@@ -741,26 +813,36 @@ export default function Inicio() {
 
         setContenido((anterior) => ({
             ...anterior,
-            [clave]: anterior[clave].filter((item) => item.id !== id),
+            [clave]: anterior[clave].filter(
+                (item) => item.id !== id
+            ),
         }));
-        setModal(null);
-    };
 
-    const alternarModoDemo = () => {
-        alternarDemo();
         setModal(null);
     };
 
     const { secciones, novedades, construcciones } = contenido;
 
     return (
-        <EdicionContext.Provider value={{ editando, puede, abrirNuevo, abrirEditar, abrirEliminar }}>
+        <EdicionContext.Provider
+            value={{
+                editando,
+                puede,
+                abrirNuevo,
+                abrirEditar,
+                abrirEliminar,
+            }}
+        >
             <Header />
 
             <main className={`inicio ${editando ? "inicio-modo-admin" : ""}`}>
                 <section
                     className="inicio-hero"
-                    style={HERO_URL ? { "--inicio-hero-imagen": `url("${HERO_URL}")` } : undefined}
+                    style={
+                        HERO_URL
+                            ? { "--inicio-hero-imagen": `url("${HERO_URL}")` }
+                            : undefined
+                    }
                 >
                     <div className="container inicio-hero-contenido">
                         <div className="inicio-hero-texto">
@@ -780,13 +862,19 @@ export default function Inicio() {
                             </p>
 
                             <div className="d-flex flex-wrap gap-3">
-                                <Enlace to="/versiones" className="btn inicio-btn-principal">
+                                <Enlace
+                                    to="/versiones"
+                                    className="btn inicio-btn-principal"
+                                >
                                     <i className="bi bi-compass-fill me-2"></i>
                                     Explorar el mundo
                                     <i className="bi bi-arrow-right ms-2"></i>
                                 </Enlace>
 
-                                <Enlace to="/comunidad" className="btn inicio-btn-secundario">
+                                <Enlace
+                                    to="/comunidad"
+                                    className="btn inicio-btn-secundario"
+                                >
                                     <i className="bi bi-people-fill me-2"></i>
                                     Unirme a la comunidad
                                 </Enlace>
@@ -806,30 +894,45 @@ export default function Inicio() {
 
                             <div className="row g-3">
                                 {secciones.map((seccion) => (
-                                    <div className="col-12 col-md-6 col-lg-4" key={seccion.id}>
+                                    <div
+                                        className="col-12 col-md-6 col-lg-4"
+                                        key={seccion.id}
+                                    >
                                         <article className="card inicio-card-seccion h-100">
-                                            <Controles tipo="seccion" item={seccion} />
+                                            <Controles
+                                                tipo="seccion"
+                                                item={seccion}
+                                            />
 
                                             <Enlace
                                                 to={seccion.enlace}
                                                 className="inicio-imagen-link"
                                                 aria-label={`Explorar ${seccion.titulo}`}
                                             >
-                                                <Imagen nombre={seccion.imagen} className="inicio-card-imagen" />
+                                                <Imagen
+                                                    nombre={seccion.imagen}
+                                                    className="inicio-card-imagen"
+                                                />
                                             </Enlace>
 
                                             <div className="card-body">
                                                 <div className="seccion-titulo d-flex">
                                                     <div className="d-flex icono-container">
-                                                        <Icono nombre={seccion.icono} className="inicio-icono" />
+                                                        <Icono
+                                                            nombre={seccion.icono}
+                                                            className="inicio-icono"
+                                                        />
                                                     </div>
-                                                    <h3>
-                                                        {seccion.titulo}
-                                                    </h3>
+
+                                                    <h3>{seccion.titulo}</h3>
                                                 </div>
+
                                                 <p>{seccion.descripcion}</p>
 
-                                                <Enlace to={seccion.enlace} className="inicio-enlace">
+                                                <Enlace
+                                                    to={seccion.enlace}
+                                                    className="inicio-enlace"
+                                                >
                                                     Descubrir
                                                     <i className="bi bi-arrow-right ms-2"></i>
                                                 </Enlace>
@@ -838,7 +941,11 @@ export default function Inicio() {
                                     </div>
                                 ))}
 
-                                <Agregar tipo="seccion" texto="Agregar sección" columna="col-12 col-md-6 col-lg-4" />
+                                <Agregar
+                                    tipo="seccion"
+                                    texto="Agregar sección"
+                                    columna="col-12 col-md-6 col-lg-4"
+                                />
                             </div>
                         </section>
                     )}
@@ -852,7 +959,10 @@ export default function Inicio() {
                                     Novedades de la comunidad
                                 </h2>
 
-                                <Enlace to="/comunidad" className="inicio-ver-todo">
+                                <Enlace
+                                    to="/comunidad"
+                                    className="inicio-ver-todo"
+                                >
                                     Ver todas
                                     <i className="bi bi-arrow-right ms-1"></i>
                                 </Enlace>
@@ -860,19 +970,35 @@ export default function Inicio() {
 
                             <div className="row g-3">
                                 {novedades.map((novedad) => (
-                                    <div className="col-12 col-md-6 col-lg-4" key={novedad.id}>
+                                    <div
+                                        className="col-12 col-md-6 col-lg-4"
+                                        key={novedad.id}
+                                    >
                                         <article className="card inicio-card-novedad h-100">
-                                            <Controles tipo="novedad" item={novedad} />
+                                            <Controles
+                                                tipo="novedad"
+                                                item={novedad}
+                                            />
 
-                                            <Enlace to={novedad.enlace} className="inicio-novedad-imagen">
-                                                <Imagen nombre={novedad.imagen} alt={novedad.titulo} />
+                                            <Enlace
+                                                to={novedad.enlace}
+                                                className="inicio-novedad-imagen"
+                                            >
+                                                <Imagen
+                                                    nombre={novedad.imagen}
+                                                    alt={novedad.titulo}
+                                                />
                                             </Enlace>
 
                                             <div className="card-body">
-                                                <span className="inicio-categoria">{novedad.categoria}</span>
+                                                <span className="inicio-categoria">
+                                                    {novedad.categoria}
+                                                </span>
 
                                                 <h3>
-                                                    <Enlace to={novedad.enlace}>{novedad.titulo}</Enlace>
+                                                    <Enlace to={novedad.enlace}>
+                                                        {novedad.titulo}
+                                                    </Enlace>
                                                 </h3>
 
                                                 <div className="inicio-metadata">
@@ -880,6 +1006,7 @@ export default function Inicio() {
                                                         <i className="bi bi-calendar3 me-1"></i>
                                                         {novedad.fecha}
                                                     </span>
+
                                                     <span>
                                                         <i className="bi bi-person me-1"></i>
                                                         {novedad.autor}
@@ -888,7 +1015,10 @@ export default function Inicio() {
 
                                                 <p>{novedad.descripcion}</p>
 
-                                                <Enlace to={novedad.enlace} className="inicio-leer-mas">
+                                                <Enlace
+                                                    to={novedad.enlace}
+                                                    className="inicio-leer-mas"
+                                                >
                                                     Leer publicación
                                                     <i className="bi bi-arrow-up-right ms-1"></i>
                                                 </Enlace>
@@ -897,7 +1027,11 @@ export default function Inicio() {
                                     </div>
                                 ))}
 
-                                <Agregar tipo="novedad" texto="Agregar novedad" columna="col-12 col-md-6 col-lg-4" />
+                                <Agregar
+                                    tipo="novedad"
+                                    texto="Agregar novedad"
+                                    columna="col-12 col-md-6 col-lg-4"
+                                />
                             </div>
                         </section>
                     )}
@@ -907,7 +1041,10 @@ export default function Inicio() {
                         <div className="col-12 col-lg-5">
                             <article className="inicio-publicacion h-100">
                                 <div className="inicio-avatar">
-                                    <Imagen nombre="avatar.png" alt="Avatar de la comunidad" />
+                                    <Imagen
+                                        nombre="avatar.png"
+                                        alt="Avatar de la comunidad"
+                                    />
                                 </div>
 
                                 <div className="inicio-publicacion-contenido">
@@ -922,7 +1059,10 @@ export default function Inicio() {
                                         Comunidad Wiki-Craft
                                     </span>
 
-                                    <Enlace to="/comunidad" className="inicio-enlace">
+                                    <Enlace
+                                        to="/comunidad"
+                                        className="inicio-enlace"
+                                    >
                                         Ver publicaciones
                                         <i className="bi bi-arrow-right ms-2"></i>
                                     </Enlace>
@@ -938,35 +1078,54 @@ export default function Inicio() {
                                         Conocé las construcciones
                                     </h2>
 
-                                    <Enlace to="/comunidad" className="inicio-ver-todo">
+                                    <Enlace
+                                        to="/comunidad"
+                                        className="inicio-ver-todo"
+                                    >
                                         Ver más
                                         <i className="bi bi-arrow-right ms-1"></i>
                                     </Enlace>
                                 </div>
 
                                 {construcciones.length === 0 && !editando && (
-                                    <p className="inicio-vacio">Todavía no hay construcciones para mostrar.</p>
+                                    <p className="inicio-vacio">
+                                        Todavía no hay construcciones para mostrar.
+                                    </p>
                                 )}
 
                                 <div className="row g-2">
                                     {construcciones.map((construccion) => (
-                                        <div className="col-4" key={construccion.id}>
+                                        <div
+                                            className="col-4"
+                                            key={construccion.id}
+                                        >
                                             <div className="inicio-construccion-item">
-                                                <Controles tipo="construccion" item={construccion} />
+                                                <Controles
+                                                    tipo="construccion"
+                                                    item={construccion}
+                                                />
 
                                                 <Enlace
                                                     to="/comunidad"
                                                     className="inicio-construccion"
                                                     title={construccion.nombre}
                                                 >
-                                                    <Imagen nombre={construccion.imagen} alt={construccion.nombre} />
+                                                    <Imagen
+                                                        nombre={construccion.imagen}
+                                                        alt={construccion.nombre}
+                                                    />
                                                     <span>{construccion.nombre}</span>
                                                 </Enlace>
                                             </div>
                                         </div>
                                     ))}
 
-                                    <Agregar tipo="construccion" texto="Agregar" columna="col-4" compacto />
+                                    <Agregar
+                                        tipo="construccion"
+                                        texto="Agregar"
+                                        columna="col-4"
+                                        compacto
+                                    />
                                 </div>
                             </section>
                         </div>
@@ -975,48 +1134,41 @@ export default function Inicio() {
                     {/* ---------- Tienda ---------- */}
                     <section className="inicio-tienda">
                         <div>
-                            <span className="inicio-categoria">TIENDA WIKI-CRAFT</span>
+                            <span className="inicio-categoria">
+                                TIENDA WIKI-CRAFT
+                            </span>
+
                             <h2>Equipate para tu próxima aventura</h2>
+
                             <p>
                                 Explorá los productos disponibles y encontrá algo para
                                 vos o para regalarle a otro jugador.
                             </p>
                         </div>
 
-                        <Enlace to="/tienda" className="btn inicio-btn-principal">
+                        <Enlace
+                            to="/tienda"
+                            className="btn inicio-btn-principal"
+                        >
                             Explorar la tienda
                             <i className="bi bi-arrow-right ms-2"></i>
                         </Enlace>
                     </section>
                 </div>
 
-                {/* ---------- Panel flotante ----------
-                    El botón solo existe en modo demo. Con login real desaparece
-                    y los controles se muestran solos según el rol. */}
-                {(MODO_DEMO || editando) && (
-                    <div className="inicio-admin-panel">
-                        {editando && (
-                            <p className="inicio-admin-aviso">
-                                <i className="bi bi-info-circle-fill"></i>
-                                Los cambios no se guardan: se pierden al recargar.
-                            </p>
-                        )}
-
-                        {MODO_DEMO && (
-                            <button
-                                type="button"
-                                className={`inicio-admin-toggle ${editando ? "activo" : ""}`}
-                                aria-pressed={editando}
-                                onClick={alternarModoDemo}
-                            >
-                                <i className={`bi ${editando ? "bi-shield-check" : "bi-shield-lock"}`}></i>
-                                {editando ? "Salir del modo administrador" : "Modo administrador"}
-                            </button>
-                        )}
-                    </div>
+                {/* ---------- Panel de administración ---------- */}
+                {esAdmin && (
+                    <BotonAdmin
+                        activo={editando}
+                        alAlternar={() => {
+                            setModoAdmin((actual) => !actual);
+                            setModal(null);
+                        }}
+                        aviso="Editá, agregá o eliminá contenido de la página de inicio."
+                    />
                 )}
 
-                {modal && (
+                {modal && editando && (
                     <ModalAdmin
                         key={`${modal.modo}-${modal.tipo}-${modal.id ?? "nuevo"}`}
                         modal={modal}

@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import Header from "../components/header";
+import BotonAdmin from "../components/botonAdmin";
 import Footer from "../components/Footer";
 
 import { songs, composers, albums, playlists } from "../data/musicData";
@@ -250,6 +251,8 @@ export default function Musica() {
           }}
         />
       </main>
+
+      <BotonAdmin alAlternar={() => navigate("/musica/maestro")} />
 
       <Footer />
     </>

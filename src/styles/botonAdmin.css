@@ -1,0 +1,110 @@
+/* ==========================================================================
+   botonAdmin.css — mismo botón de administrador que usa la página de inicio.
+   Las variables se definen acá porque en inicio viven dentro de ".inicio".
+   ========================================================================== */
+.boton-admin-panel {
+    --ba-borde: 1.5px;
+    --ba-ease: cubic-bezier(0.22, 0.8, 0.24, 1);
+    --ba-ease-suave: cubic-bezier(0.25, 1, 0.5, 1);
+    --ba-dur-corta: 250ms;
+    --ba-dur-media: 640ms;
+    --ba-texto: var(--texto, #111111);
+    --ba-blanco: var(--blanco, #fffdf9);
+    --ba-verde: var(--verde, #1db53c);
+    --ba-verde-hover: var(--verde-hover, #00a521);
+    --ba-verde-claro: var(--verde-claro, #67ff6767);
+    --ba-sombra: 0 2px 14px -4px rgba(48, 47, 42, 0.12), 0 0 0 0 rgba(29, 181, 60, 0);
+    --ba-sombra-hover: 0 18px 40px -14px rgba(48, 47, 42, 0.3), 0 4px 14px -4px rgba(29, 181, 60, 0.2);
+
+    position: fixed;
+    right: clamp(16px, 2.5vw, 32px);
+    bottom: clamp(16px, 2.5vw, 32px);
+    z-index: 900;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+    max-width: calc(100vw - 32px);
+}
+
+.boton-admin-aviso {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    padding: 9px 16px;
+    border: var(--ba-borde) solid var(--ba-verde-claro);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--ba-blanco) 90%, transparent);
+    -webkit-backdrop-filter: blur(14px) saturate(1.3);
+    backdrop-filter: blur(14px) saturate(1.3);
+    box-shadow: var(--ba-sombra);
+    color: color-mix(in srgb, var(--ba-texto) 72%, transparent);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    animation: boton-admin-aparece var(--ba-dur-media) var(--ba-ease-suave) backwards;
+}
+
+.boton-admin-aviso i {
+    color: var(--ba-verde);
+}
+
+.boton-admin-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 48px;
+    padding: 0 22px;
+    border: var(--ba-borde) solid color-mix(in srgb, var(--ba-texto) 16%, transparent);
+    border-radius: 999px;
+    background: color-mix(in srgb, #111111 10%, transparent);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+    box-shadow: var(--ba-sombra);
+    color: var(--ba-texto);
+    font: inherit;
+    font-size: 0.875rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition:
+        background-color var(--ba-dur-corta) var(--ba-ease),
+        border-color var(--ba-dur-corta) var(--ba-ease),
+        color var(--ba-dur-corta) var(--ba-ease),
+        box-shadow var(--ba-dur-media) var(--ba-ease-suave),
+        transform var(--ba-dur-media) var(--ba-ease-suave);
+}
+
+.boton-admin-toggle:hover {
+    border-color: var(--ba-verde);
+    box-shadow: var(--ba-sombra-hover);
+    color: var(--ba-verde-hover);
+    transform: translateY(-2px);
+}
+
+.boton-admin-toggle:active {
+    transform: translateY(0) scale(0.97);
+    transition-duration: 120ms;
+}
+
+.boton-admin-toggle.activo {
+    border-color: var(--ba-verde);
+    background: var(--ba-verde);
+    color: var(--ba-blanco);
+}
+
+.boton-admin-toggle.activo:hover {
+    border-color: var(--ba-verde-hover);
+    background: var(--ba-verde-hover);
+    color: var(--ba-blanco);
+}
+
+@keyframes boton-admin-aparece {
+    from {
+        opacity: 0;
+        transform: translateY(8px) scale(0.97);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}

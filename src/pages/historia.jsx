@@ -1,6 +1,8 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import Header from '../components/header';
 import Footer from '../components/Footer';
+import BotonAdmin from '../components/botonAdmin';
+import { useAuth } from '../context/AuthContext';
 import '../styles/index.css';   // base + modo administrador (los estilos que ya tenías)
 import '../styles/historia.css'; // estilos propios de esta página (línea de tiempo, aside, tarjetas)
 
@@ -884,7 +886,9 @@ function ModalConfirmar({ titulo, texto, textoBoton, onConfirmar, onCerrar }) {
 // ---------------------------------------------------------------------------
 function Historia({ eventos: eventosProp }) {
   const [eventos, setEventos] = useState(() => eventosProp || leerGuardado() || EVENTOS_INICIALES);
-  const [modoAdmin, setModoAdmin] = useState(false);
+  const { esAdmin } = useAuth();
+  const [modoAdminAbierto, setModoAdmin] = useState(false);
+  const modoAdmin = modoAdminAbierto && esAdmin; // solo el admin puede editar
   const [modal, setModal] = useState(null); // null | {tipo:'form'|'borrar'|'restaurar', ...}
   const [abiertos, setAbiertos] = useState({});
   const [zona, setZona] = useState({ era: null, evento: null }); // dónde está la persona
@@ -1130,24 +1134,17 @@ function Historia({ eventos: eventosProp }) {
           </main>
         </div>
 
-        {/* ---------- PANEL DE ADMINISTRADOR (flotante) ---------- */}
-        <div className="inicio-admin-panel">
-          {modoAdmin && (
-            <p className="inicio-admin-aviso">
-              <i aria-hidden="true">✎</i> Editá, agregá o eliminá hitos.
-            </p>
-          )}
-          {modoAdmin && (
-            <button type="button" className="inicio-admin-toggle"
-              onClick={() => setModal({ tipo: 'restaurar' })}>
-              Restaurar originales
-            </button>
-          )}
-          <button type="button" className={`inicio-admin-toggle${modoAdmin ? ' activo' : ''}`}
-            aria-pressed={modoAdmin} onClick={() => setModoAdmin((v) => !v)}>
-            {modoAdmin ? 'Salir del modo administrador' : 'Modo administrador'}
+        {/* ---------- BOTÓN DE ADMINISTRADOR (solo admin) ---------- */}
+        <BotonAdmin
+          activo={modoAdmin}
+          alAlternar={() => setModoAdmin((v) => !v)}
+          aviso="Editá, agregá o eliminá hitos."
+        >
+          <button type="button" className="boton-admin-toggle"
+            onClick={() => setModal({ tipo: 'restaurar' })}>
+            Restaurar originales
           </button>
-        </div>
+        </BotonAdmin>
 
         {/* ---------- VENTANAS ---------- */}
         {modal?.tipo === 'form' && (

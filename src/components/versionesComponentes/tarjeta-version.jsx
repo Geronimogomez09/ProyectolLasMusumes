@@ -62,14 +62,16 @@ function TarjetaVersion({
           </div>
 
           {/* BOTONES DE EDICIÓN Y ELIMINACIÓN */}
-          <div className="version-card__acciones">
-            <button className="btn-accion btn-accion--editar" onClick={onEditar} title="Editar versión">
-              ✏️ Editar
-            </button>
-            <button className="btn-accion btn-accion--eliminar" onClick={onEliminar} title="Eliminar versión">
-              🗑️ Eliminar
-            </button>
-          </div>
+          {(onEditar || onEliminar) && (
+            <div className="version-card__acciones">
+              <button className="btn-accion btn-accion--editar" onClick={onEditar} title="Editar versión">
+                ✏️ Editar
+              </button>
+              <button className="btn-accion btn-accion--eliminar" onClick={onEliminar} title="Eliminar versión">
+                🗑️ Eliminar
+              </button>
+            </div>
+          )}
         </div>
 
         <p className="version-card__fecha">{version.fechaLegible}</p>

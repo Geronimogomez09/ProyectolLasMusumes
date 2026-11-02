@@ -7,6 +7,8 @@ import NuevoPost from '../components/comunidadComponentes/nuevo-post';
 import { EMOJIS_MINECRAFT } from '../components/comunidadComponentes/emojis-minecraft';
 import Footer from '../components/Footer';
 import Header from '../components/header';
+import BotonAdmin from '../components/botonAdmin';
+import { useAuth } from '../context/AuthContext';
 import '../styles/Comunidad.css';
 // ---------------------------------------------------------------------------
 // DATOS MOCKEADOS (posts)
@@ -151,7 +153,9 @@ function Comunidad({ posts: postsProp }) {
   const [denunciaAbiertaPost, setDenunciaAbiertaPost] = useState(null);
   const [reportados, setReportados] = useState({});
   const [denunciasEnviadas, setDenunciasEnviadas] = useState(() => leerLocal(CLAVE_DENUNCIAS, []));
-  const [administradorAbierto, setAdministradorAbierto] = useState(() => searchParams.get('admin') === '1');
+  const { esAdmin } = useAuth();
+  const [adminSolicitado, setAdministradorAbierto] = useState(() => searchParams.get('admin') === '1');
+  const administradorAbierto = adminSolicitado && esAdmin; // solo el admin entra al panel
   const [adminSeccion, setAdminSeccion] = useState('denuncias');
   const [postEditando, setPostEditando] = useState(null);
   const [textoPostEditado, setTextoPostEditado] = useState('');
@@ -605,10 +609,9 @@ function Comunidad({ posts: postsProp }) {
         )}
       </div>
       )}
-      <button
-        type="button"
-        className={`comunidad-admin-toggle ${administradorAbierto ? 'activo' : ''}`}
-        onClick={() => {
+      <BotonAdmin
+        activo={administradorAbierto}
+        alAlternar={() => {
           if (administradorAbierto) {
             setAdministradorAbierto(false);
             setSearchParams({});
@@ -618,12 +621,7 @@ function Comunidad({ posts: postsProp }) {
             setSearchParams({ admin: '1' });
           }
         }}
-        aria-label={administradorAbierto ? 'Volver al modo usuario' : 'Abrir panel de administración'}
-      >
-        <span className="admin-toggle-pulse" />
-        {administradorAbierto ? 'Modo usuario' : 'Modo administrador'}
-        <span aria-hidden="true">{administradorAbierto ? '↙' : '↗'}</span>
-      </button>
+      />
       {!administradorAbierto && <Footer />}
     </>
   );
