@@ -1,5 +1,6 @@
-
 import React, { useState } from "react";
+import Header from "../components/header";
+import Footer from "../components/Footer";
 import { useNavigate, useParams } from "react-router-dom";
 import { albums, songs, composers } from "../data/musicData";
 import { useMusic } from "../context/MusicContext";
@@ -27,16 +28,20 @@ function Album() {
 
   if (!album) {
     return (
-      <main className="album-page">
-        <button
-          type="button"
-          onClick={() => navigate(-1)}
-          className="back-button"
-        >
-          ← Volver
-        </button>
-        <h1>Álbum no encontrado</h1>
-      </main>
+      <>
+        <Header />
+        <main className="album-page">
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="back-button"
+          >
+            ← Volver
+          </button>
+          <h1>Álbum no encontrado</h1>
+        </main>
+        <Footer />
+      </>
     );
   }
 
@@ -59,111 +64,115 @@ function Album() {
     albums.find((item) => item.id === song?.albumId);
 
   return (
-    <main className="album-page">
-      <button
-        type="button"
-        onClick={() => navigate(-1)}
-        className="back-button"
-      >
-        ← Volver
-      </button>
+    <>
+      <Header />
+      <main className="album-page">
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          className="back-button"
+        >
+          ← Volver
+        </button>
 
-      <section className="album-header">
-        <img src={album.cover} alt={album.title} />
+        <section className="album-header">
+          <img src={album.cover} alt={album.title} />
 
-        <div>
-          <span>ÁLBUM</span>
-          <h1>{album.title}</h1>
+          <div>
+            <span>ÁLBUM</span>
+            <h1>{album.title}</h1>
 
-          {composer && (
-            <button
-              type="button"
-              onClick={() =>
-                navigate(`/musica/compositor/${composer.id}`)
-              }
-            >
-              {composer.name}
-            </button>
-          )}
+            {composer && (
+              <button
+                type="button"
+                onClick={() =>
+                  navigate(`/musica/compositor/${composer.id}`)
+                }
+              >
+                {composer.name}
+              </button>
+            )}
 
-          <p>
-            {album.year} · {albumSongs.length} canciones
-          </p>
-          <p>{album.description}</p>
+            <p>
+              {album.year} · {albumSongs.length} canciones
+            </p>
+            <p>{album.description}</p>
 
-          <div className="album-actions">
-            <button
-              type="button"
-              className="album-primary-action"
-              disabled={!playableSongs.length}
-              onClick={() => playCollection(albumSongs)}
-            >
-              ▶ <span>Reproducir</span>
-            </button>
+            <div className="album-actions">
+              <button
+                type="button"
+                className="album-primary-action"
+                disabled={!playableSongs.length}
+                onClick={() => playCollection(albumSongs)}
+              >
+                ▶ <span>Reproducir</span>
+              </button>
 
-            <button
-              type="button"
-              className="album-secondary-action"
-              disabled={!playableSongs.length}
-              onClick={() =>
-                playCollection(albumSongs, { shuffle: true })
-              }
-            >
-              ⤨ <span>Aleatorio</span>
-            </button>
+              <button
+                type="button"
+                className="album-secondary-action"
+                disabled={!playableSongs.length}
+                onClick={() =>
+                  playCollection(albumSongs, { shuffle: true })
+                }
+              >
+                ⤨ <span>Aleatorio</span>
+              </button>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section className="album-songs songs-list">
-        {albumSongs.map((song, index) => (
-          <SongRow
-            key={song.id}
-            song={{
-              ...song,
-              duration: songDurations[song.id] ?? song.duration,
-            }}
-            index={index}
-            composer={getComposer(song)}
-            isFavorite={isFavorite(song)}
-            isBlocked={isBlocked(song)}
-            onPlay={(selectedSong) =>
-              playSong(selectedSong, albumSongs)
-            }
-            onOpen={setSelectedSong}
-            onToggleFavorite={toggleFavorite}
-            onToggleBlocked={toggleBlocked}
-          />
-        ))}
+        <section className="album-songs songs-list">
+          {albumSongs.map((song, index) => (
+            <SongRow
+              key={song.id}
+              song={{
+                ...song,
+                duration: songDurations[song.id] ?? song.duration,
+              }}
+              index={index}
+              composer={getComposer(song)}
+              isFavorite={isFavorite(song)}
+              isBlocked={isBlocked(song)}
+              onPlay={(selectedSong) =>
+                playSong(selectedSong, albumSongs)
+              }
+              onOpen={setSelectedSong}
+              onToggleFavorite={toggleFavorite}
+              onToggleBlocked={toggleBlocked}
+            />
+          ))}
 
-        {!albumSongs.length && (
-          <p>Este álbum todavía no tiene canciones.</p>
-        )}
-      </section>
+          {!albumSongs.length && (
+            <p>Este álbum todavía no tiene canciones.</p>
+          )}
+        </section>
 
-      <SongPanel
-        song={selectedSong}
-        composer={selectedSong ? getComposer(selectedSong) : null}
-        album={selectedSong ? getAlbum(selectedSong) : album}
-        isFavorite={selectedSong ? isFavorite(selectedSong) : false}
-        isBlocked={selectedSong ? isBlocked(selectedSong) : false}
-        onClose={() => setSelectedSong(null)}
-        onPlay={(song) => {
-          playSong(song, albumSongs);
-          setSelectedSong(null);
-        }}
-        onToggleFavorite={toggleFavorite}
-        onToggleBlocked={toggleBlocked}
-        onOpenAlbum={(selectedAlbum) => {
-          setSelectedSong(null);
-          navigate(`/musica/album/${selectedAlbum.id}`);
-        }}
-        onOpenComposer={(selectedComposer) => {
-          setSelectedSong(null);
-          navigate(`/musica/compositor/${selectedComposer.id}`);
-        }}
-      />
-    </main>
+        <SongPanel
+          song={selectedSong}
+          composer={selectedSong ? getComposer(selectedSong) : null}
+          album={selectedSong ? getAlbum(selectedSong) : album}
+          isFavorite={selectedSong ? isFavorite(selectedSong) : false}
+          isBlocked={selectedSong ? isBlocked(selectedSong) : false}
+          onClose={() => setSelectedSong(null)}
+          onPlay={(song) => {
+            playSong(song, albumSongs);
+            setSelectedSong(null);
+          }}
+          onToggleFavorite={toggleFavorite}
+          onToggleBlocked={toggleBlocked}
+          onOpenAlbum={(selectedAlbum) => {
+            setSelectedSong(null);
+            navigate(`/musica/album/${selectedAlbum.id}`);
+          }}
+          onOpenComposer={(selectedComposer) => {
+            setSelectedSong(null);
+            navigate(`/musica/compositor/${selectedComposer.id}`);
+          }}
+        />
+      </main>
+      <Footer />
+    </>
   );
 }
 
