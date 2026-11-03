@@ -81,15 +81,9 @@ function AgregarVersion({ onAgregar, versionAEditar, onActualizar, onCancelarEdi
     }));
   }
 
-  function handleImagen(e) {
-    const archivo = e.target.files[0];
-    if (!archivo) return;
-    if (!archivo.type.startsWith('image/')) {
-      setError('El archivo seleccionado no es una imagen.');
-      return;
-    }
-    setError('');
-    setVistaPrevia(URL.createObjectURL(archivo));
+  function handleImagenUrl(e) {
+    const url = e.target.value.trim();
+    setVistaPrevia(url);
   }
 
   function cerrar() {
@@ -102,7 +96,7 @@ function AgregarVersion({ onAgregar, versionAEditar, onActualizar, onCancelarEdi
     }
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
 
     if (!form.numero.trim() || !form.nombre.trim() || !form.fecha || !form.descripcion.trim()) {
@@ -114,13 +108,15 @@ function AgregarVersion({ onAgregar, versionAEditar, onActualizar, onCancelarEdi
       return;
     }
 
+    const imagenGuardada = vistaPrevia.trim() || IMAGEN_POR_DEFECTO;
+
     const datosVersion = {
       numero: form.numero.trim(),
       nombre: form.nombre.trim(),
       edicion: form.edicion,
       fecha: form.fecha,
       fechaLegible: formatearFecha(form.fecha),
-      imagen: vistaPrevia || versionAEditar?.imagen || IMAGEN_POR_DEFECTO,
+      imagen: imagenGuardada,
       descripcion: form.descripcion.trim(),
       nuevasFunciones: aLista(form.nuevasFunciones),
       correcciones: aLista(form.correcciones),
@@ -208,8 +204,13 @@ function AgregarVersion({ onAgregar, versionAEditar, onActualizar, onCancelarEdi
       </label>
 
       <label className="agregar-version-campo">
-        Imagen
-        <input type="file" accept="image/*" onChange={handleImagen} />
+        Imagen (URL opcional)
+        <input
+          type="url"
+          placeholder="https://ejemplo.com/imagen.png"
+          value={vistaPrevia}
+          onChange={handleImagenUrl}
+        />
       </label>
       {vistaPrevia && (
         <img src={vistaPrevia} alt="Vista previa" className="agregar-version-preview" />

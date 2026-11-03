@@ -17,14 +17,7 @@ import {
   writeBatch,
 } from "firebase/firestore";
 
-import {
-  deleteObject,
-  getDownloadURL,
-  ref,
-  uploadBytes,
-} from "firebase/storage";
-
-import { db, storage } from "./firebase";
+import { db } from "./firebase";
 
 // ======================================================
 // COLECCIONES PRINCIPALES DE WIKICRAFT
@@ -175,10 +168,12 @@ export async function crearPerfilUsuario(usuario, datosAdicionales = {}) {
   const existente = await getDoc(referencia);
 
   if (existente.exists()) {
-    return {
-      uid: existente.id,
-      ...existente.data(),
-    };
+    if (datosAdicionales.nombreUsuario && datosAdicionales.nombreUsuario !== existente.data().nombreUsuario) {
+      await updateDoc(referencia, { nombreUsuario: datosAdicionales.nombreUsuario });
+      const actualizado = await getDoc(referencia);
+      return { uid: actualizado.id, ...actualizado.data() };
+    }
+    return { uid: existente.id, ...existente.data() };
   }
 
   const perfil = {
@@ -187,11 +182,13 @@ export async function crearPerfilUsuario(usuario, datosAdicionales = {}) {
     email: usuario.email || "",
     nombreUsuario:
       datosAdicionales.nombreUsuario ||
+      usuario.displayName ||
       usuario.email?.split("@")[0] ||
       "Usuario",
     fotoPerfil: usuario.photoURL || "",
     biografia: datosAdicionales.biografia || "",
     rol: "usuario",
+    estado: "activo",
     fechaRegistro: serverTimestamp(),
   };
 
@@ -201,35 +198,10 @@ export async function crearPerfilUsuario(usuario, datosAdicionales = {}) {
 }
 
 // ======================================================
-// ARCHIVOS: FIREBASE STORAGE
+// IMÁGENES EXTERNAS (SIN FIREBASE STORAGE)
 // ======================================================
-
-// Sube un archivo y devuelve su URL de descarga.
-export async function subirArchivo(ruta, archivo) {
-  if (!archivo) return "";
-
-  const referencia = ref(
-    storage,
-    `${ruta}/${Date.now()}-${archivo.name}`
-  );
-
-  const resultado = await uploadBytes(referencia, archivo);
-
-  return getDownloadURL(resultado.ref);
-}
-
-// Elimina un archivo de Storage a partir de su URL.
-export async function eliminarArchivo(url) {
-  if (!url) return;
-
-  try {
-    await deleteObject(ref(storage, url));
-  } catch (error) {
-    if (error.code !== "storage/object-not-found") {
-      throw error;
-    }
-  }
-}
+// Las imágenes se guardan como URL en Firestore. El proyecto no sube
+// archivos ni necesita habilitar Firebase Storage.
 
 // ======================================================
 // ESCUCHAS EN TIEMPO REAL
@@ -320,4 +292,75 @@ export async function alternarEnArray(
     [campo]: agregar ? arrayUnion(valor) : arrayRemove(valor),
     fechaActualizacion: serverTimestamp(),
   });
+}
+
+// ======================================================
+// COMUNIDAD: publicaciones y denuncias persistentes
+// ======================================================
+export async function crearPublicacion(datos, usuario, perfil = {}) {
+  if (!usuario?.uid) throw new Error("Tenés que iniciar sesión para publicar.");
+  const nombre = perfil.nombreUsuario || usuario.displayName || usuario.email?.split("@")[0] || "Usuario";
+  const imagenUrl = typeof datos.imagen === "string" ? datos.imagen.trim() : "";
+  return crearDocumento(COLECCIONES.publicaciones, {
+    autorId: usuario.uid,
+    autorNombre: nombre,
+    autorFoto: perfil.fotoPerfil || usuario.photoURL || "",
+    categoria: datos.categoria,
+    contenido: datos.contenido,
+    imagen: imagenUrl,
+    comentarios: [],
+    likes: 0,
+    editado: false,
+  });
+}
+
+export function escucharPublicaciones(callback, alError = console.error) {
+  return escucharDocumentos(COLECCIONES.publicaciones, callback, { campoOrden: "fechaCreacion", direccion: "desc" }, alError);
+}
+
+export async function actualizarPublicacion(id, cambios) {
+  const permitidos = { contenido: cambios.contenido, categoria: cambios.categoria };
+  if (Object.prototype.hasOwnProperty.call(cambios, "imagen")) permitidos.imagen = cambios.imagen || "";
+  Object.keys(permitidos).forEach((k) => permitidos[k] === undefined && delete permitidos[k]);
+  await actualizarDocumento(COLECCIONES.publicaciones, id, { ...permitidos, editado: true });
+}
+
+export async function eliminarPublicacion(id) {
+  await eliminarDocumento(COLECCIONES.publicaciones, id);
+}
+
+export async function crearDenuncia(datos, usuario, perfil = {}) {
+  if (!usuario?.uid) throw new Error("Tenés que iniciar sesión para denunciar.");
+  return crearDocumento(COLECCIONES.denuncias, {
+    ...datos,
+    denuncianteId: usuario.uid,
+    denuncianteNombre: perfil.nombreUsuario || usuario.email?.split("@")[0] || "Usuario",
+    estado: "Pendiente",
+  });
+}
+
+export async function actualizarEstadoDenuncia(id, estado) {
+  await actualizarDocumento(COLECCIONES.denuncias, id, { estado });
+}
+
+export function escucharDenuncias(callback, alError = console.error) {
+  return escucharDocumentos(COLECCIONES.denuncias, callback, { campoOrden: "fechaCreacion", direccion: "desc" }, alError);
+}
+
+export async function suspenderCuenta(uid, suspendida = true) {
+  await actualizarDocumento(COLECCIONES.usuarios, uid, { estado: suspendida ? "suspendido" : "activo" });
+}
+
+// ======================================================
+// VERSIONES: Firestore (operaciones protegidas por reglas)
+// ======================================================
+export function escucharVersiones(callback, alError = console.error) {
+  return escucharDocumentos(COLECCIONES.versiones, callback, { campoOrden: "fecha", direccion: "desc" }, alError);
+}
+export async function guardarVersion(datos, id = null) {
+  if (id) return actualizarDocumento(COLECCIONES.versiones, id, datos);
+  return crearDocumento(COLECCIONES.versiones, datos);
+}
+export async function borrarVersion(id) {
+  return eliminarDocumento(COLECCIONES.versiones, id);
 }

@@ -91,23 +91,6 @@ function TarjetaVersion({
             </div>
           ) : null
         )}
-
-        <button
-          className="version-card__btn-comentarios"
-          onClick={() => onToggleComentarios(version.id)}
-        >
-          💬 {version.comentarios.length} comentario
-          {version.comentarios.length === 1 ? '' : 's'}
-        </button>
-
-        {comentariosAbiertos && (
-          <ListaComentarios
-            comentarios={version.comentarios}
-            onAgregarComentario={(comentario) =>
-              onAgregarComentario(version.id, comentario)
-            }
-          />
-        )}
       </div>
     </article>
   );
