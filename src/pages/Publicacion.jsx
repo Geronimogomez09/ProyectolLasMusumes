@@ -92,20 +92,20 @@ export default function Publicacion() {
         <div className="publicacion-page-header">
           <nav className="publicacion-breadcrumb"><Link to="/comunidad">Comunidad</Link><span>/</span><span>Publicación</span></nav>
           <p className="publicacion-eyebrow">WIKI-CRAFT · ESPACIO DE LA COMUNIDAD</p>
-          <h1>Explorá la conversación</h1>
-          <p className="publicacion-page-subtitulo">Compartí ideas, descubrí opiniones y seguí construyendo junto a otros jugadores.</p>
+          <h1>Explora la conversacian</h1>
+          <p className="publicacion-page-subtitulo">Comparti ideas, descubri opiniones y segui construyendo junto a otros jugadores.</p>
           <Link to="/comunidad" className="publicacion-volver publicacion-volver--arriba">← Volver a Comunidad</Link>
         </div>
 
         {error && <p className="publicacion-error" role="alert">{error}</p>}
         {cargando ? (
-          <section className="publicacion-no-encontrada"><p>Cargando publicación...</p></section>
+          <section className="publicacion-no-encontrada"><p>Cargando publicacion...</p></section>
         ) : !post ? (
           <section className="publicacion-no-encontrada">
             <span className="publicacion-no-encontrada__icono">⛏</span>
             <p className="publicacion-eyebrow">WIKI-CRAFT / COMUNIDAD</p>
-            <h1>Publicación no encontrada</h1>
-            <p>Puede que se haya eliminado o que el enlace ya no sea válido.</p>
+            <h1>Publicacion no encontrada</h1>
+            <p>Puede que se haya eliminado o que el enlace ya no sea valido.</p>
             <Link to="/comunidad" className="publicacion-volver">← Volver a Comunidad</Link>
           </section>
         ) : (

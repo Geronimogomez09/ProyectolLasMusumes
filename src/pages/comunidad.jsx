@@ -28,7 +28,13 @@ const CATEGORIAS = [
   "construcciones",
   "Mods",
   "Anuncios",
-  "pvps"
+  "pvps",
+  "consultas",
+  "eventos",
+  "skins",
+  "texturas",
+  "redstone",
+  "otros"
 ];
 
 const nombreUsuario = (usuario, perfil) =>
@@ -216,7 +222,7 @@ export default function Comunidad() {
             <div className="comunidad-hero__contenido">
               <h1>Comunidad</h1>
               <p>
-                Compartí experiencias, construcciones y novedades
+                Comparti experiencias, construcciones y novedades
                 con otros jugadores.
               </p>
             </div>

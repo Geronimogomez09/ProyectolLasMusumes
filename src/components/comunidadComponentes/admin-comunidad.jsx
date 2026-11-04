@@ -130,7 +130,7 @@ export default function AdminComunidad({ posts = [], onSalir }) {
 
           <div>
             <strong>WIKI-CRAFT</strong>
-            <small>Centro de moderación</small>
+            <small>Centro de moderacion</small>
           </div>
         </div>
 
@@ -151,10 +151,10 @@ export default function AdminComunidad({ posts = [], onSalir }) {
               PANEL DE CONTROL / COMUNIDAD
             </span>
 
-            <h1>Administración</h1>
+            <h1>Administracion</h1>
 
             <p>
-              Gestioná las publicaciones, revisá denuncias
+              Gestioná las publicaciones, revis denuncias
               y mantené la comunidad segura.
             </p>
           </div>
