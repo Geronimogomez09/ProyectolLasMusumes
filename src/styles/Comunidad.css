@@ -984,3 +984,18 @@
 @media (prefers-reduced-motion: reduce) {
   .post-card__ver-publicacion { transition: none; }
 }
+
+/* Comentarios desplegables dentro de cada tarjeta del muro. */
+.post-usuario-acciones--mejoradas { display:flex; align-items:center; gap:.55rem; flex-wrap:wrap; margin-top:1rem; padding-top:.85rem; border-top:1px solid #edf0eb; }
+.post-usuario-acciones--mejoradas button, .post-usuario-acciones--mejoradas a { display:inline-flex; align-items:center; gap:.35rem; border:1px solid #dfe9dc; border-radius:10px; padding:.55rem .8rem; background:#f8fbf6; color:#3b7042; font-size:.8rem; font-weight:750; text-decoration:none; cursor:pointer; transition:all .2s ease; }
+.post-usuario-acciones--mejoradas button:hover, .post-usuario-acciones--mejoradas a:hover { transform:translateY(-2px); border-color:#9bcba0; background:#edf8eb; }
+.post-usuario-acciones--mejoradas .post-comentarios-toggle { margin-left:auto; background:#edf7eb; border-color:#d7ead4; color:#267b3b; }
+.post-comentarios-toggle span { color:#718572; font-size:.72rem; font-weight:600; }
+.post-comentarios-inline { margin-top:1rem; padding:1rem; border:1px solid #e4ede1; border-radius:15px; background:linear-gradient(145deg,#fbfdf9,#f6faf4); animation:comentarios-entrada .22s ease both; }
+.post-comentarios-inline__titulo { display:flex; align-items:center; justify-content:space-between; gap:1rem; padding-bottom:.8rem; border-bottom:1px solid #e8eee5; }
+.post-comentarios-inline__titulo span { color:#299747; font-size:.62rem; letter-spacing:.14em; font-weight:850; }
+.post-comentarios-inline__titulo h3 { margin:.25rem 0 0; color:#1c3823; font-size:1.05rem; }
+.post-comentarios-inline__titulo b { display:grid; place-items:center; min-width:32px; height:32px; border-radius:10px; background:#e8f5e6; color:#2d803e; }
+.post-comentarios-inline .lista-comentarios { margin-top:.8rem; }
+@keyframes comentarios-entrada { from { opacity:0; transform:translateY(7px); } to { opacity:1; transform:translateY(0); } }
+@media(max-width:560px) { .post-usuario-acciones--mejoradas .post-comentarios-toggle { margin-left:0; } .post-comentarios-inline { padding:.75rem; } .post-comentarios-toggle span { display:none; } }

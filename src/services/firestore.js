@@ -327,8 +327,114 @@ export async function actualizarPublicacion(id, cambios) {
 
 export async function eliminarPublicacion(id) {
   await eliminarDocumento(COLECCIONES.publicaciones, id);
+  
 }
 
+// ======================================================
+// COMUNIDAD: comentarios de publicaciones
+// ======================================================
+
+export async function crearComentario(publicacionId, datos, usuario, perfil = {}) {
+  if (!usuario?.uid) {
+    throw new Error("Tenés que iniciar sesión para comentar.");
+  }
+
+  const texto = datos.texto?.trim();
+
+  if (!texto) {
+    throw new Error("El comentario no puede estar vacío.");
+  }
+
+  const nombre =
+    perfil.nombreUsuario ||
+    usuario.displayName ||
+    usuario.email?.split("@")[0] ||
+    "Usuario";
+
+  const comentario = {
+    id: crypto.randomUUID(),
+    autorId: usuario.uid,
+    autorNombre: nombre,
+    usuario: nombre,
+    inicial: nombre.slice(0, 1).toUpperCase(),
+    colorAvatar: "#16813b",
+    texto,
+    fechaCreacion: new Date().toISOString(),
+  };
+
+  await updateDoc(
+    doc(db, COLECCIONES.publicaciones, String(publicacionId)),
+    {
+      comentarios: arrayUnion(comentario),
+      fechaActualizacion: serverTimestamp(),
+    }
+  );
+
+  return comentario;
+}
+
+export async function actualizarComentario(publicacionId, comentarioId, nuevoTexto) {
+  const texto = nuevoTexto?.trim();
+
+  if (!texto) {
+    throw new Error("El comentario no puede quedar vacío.");
+  }
+
+  const referencia = doc(
+    db,
+    COLECCIONES.publicaciones,
+    String(publicacionId)
+  );
+
+  const resultado = await getDoc(referencia);
+
+  if (!resultado.exists()) {
+    throw new Error("La publicación ya no existe.");
+  }
+
+  const comentarios = resultado.data().comentarios || [];
+
+  const actualizados = comentarios.map((comentario) =>
+    comentario.id === comentarioId
+      ? {
+          ...comentario,
+          texto,
+          editado: true,
+          fechaEdicion: new Date().toISOString(),
+        }
+      : comentario
+  );
+
+  await updateDoc(referencia, {
+    comentarios: actualizados,
+    fechaActualizacion: serverTimestamp(),
+  });
+}
+
+export async function eliminarComentario(publicacionId, comentarioId) {
+  const referencia = doc(
+    db,
+    COLECCIONES.publicaciones,
+    String(publicacionId)
+  );
+
+  const resultado = await getDoc(referencia);
+
+  if (!resultado.exists()) {
+    throw new Error("La publicación ya no existe.");
+  }
+
+  const comentarios = resultado.data().comentarios || [];
+
+  const actualizados = comentarios.filter(
+    (comentario) => comentario.id !== comentarioId
+  );
+
+  await updateDoc(referencia, {
+    comentarios: actualizados,
+    fechaActualizacion: serverTimestamp(),
+  });
+}
 export async function crearDenuncia(datos, usuario, perfil = {}) {
   if (!usuario?.uid) throw new Error("Tenés que iniciar sesión para denunciar.");
   return crearDocumento(COLECCIONES.denuncias, {

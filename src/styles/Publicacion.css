@@ -146,3 +146,9 @@
 .publicacion-main .publicacion-autor__datos strong {
   font-family: 'MinecraftSeven', sans-serif;
 }
+
+/* Ajustes de navegación y estados para la versión conectada a Firestore. */
+.publicacion-volver--arriba { margin-top: .9rem; }
+.publicacion-error { max-width: 980px; margin: 0 auto 1rem; padding: .8rem 1rem; border: 1px solid #f0cfca; border-radius: 12px; background: #fff4f2; color: #a43e36; }
+.publicacion-pie { display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap; margin-top:1.5rem; padding-top:1rem; border-top:1px solid #edf1eb; }
+.publicacion-pie > span { color:#9aa397; font-size:.65rem; letter-spacing:.08em; font-weight:750; }

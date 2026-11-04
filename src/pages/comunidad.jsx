@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import Header from "../components/header";
 import Footer from "../components/Footer";
 import NuevoPost from "../components/comunidadComponentes/nuevo-post";
+import ListaComentarios from "../components/comunidadComponentes/lista-comentarios";
 import DenunciaModal from "../components/comunidadComponentes/denuncia-modal";
 import BotonAdmin from "../components/botonAdmin";
 
@@ -16,6 +17,9 @@ import {
   actualizarPublicacion,
   eliminarPublicacion,
   crearDenuncia,
+  crearComentario,
+  actualizarComentario,
+  eliminarComentario,
   escucharDenuncias,
   actualizarEstadoDenuncia,
   escucharDocumentos,
@@ -46,6 +50,7 @@ export default function Comunidad() {
 
   const [filtro, setFiltro] = useState("Todas");
   const [modal, setModal] = useState(null);
+  const [comentariosAbiertos, setComentariosAbiertos] = useState({});
 
   const [admin, setAdmin] = useState(false);
   const [adminSeccion, setAdminSeccion] = useState("denuncias");
@@ -170,6 +175,35 @@ export default function Comunidad() {
     } catch (e) {
       console.error(e);
       setError("No se pudo editar la publicación.");
+    }
+  }
+
+  // Comentarios integrados en cada publicación del muro.
+  async function agregarComentario(postId, datos) {
+    try {
+      await crearComentario(postId, datos, usuario, perfil);
+    } catch (e) {
+      console.error(e);
+      setError(e.message || "No se pudo publicar el comentario.");
+    }
+  }
+
+  async function editarComentario(postId, comentarioId, texto) {
+    try {
+      await actualizarComentario(postId, comentarioId, texto);
+    } catch (e) {
+      console.error(e);
+      setError("No se pudo editar el comentario.");
+    }
+  }
+
+  async function borrarComentario(postId, comentarioId) {
+    if (!window.confirm("¿Eliminar este comentario?")) return;
+    try {
+      await eliminarComentario(postId, comentarioId);
+    } catch (e) {
+      console.error(e);
+      setError("No se pudo eliminar el comentario.");
     }
   }
 
@@ -923,27 +957,42 @@ export default function Comunidad() {
                         />
                       )}
 
-                      <div className="post-usuario-acciones">
-
-                        {/* Editar: únicamente el propietario que no sea admin. */}
+                      <div className="post-usuario-acciones post-usuario-acciones--mejoradas">
                         {!esAdmin && p.autorId === usuario?.uid && (
-                          <button onClick={() => editar(p)}>
-                            Editar
-                          </button>
+                          <button type="button" onClick={() => editar(p)}>✎ Editar</button>
                         )}
-
-                        {/* Eliminar: propietario o administrador. */}
                         {(p.autorId === usuario?.uid || esAdmin) && (
-                          <button onClick={() => borrar(p)}>
-                            Eliminar
-                          </button>
+                          <button type="button" onClick={() => borrar(p)}>⌫ Eliminar</button>
                         )}
-
+                        <button
+                          type="button"
+                          className="post-comentarios-toggle"
+                          aria-expanded={Boolean(comentariosAbiertos[p.id])}
+                          onClick={() => setComentariosAbiertos((prev) => ({ ...prev, [p.id]: !prev[p.id] }))}
+                        >
+                          💬 {Array.isArray(p.comentarios) ? p.comentarios.length : 0} comentarios
+                          <span>{comentariosAbiertos[p.id] ? "Cerrar" : "Ver / comentar"}</span>
+                        </button>
+                        <Link className="post-ver-detalle" to={`/publicacion/${p.id}`}>Ver publicación completa →</Link>
                       </div>
 
-                      <Link to={`/publicacion/${p.id}`}>
-                        Ver publicación completa →
-                      </Link>
+                      {comentariosAbiertos[p.id] && (
+                        <section className="post-comentarios-inline" aria-label={`Comentarios de ${p.autorNombre || "la publicación"}`}>
+                          <div className="post-comentarios-inline__titulo">
+                            <div><span>CONVERSACIÓN</span><h3>Comentarios</h3></div>
+                            <b>{Array.isArray(p.comentarios) ? p.comentarios.length : 0}</b>
+                          </div>
+                          <ListaComentarios
+                            comentarios={Array.isArray(p.comentarios) ? p.comentarios : []}
+                            onAgregarComentario={(datos) => agregarComentario(p.id, datos)}
+                            modoAdministrador={Boolean(esAdmin)}
+                            modoUsuario={!esAdmin}
+                            usuarioActualId={usuario?.uid}
+                            onEditarComentario={(comentarioId, texto) => editarComentario(p.id, comentarioId, texto)}
+                            onEliminarComentario={(comentarioId) => borrarComentario(p.id, comentarioId)}
+                          />
+                        </section>
+                      )}
 
                     </article>
                   ))}
