@@ -1,44 +1,48 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Header from "../components/header";
 import Footer from "../components/Footer";
-import avatar from "../assets/index/avatar.png";
-import comunidad from "../assets/index/comunidad.png";
-import musica from "../assets/index/musica.png";
-import tutoriales from "../assets/index/tutoriales.png";
+import integrante01 from "../assets/index/integrante-01.png";
+import integrante02 from "../assets/index/integrante-02.png";
+import integrante03 from "../assets/index/integrante-03.png";
+import integrante04 from "../assets/index/integrante-04.png";
+import convivenciaIcono from "../assets/iconos/heart.png";
+import contenidoIcono from "../assets/iconos/knowledge_book.png";
+import privacidadIcono from "../assets/iconos/ender_chest.png";
+import responsabilidadIcono from "../assets/iconos/brush.png";
 import "../styles/nosotros.css";
 
 const integrantes = [
     {
         numero: "01",
-        nombre: "Nombre del integrante",
+        nombre: "Ana Vera",
         rol: "Desarrollo",
-        imagen: avatar,
-        alt: "Avatar pixelado de Minecraft",
-        descripcion: "Acá podés contar quién es, qué aporta al proyecto y qué parte de Wiki-Craft disfruta crear.",
+        imagen: integrante01,
+        alt: "Personaje de Minecraft con pelo castaño y ropa oscura",
+        descripcion: "Ana creó la página de Música, la sección más completa del sitio: reúne álbumes, canciones y artistas para descubrir y disfrutar el universo musical de Minecraft.",
     },
     {
         numero: "02",
-        nombre: "Nombre del integrante",
+        nombre: "Geronimo Gomez",
         rol: "Comunidad",
-        imagen: comunidad,
-        alt: "Ilustración de la comunidad de Minecraft",
-        descripcion: "Un espacio para presentar a quien acompaña a la comunidad y ayuda a que todos tengan un lugar.",
+        imagen: integrante02,
+        alt: "Personaje de Minecraft con uniforme negro y azul",
+        descripcion: "Geronimo desarrolló la página de Comunidad y ayuda a que todos encuentren su lugar para compartir. También se encarga de organizar y mantener las ramas del proyecto.",
     },
     {
         numero: "03",
-        nombre: "Nombre del integrante",
+        nombre: "Ivan Barrera",
         rol: "Contenido",
-        imagen: tutoriales,
-        alt: "Ilustración de una aventura de Minecraft",
-        descripcion: "Contanos quién prepara las guías, ideas y recursos que ayudan a explorar cada rincón del juego.",
+        imagen: integrante03,
+        alt: "Personaje de Minecraft vestido de negro",
+        descripcion: "Ivan creó las páginas Principal e Historia, y está muy comprometido con acompañar a los usuarios para que tengan una buena experiencia en Wiki-Craft.",
     },
     {
         numero: "04",
-        nombre: "Nombre del integrante",
+        nombre: "Juan Sada",
         rol: "Creatividad",
-        imagen: musica,
-        alt: "Ilustración de Minecraft relacionada con la música",
-        descripcion: "Presentá a quien suma nuevas ideas y le da personalidad a las experiencias del sitio.",
+        imagen: integrante04,
+        alt: "Personaje de Minecraft con campera gris",
+        descripcion: "Juan creó la página Nosotros y está a cargo de la Tienda, donde administra los productos para mantener el catálogo organizado y actualizado.",
     },
 ];
 
@@ -46,23 +50,76 @@ const pautas = [
     {
         titulo: "Buena convivencia",
         texto: "Tratemos a todas las personas con respeto. No se permiten insultos, acoso, amenazas ni discriminación.",
+        detalles: [
+            "Debatí ideas sin atacar a quien piensa distinto. Los insultos, las amenazas y el acoso no tienen lugar en la comunidad.",
+            "No publiques contenido discriminatorio ni persigas a otras personas dentro o fuera del sitio.",
+            "Si una conversación se pone tensa, tomá distancia y usá las herramientas de reporte para pedir ayuda al equipo.",
+        ],
+        icono: convivenciaIcono,
+        iconoAlt: "Corazón de Minecraft",
     },
     {
         titulo: "Contenido apropiado",
         texto: "Compartí material relacionado con Minecraft y Wiki-Craft. Evitá publicaciones explícitas, engañosas o que puedan perjudicar a otros.",
+        detalles: [
+            "Compartí construcciones, guías, ideas y conversaciones relacionadas con Minecraft y la comunidad.",
+            "No publiques contenido explícito, violento, engañoso, spam o enlaces que puedan poner en riesgo a otras personas.",
+            "Antes de publicar una imagen o un enlace, revisá que sea apropiado para la comunidad y que la descripción sea clara.",
+        ],
+        icono: contenidoIcono,
+        iconoAlt: "Libro del conocimiento de Minecraft",
     },
     {
         titulo: "Cuidá tu privacidad",
         texto: "No publiques contraseñas, datos personales ni información privada propia o de otras personas.",
+        detalles: [
+            "Nunca compartas contraseñas, códigos de acceso, direcciones, teléfonos ni datos de pago.",
+            "Pedí permiso antes de publicar fotos, mensajes privados o información que identifique a otra persona.",
+            "Desconfiá de quien te pida credenciales o te prometa recompensas a cambio de información personal; avisá al equipo si ocurre.",
+        ],
+        icono: privacidadIcono,
+        iconoAlt: "Cofre de Ender de Minecraft",
     },
     {
         titulo: "Uso responsable",
         texto: "No hagas spam, no suplantes identidades y respetá los derechos de autor al compartir creaciones y recursos.",
+        detalles: [
+            "Publicá cada aporte en el espacio correspondiente y evitá repetir mensajes, promocionar contenido sin permiso o llenar las conversaciones de enlaces.",
+            "No te hagas pasar por otra persona, por el equipo del sitio ni por una marca o creador.",
+            "Compartí solo contenido propio o que tengas permiso para usar, y reconocé a su autor cuando corresponda.",
+        ],
+        icono: responsabilidadIcono,
+        iconoAlt: "Pincel de Minecraft",
     },
 ];
 
 function Nosotros() {
     const [estadoFormulario, setEstadoFormulario] = useState("");
+    const [integranteSeleccionado, setIntegranteSeleccionado] = useState(null);
+    const imagenActivadora = useRef(null);
+    const botonCerrarImagen = useRef(null);
+
+    useEffect(() => {
+        if (!integranteSeleccionado) return undefined;
+
+        const overflowAnterior = document.body.style.overflow;
+        document.body.style.overflow = "hidden";
+        botonCerrarImagen.current?.focus();
+
+        function cerrarConEscape(evento) {
+            if (evento.key === "Escape") {
+                setIntegranteSeleccionado(null);
+            }
+        }
+
+        document.addEventListener("keydown", cerrarConEscape);
+
+        return () => {
+            document.body.style.overflow = overflowAnterior;
+            document.removeEventListener("keydown", cerrarConEscape);
+            imagenActivadora.current?.focus();
+        };
+    }, [integranteSeleccionado]);
 
     function enviarFormulario(evento) {
         evento.preventDefault();
@@ -84,9 +141,14 @@ function Nosotros() {
                             Este espacio es para compartir ideas, resolver dudas y construir juntos
                             un rincón para quienes disfrutan Minecraft.
                         </p>
-                        <a className="nosotros-boton" href="#contacto">
-                            Hablemos <span aria-hidden="true">↓</span>
-                        </a>
+                        <div className="nosotros-hero-acciones">
+                            <a className="nosotros-boton" href="#contacto">
+                                Hablemos <span aria-hidden="true">→</span>
+                            </a>
+                            <a className="nosotros-boton nosotros-boton-secundario" href="#equipo">
+                                Conocenos <span aria-hidden="true">→</span>
+                            </a>
+                        </div>
                     </div>
                 </section>
 
@@ -171,16 +233,25 @@ function Nosotros() {
 
                         <div className="row g-3 g-lg-4">
                             {pautas.map((pauta, indice) => (
-                                <div className="col-12 col-md-6" key={pauta.titulo}>
-                                    <article className="pauta-tarjeta">
-                                        <span className="pauta-numero" aria-hidden="true">
-                                            0{indice + 1}
-                                        </span>
-                                        <div>
-                                            <h3>{pauta.titulo}</h3>
-                                            <p>{pauta.texto}</p>
+                                <div className="col-12" key={pauta.titulo}>
+                                    <details className="pauta-tarjeta">
+                                        <summary className="pauta-resumen">
+                                            <span className="pauta-numero" aria-hidden="true">
+                                                0{indice + 1}
+                                            </span>
+                                            <img className="pauta-icono" src={pauta.icono} alt={pauta.iconoAlt} />
+                                            <span className="pauta-titulo">{pauta.titulo}</span>
+                                            <span className="pauta-desplegar" aria-hidden="true">+</span>
+                                        </summary>
+                                        <div className="pauta-contenido">
+                                            <p className="pauta-introduccion">{pauta.texto}</p>
+                                            <ul>
+                                                {pauta.detalles.map((detalle) => (
+                                                    <li key={detalle}>{detalle}</li>
+                                                ))}
+                                            </ul>
                                         </div>
-                                    </article>
+                                    </details>
                                 </div>
                             ))}
                         </div>
@@ -207,11 +278,21 @@ function Nosotros() {
                                 <div className="col-12 col-sm-6 col-xl-3" key={integrante.numero}>
                                     <article className="integrante-tarjeta">
                                         <div className="integrante-imagen">
-                                            <img src={integrante.imagen} alt={integrante.alt} loading="lazy" />
+                                            <button
+                                                className="integrante-imagen-boton"
+                                                type="button"
+                                                aria-label={`Ver imagen completa de ${integrante.nombre}`}
+                                                onClick={(evento) => {
+                                                    imagenActivadora.current = evento.currentTarget;
+                                                    setIntegranteSeleccionado(integrante);
+                                                }}
+                                            >
+                                                <img src={integrante.imagen} alt={integrante.alt} loading="lazy" />
+                                            </button>
                                             <span>{integrante.numero}</span>
                                         </div>
                                         <div className="integrante-contenido">
-                                            <p className="integrante-rol">{integrante.rol}</p>
+                                            <p className="integrante-rol">WIKI-CRAFT</p>
                                             <h3>{integrante.nombre}</h3>
                                             <p>{integrante.descripcion}</p>
                                         </div>
@@ -224,6 +305,35 @@ function Nosotros() {
             </main>
 
             <Footer />
+
+            {integranteSeleccionado && (
+                <div
+                    className="integrante-lightbox"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label={`Imagen completa de ${integranteSeleccionado.nombre}`}
+                    onMouseDown={(evento) => {
+                        if (evento.target === evento.currentTarget) {
+                            setIntegranteSeleccionado(null);
+                        }
+                    }}
+                >
+                    <button
+                        ref={botonCerrarImagen}
+                        className="integrante-lightbox-cerrar"
+                        type="button"
+                        aria-label="Cerrar imagen"
+                        onClick={() => setIntegranteSeleccionado(null)}
+                    >
+                        ×
+                    </button>
+                    <img
+                        src={integranteSeleccionado.imagen}
+                        alt={integranteSeleccionado.alt}
+                    />
+                    <p>{integranteSeleccionado.nombre}</p>
+                </div>
+            )}
         </div>
     );
 }
