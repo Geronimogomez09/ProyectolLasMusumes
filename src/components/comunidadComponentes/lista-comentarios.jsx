@@ -48,11 +48,15 @@ function ListaComentarios({
                 <button type="button" onClick={() => setComentarioEditando(null)}>Cancelar</button>
               </div>
             ) : <p className="comentario__texto">{renderizarTextoConEmojis(c.texto)}</p>}
-            {(modoAdministrador || (modoUsuario && (c.autorId === usuarioActualId || (!c.autorId && c.usuario === 'Vos')))) && comentarioEditando !== c.id && (
-              <div className="admin-comentario-acciones">
-                <button type="button" onClick={() => comenzarEdicion(c)}>✎ Editar</button>
-                <button type="button" className="admin-eliminar" onClick={() => onEliminarComentario?.(c.id)}>⌫ Eliminar</button>
-              </div>
+            {comentarioEditando !== c.id && (
+              (modoAdministrador || (modoUsuario && (c.autorId === usuarioActualId || (!c.autorId && c.usuario === 'Vos')))) && (
+                <div className="admin-comentario-acciones">
+                  {!modoAdministrador && (modoUsuario && (c.autorId === usuarioActualId || (!c.autorId && c.usuario === 'Vos'))) && (
+                    <button type="button" onClick={() => comenzarEdicion(c)}>✎ Editar</button>
+                  )}
+                  <button type="button" className="admin-eliminar" onClick={() => onEliminarComentario?.(c.id)}>⌫ Eliminar</button>
+                </div>
+              )
             )}
             {typeof onDenunciarComentario === 'function' && comentarioEditando !== c.id && (
               <button
