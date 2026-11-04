@@ -199,8 +199,15 @@
   text-align: center;
   color: #777;
   padding: 2rem 0;
+  
 }
-
+.versiones-page {
+  background-image: url('/fondos/fondo-productos.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
 /* ---------- RESPONSIVE ---------- */
 @media (max-width: 600px) {
   .versiones-hero {

@@ -1,11 +1,12 @@
-
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 
 import Header from "../components/header";
 import Footer from "../components/Footer";
 import NuevoPost from "../components/comunidadComponentes/nuevo-post";
+import ListaComentarios from "../components/comunidadComponentes/lista-comentarios";
 import DenunciaModal from "../components/comunidadComponentes/denuncia-modal";
+import AdminComunidad from "../components/comunidadComponentes/admin-comunidad";
 import BotonAdmin from "../components/botonAdmin";
 
 import { useAuth } from "../context/AuthContext";
@@ -16,10 +17,9 @@ import {
   actualizarPublicacion,
   eliminarPublicacion,
   crearDenuncia,
-  escucharDenuncias,
-  actualizarEstadoDenuncia,
-  escucharDocumentos,
-  suspenderCuenta
+  crearComentario,
+  actualizarComentario,
+  eliminarComentario
 } from "../services/firestore";
 
 import "../styles/Comunidad.css";
@@ -28,7 +28,13 @@ const CATEGORIAS = [
   "construcciones",
   "Mods",
   "Anuncios",
-  "pvps"
+  "pvps",
+  "consultas",
+  "eventos",
+  "skins",
+  "texturas",
+  "redstone",
+  "otros"
 ];
 
 const nombreUsuario = (usuario, perfil) =>
@@ -41,17 +47,18 @@ export default function Comunidad() {
   const { usuario, perfil, esAdmin } = useAuth();
 
   const [posts, setPosts] = useState([]);
-  const [denuncias, setDenuncias] = useState([]);
-  const [usuarios, setUsuarios] = useState([]);
 
   const [filtro, setFiltro] = useState("Todas");
   const [modal, setModal] = useState(null);
+  const [comentariosAbiertos, setComentariosAbiertos] = useState({});
 
   const [admin, setAdmin] = useState(false);
-  const [adminSeccion, setAdminSeccion] = useState("denuncias");
 
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState("");
+
+  // El panel solo se muestra si el usuario es administrador.
+  const modoAdmin = admin && esAdmin;
 
   // Limpiar publicaciones y denuncias ficticias antiguas.
   useEffect(() => {
@@ -76,19 +83,6 @@ export default function Comunidad() {
     return () => offPosts?.();
   }, []);
 
-  // Escuchar denuncias y usuarios cuando se abre el panel.
-  useEffect(() => {
-    if (!esAdmin || !admin) return;
-
-    const offReports = escucharDenuncias(setDenuncias);
-    const offUsers = escucharDocumentos("usuarios", setUsuarios);
-
-    return () => {
-      offReports?.();
-      offUsers?.();
-    };
-  }, [esAdmin, admin]);
-
   const filtrados = useMemo(
     () =>
       posts.filter(
@@ -107,20 +101,27 @@ export default function Comunidad() {
     }
   }
 
-  // Crear denuncia.
+  // Crear denuncia de publicación o comentario.
   async function denunciar(datos) {
     if (!modal) return;
+
+    const esComentario = modal.tipo === "comentario";
 
     try {
       await crearDenuncia(
         {
-          publicacionId: modal.id,
-          autorId: modal.autorId,
-          autorNombre: modal.autorNombre,
-          contenido: modal.contenido,
+          publicacionId: String(modal.publicacionId || modal.id),
+          autorId: esComentario ? modal.comentario?.autorId : modal.autorId,
+          autorNombre: esComentario
+            ? (modal.comentario?.autorNombre || modal.comentario?.usuario || "Usuario")
+            : modal.autorNombre,
+          contenido: esComentario
+            ? (modal.comentario?.texto || modal.comentario?.contenido || "")
+            : modal.contenido,
+          comentarioId: esComentario ? modal.comentario?.id : null,
           motivo: datos.motivo,
           detalle: datos.detalle,
-          tipoContenido: "publicacion"
+          tipoContenido: esComentario ? "comentario" : "publicacion"
         },
         usuario,
         perfil
@@ -133,7 +134,7 @@ export default function Comunidad() {
     }
   }
 
-  // Eliminar publicación.
+  // Eliminar publicación (propietario o administrador).
   async function borrar(post) {
     if (
       !esAdmin &&
@@ -173,665 +174,76 @@ export default function Comunidad() {
     }
   }
 
+  // Comentarios integrados en cada publicación del muro.
+  async function agregarComentario(postId, datos) {
+    try {
+      await crearComentario(postId, datos, usuario, perfil);
+    } catch (e) {
+      console.error(e);
+      setError(e.message || "No se pudo publicar el comentario.");
+    }
+  }
+
+  async function editarComentario(postId, comentarioId, texto) {
+    try {
+      await actualizarComentario(postId, comentarioId, texto);
+    } catch (e) {
+      console.error(e);
+      setError("No se pudo editar el comentario.");
+    }
+  }
+
+  async function borrarComentario(postId, comentarioId) {
+    if (!window.confirm("¿Eliminar este comentario?")) return;
+    try {
+      await eliminarComentario(postId, comentarioId);
+    } catch (e) {
+      console.error(e);
+      setError("No se pudo eliminar el comentario.");
+    }
+  }
+
   // Cambiar entre Comunidad y administración.
   function alternarAdmin() {
     if (!esAdmin) return;
-
-    if (!admin) {
-      setAdminSeccion("denuncias");
-    }
-
-    setAdmin(!admin);
+    setAdmin((prev) => !prev);
   }
 
   return (
     <>
-      {!(admin && esAdmin) && <Header />}
+      {!modoAdmin && <Header />}
 
-      <div className={admin && esAdmin ? "" : "comunidad-page"}>
+      <div className={modoAdmin ? "" : "comunidad-page"}>
 
-        {!(admin && esAdmin) && (
+        {!modoAdmin && (
           <header className="comunidad-hero">
             <div className="comunidad-hero__overlay" />
 
             <div className="comunidad-hero__contenido">
               <h1>Comunidad</h1>
               <p>
-                Compartí experiencias, construcciones y novedades
+                Comparti experiencias, construcciones y novedades
                 con otros jugadores.
               </p>
             </div>
           </header>
         )}
 
-        <main className={admin && esAdmin ? "" : "comunidad-main"}>
+        <main className={modoAdmin ? "" : "comunidad-main"}>
 
           {error && (
             <p role="alert">{error}</p>
           )}
 
-          {/* ================= PANEL ADMINISTRATIVO ================= */}
+          {modoAdmin ? (
 
-          {admin && esAdmin ? (
-            <main className="comunidad-admin-page">
+            /* ================= PANEL ADMINISTRATIVO ================= */
 
-              <div className="admin-page-fondo" aria-hidden="true">
-                <span />
-                <span />
-                <span />
-              </div>
+            <AdminComunidad
+              posts={posts}
+              onSalir={() => setAdmin(false)}
+            />
 
-              <header className="admin-topbar">
-
-                <div className="admin-brand">
-                  <span className="admin-brand__icon">⚒</span>
-
-                  <div>
-                    <strong>WIKI-CRAFT</strong>
-                    <small>Centro de moderación</small>
-                  </div>
-                </div>
-
-                <button
-                  className="admin-salir"
-                  onClick={() => setAdmin(false)}
-                >
-                  ← Volver a Comunidad
-                </button>
-
-              </header>
-
-              <section className="admin-dashboard">
-
-                <div className="admin-welcome">
-
-                  <div>
-                    <span className="admin-eyebrow">
-                      PANEL DE CONTROL / COMUNIDAD
-                    </span>
-
-                    <h1>Administración</h1>
-
-                    <p>
-                      Gestioná las publicaciones, revisá denuncias
-                      y mantené la comunidad segura.
-                    </p>
-                  </div>
-
-                  <div className="admin-status">
-                    <span className="admin-status__dot" />
-                    SISTEMA ACTIVO
-                  </div>
-
-                </div>
-
-                {/* ESTADÍSTICAS */}
-
-                <div className="admin-stats">
-
-                  <article className="admin-stat admin-stat--green">
-                    <span className="admin-stat__icon">▤</span>
-                    <small>Publicaciones</small>
-                    <strong>{posts.length}</strong>
-                    <span>Contenido publicado</span>
-                  </article>
-
-                  <article className="admin-stat admin-stat--gold">
-                    <span className="admin-stat__icon">⚑</span>
-                    <small>Denuncias pendientes</small>
-                    <strong>
-                      {denuncias.filter(
-                        (d) => d.estado === "Pendiente"
-                      ).length}
-                    </strong>
-                    <span>Requieren revisión</span>
-                  </article>
-
-                  <article className="admin-stat admin-stat--blue">
-                    <span className="admin-stat__icon">♙</span>
-                    <small>Cuentas registradas</small>
-                    <strong>{usuarios.length}</strong>
-                    <span>Usuarios de Wiki-Craft</span>
-                  </article>
-
-                </div>
-
-                {/* ESPACIO DE TRABAJO */}
-
-                <div className="admin-workspace">
-
-                  <aside className="admin-sidebar">
-
-                    <span className="admin-sidebar__label">
-                      MODERACIÓN
-                    </span>
-
-                    <button
-                      className={
-                        adminSeccion === "denuncias"
-                          ? "seleccionado"
-                          : ""
-                      }
-                      onClick={() => setAdminSeccion("denuncias")}
-                    >
-                      <span>⚑</span>
-                      Denuncias
-                      <b>
-                        {denuncias.filter(
-                          (d) => d.estado === "Pendiente"
-                        ).length}
-                      </b>
-                    </button>
-
-                    <button
-                      className={
-                        adminSeccion === "publicaciones"
-                          ? "seleccionado"
-                          : ""
-                      }
-                      onClick={() => setAdminSeccion("publicaciones")}
-                    >
-                      <span>▤</span>
-                      Publicaciones
-                      <b>{posts.length}</b>
-                    </button>
-
-                    <button
-                      className={
-                        adminSeccion === "cuentas"
-                          ? "seleccionado"
-                          : ""
-                      }
-                      onClick={() => setAdminSeccion("cuentas")}
-                    >
-                      <span>♙</span>
-                      Cuentas
-                      <b>
-                        {usuarios.filter(
-                          (u) => u.rol !== "admin"
-                        ).length}
-                      </b>
-                    </button>
-
-                    <button
-                      className={
-                        adminSeccion === "comentarios"
-                          ? "seleccionado"
-                          : ""
-                      }
-                      onClick={() => setAdminSeccion("comentarios")}
-                    >
-                      <span>☰</span>
-                      Comentarios
-                    </button>
-
-                    <div className="admin-sidebar__nota">
-                      <span>✦ Consejo</span>
-                      <p>
-                        Revisá el contexto antes de tomar una
-                        decisión de moderación.
-                      </p>
-                    </div>
-
-                  </aside>
-
-                  <section className="admin-content">
-
-                    {/* DENUNCIAS */}
-
-                    {adminSeccion === "denuncias" && (
-                      <>
-                        <div className="admin-section-heading">
-
-                          <div>
-                            <span className="admin-eyebrow">
-                              BANDEJA DE ENTRADA
-                            </span>
-
-                            <h2>Denuncias recibidas</h2>
-
-                            <p>
-                              Revisá los reportes enviados por la comunidad.
-                            </p>
-                          </div>
-
-                          <span className="admin-count">
-                            {denuncias.length} reportes
-                          </span>
-
-                        </div>
-
-                        {denuncias.length === 0 ? (
-                          <div className="admin-empty">
-                            <span>✓</span>
-                            <h3>Todo tranquilo por acá</h3>
-                            <p>
-                              Cuando alguien denuncie una publicación,
-                              aparecerá en esta bandeja.
-                            </p>
-                          </div>
-                        ) : (
-                          <div className="comunidad-admin-denuncias">
-
-                            {[...denuncias].map((d) => (
-                              <article
-                                className="comunidad-admin-denuncia"
-                                key={d.id}
-                              >
-
-                                <div className="comunidad-admin-denuncia__top">
-
-                                  <div>
-                                    <span className="admin-report-id">
-                                      REPORTE #{String(d.id).slice(-5)}
-                                    </span>
-
-                                    <strong>
-                                      Publicación de {d.autorNombre || "Usuario"}
-                                    </strong>
-                                  </div>
-
-                                  <span
-                                    className={
-                                      d.estado === "Pendiente"
-                                        ? "estado-pendiente"
-                                        : "estado-resuelto"
-                                    }
-                                  >
-                                    {d.estado || "Pendiente"}
-                                  </span>
-
-                                </div>
-
-                                <p className="admin-report-content">
-                                  {d.contenido ||
-                                    "La publicación denunciada ya no está disponible."}
-                                </p>
-
-                                <div className="admin-report-meta">
-                                  <span>
-                                    Denunciante: {d.denuncianteNombre || "Usuario"}
-                                  </span>
-
-                                  <span>
-                                    ⚑ {d.motivo || "Sin motivo"}
-                                  </span>
-
-                                  <span>
-                                    ◷ {d.fechaCreacion?.toDate?.()
-                                      .toLocaleString("es-AR") ||
-                                      "Fecha no disponible"}
-                                  </span>
-                                </div>
-
-                                {d.detalle && (
-                                  <p className="admin-report-detail">
-                                    “{d.detalle}”
-                                  </p>
-                                )}
-
-                                {d.estado === "Pendiente" && (
-                                  <div className="admin-denuncia-acciones">
-
-                                    <button
-                                      className="admin-btn-primary"
-                                      onClick={() =>
-                                        actualizarEstadoDenuncia(
-                                          d.id,
-                                          "Revisada"
-                                        ).catch(() =>
-                                          setError(
-                                            "No se pudo actualizar la denuncia."
-                                          )
-                                        )
-                                      }
-                                    >
-                                      ✓ Marcar revisada
-                                    </button>
-
-                                    <button
-                                      className="admin-btn-danger"
-                                      onClick={async () => {
-                                        if (
-                                          !window.confirm(
-                                            "¿Eliminar la publicación denunciada?"
-                                          )
-                                        ) return;
-
-                                        try {
-                                          await eliminarPublicacion(
-                                            d.publicacionId
-                                          );
-
-                                          await actualizarEstadoDenuncia(
-                                            d.id,
-                                            "Publicación eliminada"
-                                          );
-                                        } catch (e) {
-                                          console.error(e);
-                                          setError(
-                                            "No se pudo eliminar la publicación denunciada."
-                                          );
-                                        }
-                                      }}
-                                    >
-                                      Eliminar publicación
-                                    </button>
-
-                                    <button
-                                      className="admin-btn-quiet"
-                                      onClick={() =>
-                                        actualizarEstadoDenuncia(
-                                          d.id,
-                                          "Descartada"
-                                        ).catch(() =>
-                                          setError(
-                                            "No se pudo descartar la denuncia."
-                                          )
-                                        )
-                                      }
-                                    >
-                                      Descartar
-                                    </button>
-
-                                  </div>
-                                )}
-
-                              </article>
-                            ))}
-
-                          </div>
-                        )}
-                      </>
-                    )}
-
-                    {/* PUBLICACIONES */}
-
-                    {adminSeccion === "publicaciones" && (
-                      <>
-                        <div className="admin-section-heading">
-
-                          <div>
-                            <span className="admin-eyebrow">
-                              CONTENIDO
-                            </span>
-
-                            <h2>Publicaciones</h2>
-
-                            <p>
-                              Desde aquí podés revisar y eliminar contenido.
-                              La administración no puede editar publicaciones.
-                            </p>
-                          </div>
-
-                          <span className="admin-count">
-                            {posts.length} publicaciones
-                          </span>
-
-                        </div>
-
-                        {posts.length === 0 ? (
-                          <div className="admin-empty">
-                            <span>▤</span>
-                            <h3>No hay publicaciones</h3>
-                            <p>
-                              Las publicaciones nuevas aparecerán acá.
-                            </p>
-                          </div>
-                        ) : (
-                          <div className="admin-lista-posts">
-
-                            {posts.map((post) => (
-                              <article
-                                className="admin-item"
-                                key={post.id}
-                              >
-
-                                <div className="admin-item__avatar">
-                                  {(post.autorNombre || "U")
-                                    .slice(0, 1)
-                                    .toUpperCase()}
-                                </div>
-
-                                <div className="admin-item__main">
-
-                                  <div className="admin-item__meta">
-                                    <strong>
-                                      {post.autorNombre || "Usuario"}
-                                    </strong>
-
-                                    <span>
-                                      {post.categoria || "General"}
-                                    </span>
-                                  </div>
-
-                                  <p>{post.contenido}</p>
-
-                                  <div className="admin-item__actions">
-                                    <button
-                                      className="admin-btn-danger"
-                                      onClick={() => borrar(post)}
-                                    >
-                                      ⌫ Eliminar publicación
-                                    </button>
-                                  </div>
-
-                                </div>
-
-                              </article>
-                            ))}
-
-                          </div>
-                        )}
-                      </>
-                    )}
-
-                    {/* CUENTAS */}
-
-                    {adminSeccion === "cuentas" && (
-                      <>
-                        <div className="admin-section-heading">
-
-                          <div>
-                            <span className="admin-eyebrow">
-                              USUARIOS REGISTRADOS
-                            </span>
-
-                            <h2>Gestión de cuentas</h2>
-
-                            <p>
-                              Podés suspender o reactivar cuentas de usuarios.
-                            </p>
-                          </div>
-
-                          <span className="admin-count">
-                            {usuarios.filter(
-                              (u) => u.rol !== "admin"
-                            ).length} cuentas
-                          </span>
-
-                        </div>
-
-                        {usuarios.filter(
-                          (u) => u.rol !== "admin"
-                        ).length === 0 ? (
-                          <div className="admin-empty">
-                            <span>♙</span>
-                            <h3>No hay usuarios registrados</h3>
-                            <p>
-                              Las cuentas aparecerán acá cuando se registren.
-                            </p>
-                          </div>
-                        ) : (
-                          <div className="admin-lista-posts">
-
-                            {usuarios
-                              .filter((u) => u.rol !== "admin")
-                              .map((u) => (
-                                <article
-                                  className="admin-item"
-                                  key={u.uid}
-                                >
-
-                                  <div className="admin-item__avatar">
-                                    {(u.nombreUsuario || u.email || "U")
-                                      .slice(0, 1)
-                                      .toUpperCase()}
-                                  </div>
-
-                                  <div className="admin-item__main">
-
-                                    <div className="admin-item__meta">
-                                      <strong>
-                                        {u.nombreUsuario || u.email || "Usuario"}
-                                      </strong>
-
-                                      <span>
-                                        {u.email || "Sin correo"}
-                                      </span>
-                                    </div>
-
-                                    <p>
-                                      Estado de la cuenta:{" "}
-                                      <strong>
-                                        {u.estado === "suspendido"
-                                          ? "Suspendida"
-                                          : "Activa"}
-                                      </strong>
-                                    </p>
-
-                                    <div className="admin-item__actions">
-                                      <button
-                                        className={
-                                          u.estado === "suspendido"
-                                            ? "admin-btn-primary"
-                                            : "admin-btn-danger"
-                                        }
-                                        onClick={async () => {
-                                          try {
-                                            await suspenderCuenta(
-                                              u.uid,
-                                              u.estado !== "suspendido"
-                                            );
-                                          } catch (e) {
-                                            console.error(e);
-                                            setError(
-                                              "No se pudo modificar el estado de la cuenta."
-                                            );
-                                          }
-                                        }}
-                                      >
-                                        {u.estado === "suspendido"
-                                          ? "Reactivar cuenta"
-                                          : "Suspender cuenta"}
-                                      </button>
-                                    </div>
-
-                                  </div>
-
-                                </article>
-                              ))}
-
-                          </div>
-                        )}
-                      </>
-                    )}
-
-                    {/* COMENTARIOS */}
-
-                    {adminSeccion === "comentarios" && (
-                      <>
-                        <div className="admin-section-heading">
-                          <div>
-                            <span className="admin-eyebrow">
-                              CONVERSACIONES
-                            </span>
-
-                            <h2>Comentarios</h2>
-
-                            <p>
-                              Comentarios asociados a las publicaciones
-                              de la comunidad.
-                            </p>
-                          </div>
-                        </div>
-
-                        {posts.every(
-                          (post) =>
-                            !Array.isArray(post.comentarios) ||
-                            post.comentarios.length === 0
-                        ) ? (
-                          <div className="admin-empty">
-                            <span>☰</span>
-                            <h3>Todavía no hay comentarios</h3>
-                            <p>
-                              Los comentarios aparecerán acá cuando
-                              estén disponibles en las publicaciones.
-                            </p>
-                          </div>
-                        ) : (
-                          posts
-                            .filter(
-                              (post) =>
-                                Array.isArray(post.comentarios) &&
-                                post.comentarios.length > 0
-                            )
-                            .map((post) => (
-                              <article
-                                className="admin-comments-group"
-                                key={post.id}
-                              >
-
-                                <div className="admin-comments-group__heading">
-                                  <strong>
-                                    {post.autorNombre || "Usuario"}
-                                  </strong>
-
-                                  <span>{post.contenido}</span>
-                                </div>
-
-                                {post.comentarios.map(
-                                  (comentario, index) => (
-                                    <div
-                                      className="admin-item"
-                                      key={comentario.id || index}
-                                    >
-                                      <div className="admin-item__main">
-                                        <div className="admin-item__meta">
-                                          <strong>
-                                            {comentario.autorNombre ||
-                                              comentario.usuario ||
-                                              "Usuario"}
-                                          </strong>
-                                        </div>
-
-                                        <p>
-                                          {comentario.texto ||
-                                            comentario.contenido}
-                                        </p>
-                                      </div>
-                                    </div>
-                                  )
-                                )}
-
-                              </article>
-                            ))
-                        )}
-                      </>
-                    )}
-
-                  </section>
-                </div>
-
-                <footer className="admin-footer">
-                  <span>WIKI-CRAFT · MODERATION TOOLS</span>
-                  <span>
-                    Los cambios se guardan en Firebase Firestore.
-                  </span>
-                </footer>
-
-              </section>
-            </main>
           ) : (
 
             /* ================= COMUNIDAD ================= */
@@ -903,7 +315,7 @@ export default function Comunidad() {
 
                         <button
                           className="btn-warning"
-                          onClick={() => setModal(p)}
+                          onClick={() => setModal({ ...p, id: p.id, tipo: "publicacion" })}
                           aria-label="Denunciar publicación"
                         >
                           ⚠
@@ -923,27 +335,45 @@ export default function Comunidad() {
                         />
                       )}
 
-                      <div className="post-usuario-acciones">
-
-                        {/* Editar: únicamente el propietario que no sea admin. */}
+                      <div className="post-usuario-acciones post-usuario-acciones--mejoradas">
                         {!esAdmin && p.autorId === usuario?.uid && (
-                          <button onClick={() => editar(p)}>
-                            Editar
-                          </button>
+                          <button type="button" onClick={() => editar(p)}>✎ Editar</button>
                         )}
-
-                        {/* Eliminar: propietario o administrador. */}
                         {(p.autorId === usuario?.uid || esAdmin) && (
-                          <button onClick={() => borrar(p)}>
-                            Eliminar
-                          </button>
+                          <button type="button" onClick={() => borrar(p)}>⌫ Eliminar</button>
                         )}
-
+                        <button
+                          type="button"
+                          className="post-comentarios-toggle"
+                          aria-expanded={Boolean(comentariosAbiertos[p.id])}
+                          onClick={() => setComentariosAbiertos((prev) => ({ ...prev, [p.id]: !prev[p.id] }))}
+                        >
+                          💬 {Array.isArray(p.comentarios) ? p.comentarios.length : 0} comentarios
+                          <span>{comentariosAbiertos[p.id] ? "Cerrar" : "Ver / comentar"}</span>
+                        </button>
+                        <Link className="post-ver-detalle" to={`/publicacion/${p.id}`}>Ver publicación completa →</Link>
                       </div>
 
-                      <Link to={`/publicacion/${p.id}`}>
-                        Ver publicación completa →
-                      </Link>
+                      {comentariosAbiertos[p.id] && (
+                        <section className="post-comentarios-inline" aria-label={`Comentarios de ${p.autorNombre || "la publicación"}`}>
+                          <div className="post-comentarios-inline__titulo">
+                            <div><span>CONVERSACIÓN</span><h3>Comentarios</h3></div>
+                            <b>{Array.isArray(p.comentarios) ? p.comentarios.length : 0}</b>
+                          </div>
+                          <ListaComentarios
+                            comentarios={Array.isArray(p.comentarios) ? p.comentarios : []}
+                            onAgregarComentario={(datos) => agregarComentario(p.id, datos)}
+                            modoAdministrador={Boolean(esAdmin)}
+                            modoUsuario={!esAdmin}
+                            usuarioActualId={usuario?.uid}
+                            onEditarComentario={(comentarioId, texto) => editarComentario(p.id, comentarioId, texto)}
+                            onEliminarComentario={(comentarioId) => borrarComentario(p.id, comentarioId)}
+                            onDenunciarComentario={(comentario) =>
+                              setModal({ tipo: "comentario", publicacionId: p.id, comentario })
+                            }
+                          />
+                        </section>
+                      )}
 
                     </article>
                   ))}
@@ -969,12 +399,13 @@ export default function Comunidad() {
 
       {modal && (
         <DenunciaModal
+          tipoContenido={modal.tipo || "publicacion"}
           onConfirmar={denunciar}
           onCancelar={() => setModal(null)}
         />
       )}
 
-      {!(admin && esAdmin) && <Footer />}
+      {!modoAdmin && <Footer />}
 
     </>
   );

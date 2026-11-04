@@ -23,10 +23,9 @@
   min-height: 70vh;
   box-sizing: border-box;
   padding: clamp(104px, 10vh, 132px) max(1rem, calc((100% - 980px) / 2)) 4rem;
-  background:
-    radial-gradient(circle at 8% 15%, rgba(44, 166, 73, .07), transparent 24rem),
-    radial-gradient(circle at 92% 38%, rgba(255, 204, 77, .08), transparent 22rem),
-    linear-gradient(145deg, #f2f6f1 0%, #f8f8f3 55%, #eef5ed 100%);
+  background-image: url('../../../public/fondos/fondo-productos.png') ;
+  background-size: cover;
+  background-position: center;
 }
 .publicacion-page-header { max-width: 980px; margin: 0 auto 1.25rem; animation: pub-entrada .45s ease both; }
 .publicacion-breadcrumb { display: flex; align-items: center; gap: .55rem; margin: 0 0 1.1rem; color: #7b867a; font-size: .84rem; }
@@ -90,7 +89,7 @@
 .publicacion-no-encontrada__icono { display: inline-grid; place-items: center; width: 54px; height: 54px; margin-bottom: 1rem; border-radius: 16px; background: #e7f7e9; font-size: 1.8rem; }
 .publicacion-no-encontrada h1 { margin: 0; color: #1b3823; font-size: clamp(1.4rem, 4vw, 1.8rem); }
 .publicacion-no-encontrada p:not(.publicacion-eyebrow) { color: #687568; }
-.publicacion-volver { display: inline-block; margin-top: .7rem; padding: .7rem 1rem; background: #27813d; color: #fff; border-radius: 10px; text-decoration: none; font-weight: 750; transition: background .18s, transform .18s; }
+.publicacion-volver { display: inline-block; font-family: "MinecraftSeven"; margin-top: .7rem; padding: .7rem 1rem; background: #27813d; color: #fff; border-radius: 10px; text-decoration: none; font-weight: 750; transition: background .18s, transform .18s; }
 .publicacion-volver:hover { background: #1d6c31; color: #fff; transform: translateY(-1px); }
 
 .publicacion-admin-toggle { position: fixed; right: 1.5rem; bottom: 1.25rem; z-index: 90; display: inline-flex; align-items: center; gap: .55rem; max-width: calc(100vw - 1.5rem); border: 1px solid #13bd3b; border-radius: 999px; padding: .78rem 1.1rem; background: rgba(255,255,255,.96); color: #079a2a; font-weight: 800; font-size: .88rem; box-shadow: 0 8px 28px rgba(21, 63, 28, .14); cursor: pointer; transition: transform .2s, box-shadow .2s, background .2s; }
@@ -146,3 +145,9 @@
 .publicacion-main .publicacion-autor__datos strong {
   font-family: 'MinecraftSeven', sans-serif;
 }
+
+/* Ajustes de navegación y estados para la versión conectada a Firestore. */
+.publicacion-volver--arriba { margin-top: .9rem; }
+.publicacion-error { max-width: 980px; margin: 0 auto 1rem; padding: .8rem 1rem; border: 1px solid #f0cfca; border-radius: 12px; background: #fff4f2; color: #a43e36; }
+.publicacion-pie { display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap; margin-top:1.5rem; padding-top:1rem; border-top:1px solid #edf1eb; }
+.publicacion-pie > span { color:#9aa397; font-size:.65rem; letter-spacing:.08em; font-weight:750; }
