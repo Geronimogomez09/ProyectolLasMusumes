@@ -5,6 +5,7 @@ import Header from '../components/header';
 import Footer from '../components/Footer';
 import { songs, composers, albums } from '../data/musicData';
 import '../styles/maestro-melodias.css';
+import ImportarCatalogoButton from "../components/music/ImportarCatalogoButton";
 
 const emptySong = {
   title: '',
@@ -184,13 +185,17 @@ function MaestroMelodias() {
             </p>
           </div>
 
-          <button
-            className="maestro-primary-button"
-            type="button"
-            onClick={openNewSong}
-          >
-            + Agregar canción
-          </button>
+  <div>
+  <button
+    className="maestro-primary-button"
+    type="button"
+    onClick={openNewSong}
+  >
+    + Agregar canción
+  </button>
+
+  <ImportarCatalogoButton />
+</div>
         </section>
 
         <section className="maestro-stats">
