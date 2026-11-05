@@ -1,18 +1,27 @@
-import React, { useState } from "react";
+import React from "react";
 import Header from "../components/header";
 import Footer from "../components/Footer";
 import { useNavigate, useParams } from "react-router-dom";
-import { composers, songs, albums } from "../data/musicData";
+import { useMusic } from "../context/MusicContext";
 import "../styles/musica.css";
 import "../styles/compositor.css";
 
 function Compositor() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [following, setFollowing] = useState(false);
+  
+
+const {
+  composers,
+  songs,
+  albums,
+  songDurations,
+  isFollowingComposer,
+  toggleFollowComposer,
+} = useMusic();
 
   const composer = composers.find(
-    (item) => item.id === Number(id)
+    (item) => Number(item.id) === Number(id)
   );
 
   if (!composer) {
@@ -35,12 +44,36 @@ function Compositor() {
   }
 
   const composerSongs = songs.filter(
-    (song) => song.composerId === composer.id
+    (song) =>
+      Number(song.composerId) === Number(composer.id)
   );
 
   const composerAlbums = albums.filter(
-    (album) => album.composerId === composer.id
+    (album) =>
+      Number(album.composerId) === Number(composer.id) ||
+      (album.composerIds ?? []).some(
+        (composerId) => Number(composerId) === Number(composer.id)
+      )
   );
+
+  const getDuration = (song) => {
+    const duration =
+      song.duration ??
+      songDurations?.[song.id];
+
+    if (typeof duration === "string" && duration.trim()) {
+      return duration;
+    }
+
+    if (typeof duration === "number" && Number.isFinite(duration)) {
+      const minutes = Math.floor(duration / 60);
+      const seconds = Math.floor(duration % 60);
+
+      return `${minutes}:${String(seconds).padStart(2, "0")}`;
+    }
+
+    return "Duración desconocida";
+  };
 
   return (
     <>
@@ -62,17 +95,35 @@ function Compositor() {
             <h1>{composer.name}</h1>
             <p>{composer.description}</p>
 
-            <button
-              type="button"
-              onClick={() => setFollowing((previous) => !previous)}
-            >
-              {following ? "✓ Siguiendo" : "♡ Seguir"}
-            </button>
+          <button
+  type="button"
+  className={`composer-follow-button ${
+    isFollowingComposer(composer.id) ? "active" : ""
+  }`}
+  onClick={() => toggleFollowComposer(composer.id)}
+  aria-pressed={isFollowingComposer(composer.id)}
+>
+  <img
+    src="/music/iconos/brujuladerecuperacion.gif"
+    alt=""
+    className="composer-follow-icon"
+  />
+  <span>
+    {isFollowingComposer(composer.id) ? "Siguiendo" : "Seguir"}
+  </span>
+</button>
           </div>
         </section>
 
         <section className="composer-section">
-          <h2>Sus canciones</h2>
+          <h2 className="composer-section-title">
+  <img
+    src="/music/iconos/disco_musical.png"
+    alt=""
+    className="music-category-icon"
+  />
+  Sus canciones
+</h2>
 
           <div className="composer-songs">
             {composerSongs.map((song) => (
@@ -88,7 +139,7 @@ function Compositor() {
 
                 <div>
                   <strong>{song.title}</strong>
-                  <span>{song.duration || "Duración desconocida"}</span>
+                  <span>{getDuration(song)}</span>
                 </div>
               </button>
             ))}
@@ -100,7 +151,14 @@ function Compositor() {
         </section>
 
         <section className="composer-section">
-          <h2>Álbumes</h2>
+          <h2 className="composer-section-title">
+  <img
+    src="/music/iconos/estanteria.png"
+    alt=""
+    className="music-category-icon"
+  />
+  Álbumes
+</h2>
 
           <div className="composer-albums">
             {composerAlbums.map((album) => (

@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import Header from "../components/header";
 import Footer from "../components/Footer";
 import { useNavigate, useParams } from "react-router-dom";
-import { albums, songs, composers } from "../data/musicData";
 import { useMusic } from "../context/MusicContext";
 import SongRow from "../components/music/SongRow";
 import SongPanel from "../components/music/SongPanel";
@@ -14,55 +13,70 @@ function Album() {
   const navigate = useNavigate();
   const [selectedSong, setSelectedSong] = useState(null);
 
-  const {
-    playSong,
-    playCollection,
-    isBlocked,
-    isFavorite,
-    toggleFavorite,
-    toggleBlocked,
-    songDurations,
-  } = useMusic();
+const {
+  songs,
+  albums,
+  composers,
+  playSong,
+  playCollection,
+  isBlocked,
+  isFavorite,
+  toggleFavorite,
+  toggleBlocked,
+  songDurations,
+} = useMusic();
 
-  const album = albums.find((item) => item.id === Number(id));
+const album = albums.find(
+  (item) => Number(item.id) === Number(id)
+);
 
-  if (!album) {
-    return (
-      <>
-        <Header />
-        <main className="album-page">
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            className="back-button"
-          >
-            ← Volver
-          </button>
-          <h1>Álbum no encontrado</h1>
-        </main>
-        <Footer />
-      </>
-    );
-  }
+if (!album) {
+  return (
+    <>
+      <Header />
+      <main className="album-page">
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          className="back-button"
+        >
+          ← Volver
+        </button>
+        <h1>Álbum no encontrado</h1>
+      </main>
+      <Footer />
+    </>
+  );
+}
 
-  const composer = composers.find(
-    (item) => item.id === album.composerId
+const composer = composers.find(
+  (item) =>
+    Number(item.id) ===
+    Number(album.composerId ?? album.composerIds?.[0])
+);
+
+const albumSongIds = (album.songs ?? []).map(Number);
+
+const albumSongs = songs.filter(
+  (song) =>
+    Number(song.albumId) === Number(id) ||
+    (song.albumId == null &&
+      albumSongIds.includes(Number(song.id)))
+);
+
+const playableSongs = albumSongs.filter(
+  (song) => !isBlocked(song) && song.audio
+);
+
+const getComposer = (song) =>
+  composers.find(
+    (item) => Number(item.id) === Number(song?.composerId)
   );
 
-  const albumSongs = (album.songs ?? [])
-    .map((songId) => songs.find((song) => song.id === songId))
-    .filter(Boolean);
-
-  const playableSongs = albumSongs.filter(
-    (song) => !isBlocked(song) && song.audio
+const getAlbum = (song) =>
+  albums.find(
+    (item) => Number(item.id) === Number(song?.albumId)
   );
-
-  const getComposer = (song) =>
-    composers.find((item) => item.id === song?.composerId);
-
-  const getAlbum = (song) =>
-    albums.find((item) => item.id === song?.albumId);
-
   return (
     <>
       <Header />

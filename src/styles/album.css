@@ -318,3 +318,22 @@
 .playlist-songs .song-menu {
   flex-shrink: 0;
 }
+.song-row .song-favorite {
+  width: 42px;
+  height: 42px;
+  min-width: 42px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.song-row .song-favorite-icon {
+  width: 27px !important;
+  height: 27px !important;
+  min-width: 27px;
+  max-width: 27px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}

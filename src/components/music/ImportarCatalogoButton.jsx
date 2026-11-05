@@ -47,6 +47,12 @@ function ImportarCatalogoButton() {
         onClick={importar}
         disabled={cargando}
       >
+        <img
+          src="/music/iconos/enderpearl.png"
+          alt=""
+          className="maestro-button-icon"
+        />
+
         {cargando ? "Importando catálogo..." : "Importar catálogo a Firebase"}
       </button>
 

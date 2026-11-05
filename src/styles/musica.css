@@ -4,6 +4,10 @@
    Tema bosque nocturno: negro, verde bosque y menta.
    ========================================================================== */
 
+/* ==========================================================================
+   FUENTES
+   ========================================================================== */
+
 @font-face {
   font-family: "MinecraftSeven";
   src: url("/fonts/Minecraft.ttf") format("truetype");
@@ -21,7 +25,7 @@
 }
 
 /* ==========================================================================
-   BASE
+   VARIABLES Y BASE
    ========================================================================== */
 
 .music-page {
@@ -76,7 +80,7 @@
 }
 
 /* ==========================================================================
-   ENCABEZADO
+   BANNER
    ========================================================================== */
 
 .music-header {
@@ -88,17 +92,22 @@
   align-items: flex-start;
   justify-content: center;
   gap: 12px;
+
   min-height: 300px;
   padding: clamp(30px, 6vw, 72px);
   margin-top: 20px !important;
   margin-bottom: 65px !important;
+
   border: 1px solid var(--music-border);
-  border-radius: 24px;
+  border-radius: 0 !important;
+
   color: #f3fff5;
   background-color: #101713;
   background-size: cover;
   background-position: center;
+
   box-shadow: 0 24px 70px rgba(0, 0, 0, 0.28);
+  animation: music-border-cycle 12s ease-in-out infinite;
 }
 
 .music-header::before,
@@ -136,8 +145,65 @@
   line-height: 1.7;
 }
 
+@media (min-width: 1400px) {
+  .music-header {
+    padding-left: max(3rem, calc((100vw - 1200px) / 2));
+  }
+}
+
 /* ==========================================================================
-   SECCIONES
+   ANIMACIONES GENERALES
+   ========================================================================== */
+
+@keyframes musica-aparecer {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes music-border-rgb {
+  0%, 100% {
+    border-color: rgba(59, 128, 84, 0.65);
+    box-shadow: 0 0 9px rgba(59, 128, 84, 0.08);
+  }
+
+  33% {
+    border-color: rgba(54, 166, 138, 0.65);
+    box-shadow: 0 0 12px rgba(54, 166, 138, 0.10);
+  }
+
+  66% {
+    border-color: rgba(156, 206, 145, 0.55);
+    box-shadow: 0 0 12px rgba(156, 206, 145, 0.09);
+  }
+}
+
+@keyframes music-border-cycle {
+  0%, 100% {
+    border-color: rgba(132, 210, 151, 0.35);
+  }
+
+  25% {
+    border-color: rgba(110, 190, 169, 0.42);
+  }
+
+  50% {
+    border-color: rgba(199, 245, 213, 0.45);
+  }
+
+  75% {
+    border-color: rgba(115, 165, 104, 0.38);
+  }
+}
+
+/* ==========================================================================
+   SECCIONES Y TÍTULOS
    ========================================================================== */
 
 .music-section {
@@ -155,18 +221,6 @@
 
 .music-section:nth-child(4) {
   animation-delay: 0.2s;
-}
-
-@keyframes musica-aparecer {
-  from {
-    opacity: 0;
-    transform: translateY(18px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 .section-title {
@@ -206,10 +260,93 @@
   line-height: 1.6;
 }
 
+/* Encabezados centrados */
+
+.music-section .section-title {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-bottom: 32px;
+  padding-bottom: 0;
+  border-bottom: none;
+  text-align: center;
+}
+
+.music-section .section-title > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  text-align: center;
+}
+
+.music-section-heading {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 0 18px;
+
+  color: var(--music-mint);
+  font-family: "MinecraftSeven", sans-serif;
+  font-size: clamp(2rem, 3.2vw, 2.6rem);
+  line-height: 1.4;
+  text-align: center;
+  border: none;
+}
+
+/* Línea menta debajo del título */
+
+.music-section-heading::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+
+  width: min(260px, 55%);
+  height: 1px;
+
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(110, 190, 145, 0.45),
+    rgba(199, 245, 213, 0.8),
+    rgba(110, 190, 145, 0.45),
+    transparent
+  );
+
+  box-shadow: 0 0 9px rgba(110, 190, 145, 0.18);
+}
+
+/* Iconos de los encabezados */
+
+.music-section-heading .music-category-icon {
+  display: block;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  margin: 0;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+/* Subtítulos */
+
+.music-section .section-title p {
+  margin: 13px 0 0;
+  color: var(--music-muted);
+  font-size: 1rem;
+  text-align: center;
+}
+
 /* ==========================================================================
-   CAJA EXTERNA DE LAS LISTAS
-   La caja externa se conserva.
-   Las filas NO tienen una segunda caja alrededor.
+   LISTAS DE CANCIONES
    ========================================================================== */
 
 .songs-list {
@@ -220,48 +357,41 @@
   margin: 0;
   padding: 0;
   overflow: visible;
+
   border: 1px solid var(--music-border);
   border-radius: 12px;
   background: rgba(13, 21, 15, 0.45);
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
 }
-
-/*
-  Las listas de álbumes y playlists conservan la caja externa.
-  No se agrega otra caja si también tienen la clase songs-list.
-*/
 
 .music-page .album-songs,
 .music-page .playlist-songs {
   display: flex;
   flex-direction: column;
   gap: 0;
+
   width: 100%;
   max-width: 100%;
   min-width: 0;
   margin: 30px 0 0;
   padding: 0;
   overflow: visible;
+
   border: 1px solid var(--music-border);
   border-radius: 12px;
   background: rgba(13, 21, 15, 0.45);
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
 }
-
-/* Si la lista también tiene .songs-list, no duplica la caja.
-   La misma lista constituye la caja externa. */
 
 .music-page .album-songs.songs-list,
 .music-page .playlist-songs.songs-list {
   border: 1px solid var(--music-border);
   border-radius: 12px;
   background: rgba(13, 21, 15, 0.45);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
 }
 
 /* ==========================================================================
    FILAS DE CANCIONES
-   Orden: número | cover | información | favorito | duración | menú
    ========================================================================== */
 
 .song-row,
@@ -319,7 +449,7 @@
 }
 
 /* ==========================================================================
-   COVERS
+   PORTADAS
    ========================================================================== */
 
 .song-cover-button {
@@ -384,8 +514,7 @@
 }
 
 /* ==========================================================================
-   TÍTULO Y ARTISTA
-   El título admite dos líneas y no invade los botones.
+   INFORMACIÓN DE LAS CANCIONES
    ========================================================================== */
 
 .song-info {
@@ -420,18 +549,18 @@
 }
 
 .song-info strong {
-  display: block;
   white-space: normal;
   overflow: visible;
   text-overflow: clip;
   overflow-wrap: anywhere;
+  font-size: 0.98rem;
   line-height: 1.35;
 }
 
 .song-info span {
   overflow: hidden;
   color: var(--music-muted);
-  font-size: 0.82rem;
+  font-size: 0.87rem;
   line-height: 1.4;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -474,8 +603,35 @@
   color: #ff91b0;
 }
 
+.song-favorite-icon {
+  display: block;
+  width: 27px;
+  height: 27px;
+  min-width: 27px;
+  max-width: 27px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  filter: brightness(0.45) saturate(0.65);
+  opacity: 0.65;
+  transition: filter 0.25s ease, opacity 0.25s ease, transform 0.2s ease;
+}
+
+.song-favorite.active .song-favorite-icon {
+  filter: brightness(1.15) saturate(1.2)
+    drop-shadow(0 0 5px rgba(90, 220, 130, 0.65));
+  opacity: 1;
+}
+
+.song-favorite:hover .song-favorite-icon {
+  transform: scale(1.15);
+}
+
+.song-favorite:active .song-favorite-icon {
+  transform: scale(0.9);
+}
+
 /* ==========================================================================
-   DURACIÓN
+   DURACIÓN Y MENÚ
    ========================================================================== */
 
 .song-duration {
@@ -489,10 +645,6 @@
   text-align: center;
   white-space: nowrap;
 }
-
-/* ==========================================================================
-   MENÚ DE CANCIÓN
-   ========================================================================== */
 
 .song-menu {
   position: relative;
@@ -565,39 +717,47 @@
    BOTONES GENERALES
    ========================================================================== */
 
-.random-button,
-.songs-expand-button {
-  border: 1px solid rgba(184, 241, 199, 0.22);
-  border-radius: 999px;
-  background: linear-gradient(120deg, #17271c, #316c45);
-  color: #edfff1;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
-}
-
-.random-button:hover,
-.songs-expand-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 30px rgba(57, 133, 79, 0.25);
-}
-
 .songs-expand-button {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  width: fit-content;
-  margin: 24px auto 0;
-  padding: 12px 22px;
-  font-size: 0.95rem;
-  font-weight: 600;
+  margin: 28px auto 0;
+  padding: 13px 30px;
+
+  font-family: "Minecrafttitulo", sans-serif;
+  font-size: 1rem;
+  letter-spacing: 0.5px;
+
+  color: #c7f5d5;
+  background: linear-gradient(145deg, #17251b, #101a13);
+  border: 1px solid rgba(150, 195, 160, 0.2);
+  border-radius: 50px;
+  padding: 14px 36px;
   cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+
+  transition:
+    background 0.35s ease,
+    border-color 0.35s ease,
+    color 0.35s ease,
+    box-shadow 0.35s ease,
+    transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-.songs-expand-button span {
-  font-size: 1.2rem;
+.songs-expand-button:hover {
+  color: #e4ffeb;
+  background: linear-gradient(145deg, #294832, #1b3021);
+  border-color: rgba(170, 230, 185, 0.45);
+  box-shadow:
+    0 6px 20px rgba(0, 0, 0, 0.25),
+    0 0 16px rgba(90, 170, 110, 0.12);
+  transform: translateY(-3px) scale(1.025);
 }
 
+.songs-expand-button:active {
+  transform: translateY(0) scale(0.97);
+  box-shadow: 0 2px 7px rgba(0, 0, 0, 0.2);
+}
 /* ==========================================================================
    CANCIONES DESTACADAS
    ========================================================================== */
@@ -607,7 +767,9 @@
   flex-direction: column;
   width: 100%;
   max-width: 900px;
+  margin: 0 auto;
   overflow: hidden;
+
   border: 1px solid var(--music-border);
   border-radius: 14px;
   background: rgba(13, 21, 15, 0.45);
@@ -618,7 +780,8 @@
   grid-template-columns: 35px 50px minmax(0, 1fr) 60px;
   align-items: center;
   gap: 15px;
-  padding: 12px 16px;
+  padding: 15px 20px;
+
   border: none;
   border-bottom: 1px solid var(--music-border);
   border-radius: 0;
@@ -655,12 +818,14 @@
 .featured-text strong {
   overflow: hidden;
   color: #f3fff5;
+  font-size: 1rem;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .featured-text small {
   color: var(--music-muted);
+  font-size: 0.88rem;
 }
 
 .featured-song > span:last-child {
@@ -677,29 +842,39 @@
 .album-grid,
 .composer-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 250px));
+  justify-content: center;
+  justify-items: center;
+  gap: 25px;
+
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
 }
 
 .playlist-card,
 .album-card,
 .composer-card {
+  width: 100%;
+  max-width: 250px;
   min-width: 0;
   overflow: hidden;
   box-sizing: border-box;
+
   border: 1px solid var(--music-border);
   border-radius: 16px;
-  background: linear-gradient(145deg, rgba(25, 39, 29, 0.88), rgba(15, 23, 17, 0.96));
+  background: linear-gradient(
+    145deg,
+    rgba(25, 39, 29, 0.88),
+    rgba(15, 23, 17, 0.96)
+  );
   color: var(--music-text);
-  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
-}
 
-.playlist-card:hover,
-.album-card:hover,
-.composer-card:hover {
-  transform: translateY(-4px);
-  border-color: rgba(155, 228, 174, 0.25);
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.22);
+  transition:
+    transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 0.35s ease,
+    border-color 0.35s ease,
+    background-color 0.35s ease;
 }
 
 .playlist-card,
@@ -723,7 +898,7 @@
   aspect-ratio: 1;
   object-fit: cover;
   border-radius: 11px;
-  transition: transform 0.3s ease;
+  transition: transform 0.4s ease, filter 0.4s ease;
 }
 
 .playlist-card-image:hover img {
@@ -737,11 +912,15 @@
 }
 
 .playlist-card-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
   padding: 0;
+
   border: none;
   background: transparent;
   color: var(--music-text);
-  font-size: 1.05rem;
+  font-size: 1.15rem;
   font-weight: 700;
   text-align: left;
   cursor: pointer;
@@ -754,7 +933,7 @@
 .playlist-card-content p {
   margin: 6px 0;
   color: var(--music-muted);
-  font-size: 0.86rem;
+  font-size: 0.92rem;
   line-height: 1.5;
 }
 
@@ -763,8 +942,9 @@
 .album-card small,
 .composer-card span {
   color: var(--music-muted);
-  font-size: 0.84rem;
+  font-size: 0.9rem;
 }
+
 
 .playlist-play {
   position: absolute;
@@ -774,19 +954,30 @@
   place-items: center;
   width: 38px;
   height: 38px;
-  border: none;
+
+  border: 1px solid rgba(150, 195, 160, 0.18);
   border-radius: 50%;
-  background: linear-gradient(135deg, #d5ffe0, #68b982);
-  color: #102417;
-  box-shadow: 0 4px 18px rgba(91, 183, 119, 0.18);
+  background: linear-gradient(145deg, #294a33, #1a3021);
+  color: #c7e4ce;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.22);
   cursor: pointer;
-  transition: transform 0.2s ease, filter 0.2s ease;
+
+  transition:
+    transform 0.25s ease,
+    background 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease;
 }
 
 .playlist-play:hover {
   transform: scale(1.08);
-  filter: brightness(1.04);
+  background: linear-gradient(145deg, #355d40, #24432e);
+  border-color: rgba(170, 220, 180, 0.35);
+  box-shadow: 0 0 13px rgba(75, 135, 88, 0.16);
 }
+
+
+/* Álbumes */
 
 .album-card {
   display: flex;
@@ -804,11 +995,12 @@
   margin-bottom: 12px;
   border-radius: 9px;
   background: #18251b;
-  transition: transform 0.3s ease;
+  transition: transform 0.4s ease, filter 0.4s ease;
 }
 
 .album-card strong {
   color: #f3fff5;
+  font-size: 1.08rem;
   line-height: 1.55;
 }
 
@@ -816,6 +1008,8 @@
 .album-card small {
   margin-top: 5px;
 }
+
+/* Compositores */
 
 .composer-card {
   display: flex;
@@ -825,7 +1019,7 @@
   cursor: pointer;
 }
 
-.composer-card img {
+.composer-card > img:not(.music-category-icon) {
   width: min(100%, 190px);
   aspect-ratio: 1;
   align-self: center;
@@ -837,18 +1031,56 @@
   transition: border-color 0.25s ease, transform 0.25s ease;
 }
 
-.composer-card:hover img {
-  border-color: var(--music-green);
-  transform: scale(1.025);
-}
-
 .composer-card strong {
   color: #f3fff5;
-  font-size: 1rem;
+  font-size: 1.08rem;
 }
 
 .composer-card span {
   margin-top: 5px;
+}
+
+.composer-card-title {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+/* ==========================================================================
+   ICONOS MINECRAFT DE CATEGORÍAS
+   ========================================================================== */
+
+.music-category-icon {
+  display: inline-block;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  margin-right: 9px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  vertical-align: middle;
+}
+
+/* Icono del aldeano en la tarjeta de compositor */
+
+.composer-card-title .music-category-icon {
+  display: inline-block !important;
+  width: 34px !important;
+  height: 34px !important;
+  min-width: 34px !important;
+  max-width: none !important;
+  margin: 0 9px 0 0 !important;
+  padding: 0 !important;
+
+  object-fit: contain !important;
+  image-rendering: pixelated;
+
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
 }
 
 /* ==========================================================================
@@ -879,10 +1111,12 @@
   height: 100%;
   overflow-y: auto;
   padding: 70px 32px 35px;
+
   border-left: 1px solid var(--music-border);
   background:
     radial-gradient(ellipse at top right, rgba(49, 111, 67, 0.22), transparent 45%),
     #101813;
+
   color: var(--music-text);
   box-shadow: -20px 0 70px rgba(0, 0, 0, 0.35);
   animation: panel-deslizar 0.25s ease;
@@ -890,8 +1124,15 @@
 }
 
 @keyframes panel-deslizar {
-  from { transform: translateX(30px); opacity: 0.7; }
-  to { transform: translateX(0); opacity: 1; }
+  from {
+    transform: translateX(30px);
+    opacity: 0.7;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
 
 .panel-close {
@@ -902,6 +1143,7 @@
   place-items: center;
   width: 38px;
   height: 38px;
+
   border: 1px solid var(--music-border);
   border-radius: 50%;
   background: #17221a;
@@ -935,6 +1177,7 @@
   width: 100%;
   margin-top: 10px;
   padding: 12px 14px;
+
   border: 1px solid var(--music-border);
   border-radius: 10px;
   background: #17221a;
@@ -979,6 +1222,37 @@
   height: 18px;
 }
 
+/* Iconos Minecraft del panel */
+
+.song-panel-minecraft-icon {
+  width: 25px;
+  height: 25px;
+  min-width: 25px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  transition: filter 0.25s ease, opacity 0.25s ease, transform 0.2s ease;
+}
+
+.song-panel-action .song-panel-minecraft-icon:not(.is-toggle) {
+  filter: none;
+  opacity: 1;
+}
+
+.song-panel-action:not(.is-active) .song-panel-minecraft-icon.is-toggle {
+  filter: brightness(0.45) saturate(0.65);
+  opacity: 0.7;
+}
+
+.song-panel-action.is-active .song-panel-minecraft-icon {
+  filter: brightness(1.15) saturate(1.2)
+    drop-shadow(0 0 5px rgba(90, 220, 130, 0.55));
+  opacity: 1;
+}
+
+.song-panel-action:hover .song-panel-minecraft-icon {
+  transform: scale(1.1);
+}
+
 /* ==========================================================================
    REPRODUCTOR FIJO
    ========================================================================== */
@@ -989,20 +1263,27 @@
   bottom: 0;
   left: 0;
   z-index: 2000;
+
   box-sizing: border-box;
   min-height: 96px;
+
   display: grid;
   grid-template-columns: minmax(190px, 280px) minmax(280px, 1fr) minmax(150px, 220px);
   align-items: center;
   gap: 18px;
   padding: 12px 25px;
+
   border-top: 1px solid rgba(170, 239, 188, 0.22);
   background:
     radial-gradient(ellipse at 50% 0%, rgba(47, 125, 70, 0.3), transparent 60%),
     linear-gradient(110deg, #090d0a 0%, #101c13 25%, #173b25 55%, #245b38 78%, #090d0a 100%);
   background-size: 200% 200%;
+
   animation: music-player-gradient 14s ease-in-out infinite;
-  box-shadow: 0 -12px 45px rgba(0, 0, 0, 0.3), 0 -1px 22px rgba(49, 123, 69, 0.12);
+  box-shadow:
+    0 -12px 45px rgba(0, 0, 0, 0.3),
+    0 -1px 22px rgba(49, 123, 69, 0.12);
+
   color: #f0fff3;
   backdrop-filter: blur(18px);
   transition: right 0.3s ease, width 0.3s ease, bottom 0.3s ease, transform 0.3s ease;
@@ -1014,8 +1295,8 @@
   100% { background-position: 0% 50%; }
 }
 
+/* Reproductor minimizado al abrir los detalles */
 
-/* Reproductor minimizado cuando se abren los detalles */
 .music-player.details-open {
   right: 452px;
   left: auto;
@@ -1025,19 +1306,18 @@
   grid-template-columns: minmax(0, 1fr);
   gap: 4px;
   padding: 8px 14px;
+
   border: 1px solid rgba(170, 239, 188, 0.3);
   border-radius: 14px;
   background: linear-gradient(120deg, #101c13, #245b38);
   animation: none;
 }
 
-/* Oculta la información de la canción y el volumen */
 .music-player.details-open .player-song,
 .music-player.details-open .player-volume {
   display: none;
 }
 
-/* Compacta los controles */
 .music-player.details-open .player-main {
   gap: 3px;
 }
@@ -1077,6 +1357,7 @@
   right: 5px;
 }
 
+/* Información de canción */
 
 .player-song {
   display: flex;
@@ -1121,6 +1402,8 @@
   font-size: 0.8rem;
 }
 
+/* Controles */
+
 .player-main {
   display: flex;
   min-width: 0;
@@ -1143,6 +1426,7 @@
   min-width: 34px;
   min-height: 34px;
   padding: 5px;
+
   border: none;
   border-radius: 50%;
   background: transparent;
@@ -1200,6 +1484,8 @@
   filter: drop-shadow(0 0 7px rgba(153, 255, 178, 0.4));
 }
 
+/* Progreso y volumen */
+
 .player-progress {
   display: grid;
   width: min(650px, 100%);
@@ -1241,12 +1527,14 @@
   top: 6px;
   right: 8px;
   z-index: 2;
+
   display: flex;
   align-items: center;
   justify-content: center;
   width: 25px;
   height: 25px;
   padding: 0;
+
   border: none;
   border-radius: 50%;
   background: transparent;
@@ -1263,16 +1551,75 @@
 }
 
 /* ==========================================================================
-   RESPONSIVE
+   TRANSICIONES Y EFECTOS
    ========================================================================== */
 
-@media (min-width: 1400px) {
-  .music-header {
-    padding-left: max(3rem, calc((100vw - 1200px) / 2));
+.music-page button,
+.music-page a {
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease,
+    border-color 0.3s ease,
+    box-shadow 0.3s ease,
+    transform 0.3s ease,
+    opacity 0.3s ease,
+    filter 0.3s ease;
+}
+
+.music-page .album-card,
+.music-page .composer-card,
+.music-page .playlist-card,
+.music-page .featured-song,
+.music-page .song-row {
+  transition:
+    transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 0.35s ease,
+    border-color 0.35s ease,
+    background-color 0.35s ease;
+}
+
+@media (hover: hover) {
+  .music-page .album-card:hover,
+  .music-page .composer-card:hover,
+  .music-page .playlist-card:hover {
+    transform: translateY(-5px);
+    box-shadow:
+      0 12px 28px rgba(0, 0, 0, 0.25),
+      0 0 14px rgba(80, 180, 112, 0.13);
+  }
+
+  .music-page .album-card:hover img,
+  .music-page .composer-card:hover > img:not(.music-category-icon),
+  .music-page .playlist-card:hover img {
+    filter: brightness(1.08);
+  }
+
+  .music-page .song-row:hover {
+    background-color: rgba(199, 245, 213, 0.045);
   }
 }
 
-/* Tablets */
+.music-page button:active {
+  transform: scale(0.97);
+}
+
+/* Bordes animados */
+
+.music-page .songs-list,
+.music-page .album-songs,
+.music-page .playlist-songs,
+.music-page .featured-ranking,
+.music-page .album-card,
+.music-page .composer-card,
+.music-page .playlist-card,
+.music-page .song-panel,
+.music-page .song-menu-content {
+  animation: music-border-rgb 12s ease-in-out infinite;
+}
+
+/* ==========================================================================
+   TABLETS
+   ========================================================================== */
 
 @media (max-width: 900px) {
   .song-row,
@@ -1313,21 +1660,21 @@
   }
 }
 
-/* Tablets pequeñas */
+/* ==========================================================================
+   TABLETS PEQUEÑAS
+   ========================================================================== */
 
 @media (max-width: 700px) {
-
-.music-player.details-open {
-  right: 0;
-  left: 0;
-  bottom: 0;
-  width: 100%;
-  min-height: 72px;
-  padding: 6px 10px;
-  border-radius: 12px 12px 0 0;
-  grid-template-columns: minmax(0, 1fr);
-}
-
+  .music-player.details-open {
+    right: 0;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    min-height: 72px;
+    padding: 6px 10px;
+    border-radius: 12px 12px 0 0;
+    grid-template-columns: minmax(0, 1fr);
+  }
 
   .song-row,
   .music-page .album-songs .song-row,
@@ -1359,7 +1706,9 @@
   }
 }
 
-/* Celulares */
+/* ==========================================================================
+   CELULARES
+   ========================================================================== */
 
 @media (max-width: 600px) {
   .music-page {
@@ -1370,7 +1719,7 @@
     min-height: 250px;
     padding: 28px;
     margin-bottom: 42px !important;
-    border-radius: 18px;
+    border-radius: 0 !important;
   }
 
   .music-header h1 {
@@ -1385,8 +1734,20 @@
     margin-bottom: 50px;
   }
 
-  .section-title h2 {
-    font-size: 1.35rem;
+  .music-section-heading {
+    gap: 9px;
+    padding-bottom: 14px;
+    font-size: 1.55rem;
+  }
+
+  .music-section-heading .music-category-icon {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+  }
+
+  .music-section .section-title p {
+    font-size: 0.88rem;
   }
 
   .songs-list,
@@ -1435,6 +1796,13 @@
     min-height: 28px;
   }
 
+  .song-favorite-icon {
+    width: 23px;
+    height: 23px;
+    min-width: 23px;
+    max-width: 23px;
+  }
+
   .song-menu {
     grid-column: 5;
     width: 28px;
@@ -1444,6 +1812,8 @@
   .song-duration {
     display: none;
   }
+
+  /* Ranking */
 
   .featured-song {
     grid-template-columns: 24px 42px minmax(0, 1fr) 45px;
@@ -1460,16 +1830,19 @@
     display: none;
   }
 
+  /* Tarjetas */
+
   .playlist-grid,
   .album-grid,
   .composer-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px;
+    gap: 14px;
   }
 
   .playlist-card,
   .album-card,
   .composer-card {
+    max-width: none;
     padding: 9px;
   }
 
@@ -1483,13 +1856,15 @@
     bottom: 0;
   }
 
-  .composer-card img {
+  .composer-card > img:not(.music-category-icon) {
     width: 100%;
   }
 
   .song-panel {
     padding: 65px 22px 30px;
   }
+
+  /* Reproductor */
 
   .music-player {
     min-height: 110px;
@@ -1523,19 +1898,42 @@
   }
 }
 
-/* Accesibilidad */
+/* ==========================================================================
+   ACCESIBILIDAD
+   ========================================================================== */
 
 @media (prefers-reduced-motion: reduce) {
   .music-page *,
   .music-page *::before,
   .music-page *::after {
+    scroll-behavior: auto !important;
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
-    scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
   }
 
-  .music-player {
-    animation: none;
+  .music-player,
+  .music-header {
+    animation: none !important;
   }
+}
+/* Alinear los botones Play de todas las playlists */
+.playlist-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.playlist-card-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  position: relative;
+  padding-bottom: 48px;
+}
+
+.playlist-play {
+  position: absolute;
+  right: 0;
+  bottom: 0;
 }

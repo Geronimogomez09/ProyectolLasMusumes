@@ -145,7 +145,11 @@ export default function SongPanel({
             className="song-panel-action"
             onClick={() => onOpenComposer?.(composer)}
           >
-            <ActionIcon name="user" />
+            <img
+  src="/music/iconos/aldeano_bibliotecario.png"
+  alt=""
+  className="song-panel-minecraft-icon"
+/>
             <span>{composer.name}</span>
           </button>
         )}
@@ -156,7 +160,11 @@ export default function SongPanel({
             className="song-panel-action"
             onClick={() => onOpenAlbum?.(album)}
           >
-            <ActionIcon name="disc" />
+            <img
+  src="/music/iconos/estanteria.png"
+  alt=""
+  className="song-panel-minecraft-icon"
+/>
             <span>{album.title}</span>
           </button>
         )}
@@ -182,7 +190,11 @@ export default function SongPanel({
           onClick={() => onToggleFavorite?.(song)}
           aria-pressed={isFavorite}
         >
-          <ActionIcon name="heart" />
+          <img
+  src="/music/iconos/esmeralda.png"
+  alt=""
+  className={`song-panel-minecraft-icon ${isFavorite ? "is-active" : ""}`}
+/>
           <span>
             {isFavorite ? "Quitar de favoritos" : "Agregar a favoritos"}
           </span>
@@ -194,7 +206,11 @@ export default function SongPanel({
           onClick={() => onToggleBlocked?.(song)}
           aria-pressed={isBlocked}
         >
-          <ActionIcon name="ban" />
+          <img
+  src="/music/iconos/disco_roto.png"
+  alt=""
+  className={`song-panel-minecraft-icon ${isBlocked ? "is-active" : ""}`}
+/>
           <span>
             {isBlocked ? "Desbloquear canción" : "Bloquear canción"}
           </span>
