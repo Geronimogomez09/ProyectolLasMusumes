@@ -1,3 +1,4 @@
+
 import React from "react";
 
 function ComposerCard({
@@ -6,6 +7,7 @@ function ComposerCard({
 }) {
   return (
     <button
+      type="button"
       className="composer-card"
       onClick={() => onOpen(composer)}
     >
@@ -14,7 +16,14 @@ function ComposerCard({
         alt={composer.name}
       />
 
-      <strong>{composer.name}</strong>
+      <strong className="composer-card-title">
+        <img
+          src="/music/iconos/aldeano_bibliotecario.png"
+          alt=""
+          className="music-category-icon"
+        />
+        {composer.name}
+      </strong>
 
       <span>
         {composer.songs.length} temas

@@ -3,12 +3,6 @@ import Header from "../components/header";
 import Footer from "../components/Footer";
 import { useNavigate, useParams } from "react-router-dom";
 
-import {
-  songs,
-  composers,
-  albums,
-} from "../data/musicData";
-
 import { useMusic } from "../context/MusicContext";
 import "../styles/cancion.css";
 
@@ -28,6 +22,9 @@ function Cancion() {
   const navigate = useNavigate();
 
   const {
+    songs,
+    composers,
+    albums,
     currentSong,
     playSong,
     isFavorite,
@@ -37,7 +34,7 @@ function Cancion() {
   } = useMusic();
 
   const song = songs.find(
-    (item) => item.id === Number(id)
+    (item) => Number(item.id) === Number(id)
   );
 
   if (!song) {
@@ -65,19 +62,21 @@ function Cancion() {
   }
 
   const composer = composers.find(
-    (item) => item.id === song.composerId
+    (item) => Number(item.id) === Number(song.composerId)
   );
 
   const album = albums.find(
-    (item) => item.id === song.albumId
+    (item) => Number(item.id) === Number(song.albumId)
   );
 
   const favorite = isFavorite(song);
   const blocked = isBlocked(song);
-  const isCurrentSong = currentSong?.id === song.id;
+
+  const isCurrentSong =
+    Number(currentSong?.id) === Number(song.id);
 
   const duration =
-    formatDuration(songDurations[song.id]) ||
+    formatDuration(songDurations?.[song.id]) ||
     formatDuration(Number(song.durationSeconds)) ||
     (typeof song.duration === "string" ? song.duration : null);
 

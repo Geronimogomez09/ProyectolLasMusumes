@@ -1,0 +1,267 @@
+
+/* ==========================================================================
+   PANEL DESPLEGABLE - MAESTRO DE MELODÍAS
+   Identidad visual: bosque nocturno.
+   ========================================================================== */
+
+/* ---------- BOTONES DEL ENCABEZADO ---------- */
+
+.maestro-hero-buttons {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.65rem;
+  position: relative;
+  z-index: 2;
+}
+
+/* ---------- BIBLIOTECA ---------- */
+
+.maestro-library {
+  margin: 2.25rem 0;
+}
+
+.maestro-accordion {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+/* ---------- ELEMENTOS DESPLEGABLES ---------- */
+
+.maestro-accordion-item {
+  overflow: hidden;
+  border: 1px solid rgba(139, 190, 151, 0.17);
+  border-radius: 14px;
+  background: linear-gradient(145deg, #17251c, #111b15);
+  box-shadow: 0 5px 18px rgba(0, 0, 0, 0.18);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+.maestro-accordion-item:hover {
+  border-color: rgba(110, 207, 139, 0.3);
+}
+
+.maestro-accordion-item.is-open {
+  border-color: rgba(110, 207, 139, 0.5);
+  background: linear-gradient(145deg, #192b20, #121e16);
+  box-shadow:
+    0 9px 26px rgba(0, 0, 0, 0.25),
+    0 0 18px rgba(85, 184, 121, 0.055);
+}
+
+/* ---------- BOTÓN QUE ABRE EL ACORDEÓN ---------- */
+
+.maestro-accordion-trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.15rem 1.25rem;
+  border: 0;
+  background: linear-gradient(105deg, #19291f, #142119);
+  color: #e7f1e9;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.maestro-accordion-trigger:hover,
+.maestro-accordion-item.is-open .maestro-accordion-trigger {
+  background: linear-gradient(105deg, #203b29, #192c20);
+}
+
+/* ---------- ICONOS ---------- */
+
+.maestro-accordion-icon {
+  flex: 0 0 46px;
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(128, 214, 155, 0.25);
+  border-radius: 12px;
+  background: rgba(85, 184, 121, 0.12);
+  color: #b5edc5;
+  font-size: 1.45rem;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.maestro-accordion-item.is-open .maestro-accordion-icon {
+  transform: scale(1.04);
+  border-color: rgba(128, 214, 155, 0.5);
+  background: rgba(85, 184, 121, 0.2);
+}
+
+/* ---------- TEXTO ---------- */
+
+.maestro-accordion-copy {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.maestro-accordion-copy strong {
+  font-family: "MinecraftSeven", "Segoe UI", sans-serif;
+  color: #e5f3e8;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.maestro-accordion-copy small {
+  color: #9caf9f;
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+
+/* ---------- CONTADOR ---------- */
+
+.maestro-accordion-count {
+  padding: 0.35rem 0.7rem;
+  border: 1px solid rgba(128, 214, 155, 0.2);
+  border-radius: 999px;
+  background: rgba(85, 184, 121, 0.1);
+  color: #b5edc5;
+  font-size: 0.76rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+/* ---------- FLECHA ---------- */
+
+.maestro-accordion-chevron {
+  flex: 0 0 30px;
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(85, 184, 121, 0.12);
+  color: #b5edc5;
+  font-size: 1.3rem;
+  font-weight: 500;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+
+.maestro-accordion-item.is-open .maestro-accordion-chevron {
+  background: rgba(85, 184, 121, 0.23);
+}
+
+/* ---------- CONTENIDO DESPLEGABLE ---------- */
+
+.maestro-accordion-content {
+  padding: 0 1.2rem 1.2rem;
+  animation: maestro-aparecer 0.22s ease;
+}
+
+/* ---------- PAPELERA ---------- */
+
+.maestro-trash-section .maestro-accordion-item {
+  border-color: rgba(194, 104, 104, 0.2);
+}
+
+.maestro-trash-section .maestro-accordion-item:hover,
+.maestro-trash-section .maestro-accordion-item.is-open {
+  border-color: rgba(211, 119, 119, 0.45);
+}
+
+.maestro-trash-section .maestro-accordion-trigger:hover,
+.maestro-trash-section .maestro-accordion-item.is-open .maestro-accordion-trigger {
+  background: linear-gradient(105deg, #382323, #261a1a);
+}
+
+.maestro-trash-section .maestro-accordion-icon {
+  border-color: rgba(211, 119, 119, 0.25);
+  background: rgba(160, 68, 68, 0.14);
+  color: #e6aaaa;
+}
+
+.maestro-trash-section .maestro-accordion-count {
+  border-color: rgba(211, 119, 119, 0.25);
+  background: rgba(160, 68, 68, 0.13);
+  color: #e6aaaa;
+}
+
+.maestro-trash-section .maestro-accordion-chevron {
+  background: rgba(160, 68, 68, 0.15);
+  color: #e6aaaa;
+}
+
+/* ---------- ETIQUETAS DE SISTEMA ---------- */
+
+.maestro-system-label {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.42rem 0.65rem;
+  border: 1px solid rgba(139, 190, 151, 0.17);
+  border-radius: 8px;
+  background: #19271e;
+  color: #9caf9f;
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+
+/* ---------- RESPONSIVE ---------- */
+
+@media (max-width: 1000px) {
+  .maestro-hero-buttons {
+    margin-left: auto;
+  }
+}
+
+@media (max-width: 650px) {
+  .maestro-hero-buttons {
+    width: 100%;
+    align-items: stretch;
+    margin-left: 0;
+  }
+
+  .maestro-hero-buttons > * {
+    width: 100%;
+  }
+
+  .maestro-accordion-trigger {
+    gap: 0.65rem;
+    padding: 0.9rem 0.75rem;
+  }
+
+  .maestro-accordion-icon {
+    flex-basis: 38px;
+    width: 38px;
+    height: 38px;
+    font-size: 1.2rem;
+  }
+
+  .maestro-accordion-copy strong {
+    font-size: 0.88rem;
+  }
+
+  .maestro-accordion-copy small {
+    font-size: 0.7rem;
+  }
+
+  .maestro-accordion-count {
+    padding: 0.25rem 0.45rem;
+    font-size: 0.68rem;
+  }
+
+  .maestro-accordion-chevron {
+    flex-basis: 25px;
+    width: 25px;
+    height: 25px;
+  }
+
+  .maestro-accordion-content {
+    padding: 0 0.65rem 0.85rem;
+  }
+}

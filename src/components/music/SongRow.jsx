@@ -1,3 +1,4 @@
+
 import React from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -75,8 +76,13 @@ function SongRow({
             : `Agregar ${song.title} a favoritos`
         }
         aria-pressed={isFavorite}
+        title={isFavorite ? "Quitar de favoritos" : "Agregar a favoritos"}
       >
-        {isFavorite ? "♥" : "♡"}
+        <img
+          src="/music/iconos/esmeralda.png"
+          alt=""
+          className="song-favorite-icon"
+        />
       </button>
 
       <span className="song-duration">
