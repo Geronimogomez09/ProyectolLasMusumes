@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { EMOJIS_MINECRAFT } from './emojis-minecraft';
-import './comentario-form.css';
+import '../../styles/comentario-form.css';
 
 // Formulario reutilizable para escribir un comentario. No sabe nada del post
 // al que pertenece: recibe onEnviar y devuelve { texto } cuando el usuario

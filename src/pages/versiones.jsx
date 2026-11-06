@@ -394,7 +394,7 @@ function Versiones({ versiones: versionesProp }) {
                 onCancelarEdicion={() => setVersionEditando(null)}
               />
 
-              <button
+              <button className="restaurar-versiones"
                 type="button"
                 onClick={restaurarVersionesIniciales}
                 disabled={restaurando}

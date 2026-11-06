@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { renderizarTextoConEmojis } from './emojis-minecraft';
 import ComentarioForm from './comentario-form';
-import './lista-comentarios.css';
+import '../../styles/lista-comentarios.css';
 
 function ListaComentarios({
   comentarios,
