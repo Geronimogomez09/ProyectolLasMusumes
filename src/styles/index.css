@@ -126,7 +126,7 @@ body {
             color-mix(in srgb, var(--fondo) 70%, transparent) 44%,
             color-mix(in srgb, var(--fondo) 5%, transparent) 75%
         ),
-        var(--inicio-hero-imagen, url("../assets/index/hero-index.png"));
+        var(--inicio-hero-imagen, url("../assets/index/wallpaper_minecraft_pc_bundle_1920x1080.png"));
     background-size: cover;
     background-position: center;
     border-bottom: 2px solid var(--verde-claro);
