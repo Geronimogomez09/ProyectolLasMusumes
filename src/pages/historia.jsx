@@ -3,6 +3,7 @@ import Header from '../components/header';
 import Footer from '../components/Footer';
 import BotonAdmin from '../components/botonAdmin';
 import { useAuth } from '../context/AuthContext';
+import { tienePermiso } from '../utils/permisos';
 import '../styles/index.css';   // base + modo administrador (los estilos que ya tenías)
 import '../styles/historia.css'; // estilos propios de esta página (línea de tiempo, aside, tarjetas)
 
@@ -886,10 +887,18 @@ function ModalConfirmar({ titulo, texto, textoBoton, onConfirmar, onCerrar }) {
 // ---------------------------------------------------------------------------
 function Historia({ eventos: eventosProp }) {
   const [eventos, setEventos] = useState(() => eventosProp || leerGuardado() || EVENTOS_INICIALES);
-  const { esAdmin } = useAuth();
+  const { perfil } = useAuth();
+  const puedeAdministrar = tienePermiso(perfil, 'historia');
   const [modoAdminAbierto, setModoAdmin] = useState(false);
-  const modoAdmin = modoAdminAbierto && esAdmin; // solo el admin puede editar
+  const modoAdmin = modoAdminAbierto && puedeAdministrar;
+
   const [modal, setModal] = useState(null); // null | {tipo:'form'|'borrar'|'restaurar', ...}
+  useEffect(() => {
+    if (!puedeAdministrar) {
+      setModoAdmin(false);
+      setModal(null);
+    }
+  }, [puedeAdministrar]);
   const [abiertos, setAbiertos] = useState({});
   const [zona, setZona] = useState({ era: null, evento: null }); // dónde está la persona
 
@@ -995,6 +1004,7 @@ function Historia({ eventos: eventosProp }) {
   const alternarDetalle = (id) => setAbiertos((previo) => ({ ...previo, [id]: !previo[id] }));
 
   function guardarEvento(datos) {
+    if (!puedeAdministrar) return;
     const esNuevo = datos.id == null;
     const nuevoId = Math.max(0, ...eventos.map((e) => e.id)) + 1;
     setEventos((previo) =>
@@ -1008,11 +1018,13 @@ function Historia({ eventos: eventosProp }) {
   }
 
   function eliminarEvento(id) {
+    if (!puedeAdministrar) return;
     setEventos((previo) => previo.filter((e) => e.id !== id));
     setModal(null);
   }
 
   function restaurarOriginales() {
+    if (!puedeAdministrar) return;
     setEventos(EVENTOS_INICIALES);
     setModal(null);
   }
@@ -1135,16 +1147,19 @@ function Historia({ eventos: eventosProp }) {
         </div>
 
         {/* ---------- BOTÓN DE ADMINISTRADOR (solo admin) ---------- */}
-        <BotonAdmin
-          activo={modoAdmin}
-          alAlternar={() => setModoAdmin((v) => !v)}
-          aviso="Editá, agregá o eliminá hitos."
-        >
-          <button type="button" className="boton-admin-toggle"
-            onClick={() => setModal({ tipo: 'restaurar' })}>
-            Restaurar originales
-          </button>
-        </BotonAdmin>
+        {puedeAdministrar && (
+          <BotonAdmin
+            permiso="historia"
+            activo={modoAdmin}
+            alAlternar={() => setModoAdmin((v) => !v)}
+            aviso="Editá, agregá o eliminá hitos."
+          >
+            <button type="button" className="boton-admin-toggle"
+              onClick={() => setModal({ tipo: 'restaurar' })}>
+              Restaurar originales
+            </button>
+          </BotonAdmin>
+        )}
 
         {/* ---------- VENTANAS ---------- */}
         {modal?.tipo === 'form' && (

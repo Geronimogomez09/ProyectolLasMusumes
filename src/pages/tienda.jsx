@@ -8,6 +8,8 @@ import CategoriasTienda from "../components/tiendaComponentes/CategoriasTienda";
 import AdministrarProductos from "../components/tiendaComponentes/AdministrarProductos";
 import Carrito from "../components/tiendaComponentes/Carrito";
 import BotonAdmin from '../components/botonAdmin';
+import { useAuth } from "../context/AuthContext";
+import { tienePermiso } from "../utils/permisos";
 import DetalleProducto from "../components/tiendaComponentes/DetalleProducto";
 
 import { productosIniciales } from "../data/productos";
@@ -480,6 +482,8 @@ function cargarBanners() {
 
 export default function Tienda() {
 
+    const { perfil } = useAuth();
+    const puedeAdministrar = tienePermiso(perfil, "tienda");
 
     const [productos, setProductos] =
         useState(cargarProductos);
@@ -489,6 +493,12 @@ export default function Tienda() {
 
     const [administradorAbierto, setAdministradorAbierto] =
         useState(false);
+
+    useEffect(() => {
+        if (!puedeAdministrar) setAdministradorAbierto(false);
+    }, [puedeAdministrar]);
+
+    const modoAdmin = administradorAbierto && puedeAdministrar;
 
     const [carrito, setCarrito] =
         useState([]);
@@ -787,6 +797,7 @@ export default function Tienda() {
     function agregarProducto(
         nuevoProducto
     ) {
+        if (!puedeAdministrar) return;
 
         setProductos(
             (actual) => [
@@ -798,6 +809,7 @@ export default function Tienda() {
     }
 
     function modificarProducto(id, datosActualizados) {
+        if (!puedeAdministrar) return;
         setProductos((actuales) =>
             actuales.map((producto) =>
                 producto.id === id
@@ -815,6 +827,7 @@ export default function Tienda() {
     */
 
     function eliminarProducto(id) {
+        if (!puedeAdministrar) return;
 
         const confirmar =
             window.confirm(
@@ -998,7 +1011,7 @@ export default function Tienda() {
                         ADMINISTRADOR
                     ========================== */}
 
-                        {administradorAbierto && (
+                        {modoAdmin && (
                             <div className="tienda-administrador">
                                 <AdministrarProductos
                                     productos={productos}
@@ -1042,9 +1055,10 @@ export default function Tienda() {
 
             <Footer />
 
-            {!mostrandoDetalle && (
+            {!mostrandoDetalle && puedeAdministrar && (
                 <BotonAdmin
-                    activo={administradorAbierto}
+                    permiso="tienda"
+                    activo={modoAdmin}
                     alAlternar={() => setAdministradorAbierto((abierto) => !abierto)}
                     aviso="Los cambios se guardan en Firebase."
                 />

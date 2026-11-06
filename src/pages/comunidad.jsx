@@ -10,6 +10,7 @@ import AdminComunidad from "../components/comunidadComponentes/admin-comunidad";
 import BotonAdmin from "../components/botonAdmin";
 
 import { useAuth } from "../context/AuthContext";
+import { tienePermiso } from "../utils/permisos";
 
 import {
   escucharPublicaciones,
@@ -44,7 +45,8 @@ const nombreUsuario = (usuario, perfil) =>
   "Usuario";
 
 export default function Comunidad() {
-  const { usuario, perfil, esAdmin } = useAuth();
+  const { usuario, perfil } = useAuth();
+  const puedeAdministrar = tienePermiso(perfil, "comunidad");
 
   const [posts, setPosts] = useState([]);
 
@@ -54,11 +56,15 @@ export default function Comunidad() {
 
   const [admin, setAdmin] = useState(false);
 
+  useEffect(() => {
+    if (!puedeAdministrar) setAdmin(false);
+  }, [puedeAdministrar]);
+
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState("");
 
   // El panel solo se muestra si el usuario es administrador.
-  const modoAdmin = admin && esAdmin;
+  const modoAdmin = admin && puedeAdministrar;
 
   // Limpiar publicaciones y denuncias ficticias antiguas.
   useEffect(() => {
@@ -137,7 +143,7 @@ export default function Comunidad() {
   // Eliminar publicación (propietario o administrador).
   async function borrar(post) {
     if (
-      !esAdmin &&
+      !puedeAdministrar &&
       post.autorId !== usuario?.uid
     ) {
       return;
@@ -155,7 +161,7 @@ export default function Comunidad() {
 
   // Editar publicación: solamente su propietario si no es administrador.
   async function editar(post) {
-    if (esAdmin || post.autorId !== usuario?.uid) return;
+    if (puedeAdministrar || post.autorId !== usuario?.uid) return;
 
     const contenido = window.prompt(
       "Editar publicación:",
@@ -205,7 +211,7 @@ export default function Comunidad() {
 
   // Cambiar entre Comunidad y administración.
   function alternarAdmin() {
-    if (!esAdmin) return;
+    if (!puedeAdministrar) return;
     setAdmin((prev) => !prev);
   }
 
@@ -336,10 +342,10 @@ export default function Comunidad() {
                       )}
 
                       <div className="post-usuario-acciones post-usuario-acciones--mejoradas">
-                        {!esAdmin && p.autorId === usuario?.uid && (
+                        {!puedeAdministrar && p.autorId === usuario?.uid && (
                           <button type="button" onClick={() => editar(p)}>✎ Editar</button>
                         )}
-                        {(p.autorId === usuario?.uid || esAdmin) && (
+                        {(p.autorId === usuario?.uid || puedeAdministrar) && (
                           <button type="button" onClick={() => borrar(p)}>⌫ Eliminar</button>
                         )}
                         <button
@@ -363,8 +369,8 @@ export default function Comunidad() {
                           <ListaComentarios
                             comentarios={Array.isArray(p.comentarios) ? p.comentarios : []}
                             onAgregarComentario={(datos) => agregarComentario(p.id, datos)}
-                            modoAdministrador={Boolean(esAdmin)}
-                            modoUsuario={!esAdmin}
+                            modoAdministrador={Boolean(puedeAdministrar)}
+                            modoUsuario={!puedeAdministrar}
                             usuarioActualId={usuario?.uid}
                             onEditarComentario={(comentarioId, texto) => editarComentario(p.id, comentarioId, texto)}
                             onEliminarComentario={(comentarioId) => borrarComentario(p.id, comentarioId)}
@@ -389,8 +395,9 @@ export default function Comunidad() {
 
       {/* BOTÓN ADMIN ORIGINAL: SE CONSERVA SU COMPONENTE Y UBICACIÓN */}
 
-      {esAdmin && (
+      {puedeAdministrar && (
         <BotonAdmin
+          permiso="comunidad"
           activo={admin}
           alAlternar={alternarAdmin}
           aviso="Estás en el panel de administración de Comunidad."

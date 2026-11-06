@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 import Header from "../components/header";
 import BotonAdmin from "../components/botonAdmin";
 import Footer from "../components/Footer";
+import { useAuth } from "../context/AuthContext";
+import { tienePermiso } from "../utils/permisos";
 
 import { useMusic } from "../context/MusicContext";
 
@@ -17,6 +19,8 @@ import "../styles/musica.css";
 
 export default function Musica() {
   const navigate = useNavigate();
+  const { perfil } = useAuth();
+  const puedeAdministrar = tienePermiso(perfil, "musica");
 
   const [selectedSong, setSelectedSong] = useState(null);
   const [showAllSongs, setShowAllSongs] = useState(false);
@@ -398,9 +402,12 @@ export default function Musica() {
         />
       </main>
 
-      <BotonAdmin
-        alAlternar={() => navigate("/musica/maestro")}
-      />
+      {puedeAdministrar && (
+        <BotonAdmin
+          permiso="musica"
+          alAlternar={() => navigate("/musica/maestro")}
+        />
+      )}
 
       <Footer />
     </>

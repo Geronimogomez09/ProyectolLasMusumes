@@ -13,6 +13,7 @@ import Header from '../components/header';
 import Footer from '../components/Footer';
 import BotonAdmin from '../components/botonAdmin';
 import { useAuth } from '../context/AuthContext';
+import { tienePermiso } from '../utils/permisos';
 
 import TarjetaVersion from '../components/versionesComponentes/tarjeta-version';
 import AgregarVersion from '../components/versionesComponentes/agregar-version';
@@ -161,7 +162,8 @@ const versionesIniciales = [
 const EDICIONES_FILTRO = ['Todas', 'Java', 'Bedrock'];
 
 function Versiones({ versiones: versionesProp }) {
-  const { esAdmin } = useAuth();
+  const { perfil } = useAuth();
+  const puedeAdministrar = tienePermiso(perfil, "versiones");
 
   const [versiones, setVersiones] = useState(versionesProp || []);
   const [busqueda, setBusqueda] = useState('');
@@ -172,7 +174,14 @@ function Versiones({ versiones: versionesProp }) {
   const [versionEditando, setVersionEditando] = useState(null);
 
   const [modoAdminAbierto, setModoAdmin] = useState(false);
-  const modoAdmin = modoAdminAbierto && esAdmin;
+  const modoAdmin = modoAdminAbierto && puedeAdministrar;
+
+  useEffect(() => {
+    if (!puedeAdministrar) {
+      setModoAdmin(false);
+      setVersionEditando(null);
+    }
+  }, [puedeAdministrar]);
 
   const [restaurando, setRestaurando] = useState(false);
 
@@ -202,6 +211,7 @@ function Versiones({ versiones: versionesProp }) {
   // ---------------------------------------------------------------------------
 
   async function restaurarVersionesIniciales() {
+    if (!puedeAdministrar) return;
     if (restaurando) return;
 
     const confirmar = window.confirm(
@@ -257,6 +267,7 @@ function Versiones({ versiones: versionesProp }) {
   // ---------------------------------------------------------------------------
 
   async function handleAgregarVersion(nuevaVersion) {
+    if (!puedeAdministrar) return;
     try {
       await guardarVersion(nuevaVersion);
     } catch (error) {
@@ -270,6 +281,7 @@ function Versiones({ versiones: versionesProp }) {
   // ---------------------------------------------------------------------------
 
   async function handleActualizarVersion(versionActualizada) {
+    if (!puedeAdministrar) return;
     try {
       const { id, ...datosActualizados } = versionActualizada;
 
@@ -287,6 +299,7 @@ function Versiones({ versiones: versionesProp }) {
   // ---------------------------------------------------------------------------
 
   async function handleEliminarVersion(id) {
+    if (!puedeAdministrar) return;
     if (
       !window.confirm(
         '¿Estás seguro de que querés eliminar esta versión?'
@@ -492,11 +505,14 @@ function Versiones({ versiones: versionesProp }) {
       </div>
 
       {/* BOTÓN ADMINISTRADOR */}
-      <BotonAdmin
-        activo={modoAdmin}
-        alAlternar={() => setModoAdmin((abierto) => !abierto)}
-        aviso="Podés agregar, editar y eliminar versiones."
-      />
+      {puedeAdministrar && (
+        <BotonAdmin
+          permiso="versiones"
+          activo={modoAdmin}
+          alAlternar={() => setModoAdmin((abierto) => !abierto)}
+          aviso="Podés agregar, editar y eliminar versiones."
+        />
+      )}
 
       <Footer />
     </>
