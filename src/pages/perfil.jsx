@@ -145,3 +145,50 @@ function Avatar({ foto, nombre, className = "" }) {
     </div>
   );
 }
+
+// 4. COMPONENTE PRINCIPAL Y ESTADOS
+
+// PERFIL: contiene el menú de navegación, los datos personales,
+// las publicaciones y el contenido guardado del usuario.
+export default function Perfil() {
+
+  // Obtiene los datos del contexto de autenticación.
+  // usuario contiene la información de Firebase Authentication.
+  // perfil contiene los datos adicionales almacenados en Firestore.
+  // cargando indica si todavía se están obteniendo los datos.
+  // esAdmin indica si el usuario tiene permisos de administrador.
+  const { usuario, perfil, cargando, esAdmin } = useAuth();
+
+  // SECCIÓN: indica qué apartado del perfil se encuentra seleccionado.
+  const [seccion, setSeccion] = useState("resumen");
+
+  // EDITANDO: determina si el formulario de datos personales está abierto.
+  const [editando, setEditando] = useState(false);
+
+  // GUARDANDO: indica si se están enviando modificaciones a Firestore.
+  const [guardando, setGuardando] = useState(false);
+
+  // MENSAJE: almacena los mensajes de confirmación que se muestran en pantalla.
+  const [mensaje, setMensaje] = useState("");
+
+  // ERROR: almacena los mensajes relacionados con problemas de validación o guardado.
+  const [error, setError] = useState("");
+
+  // PUBLICACIONES: almacena las publicaciones realizadas por el usuario.
+  const [publicaciones, setPublicaciones] = useState([]);
+
+  // FORMULARIO: contiene los valores de los campos de datos personales.
+  // Se inicializa con cadenas vacías para evitar campos sin controlar.
+  const [formulario, setFormulario] = useState({
+    nombreUsuario: "",
+    nombre: "",
+    apellido: "",
+    biografia: "",
+    ubicacion: "",
+    sitioWeb: "",
+    fechaNacimiento: "",
+    fotoPerfil: "",
+  });
+
+
+}
