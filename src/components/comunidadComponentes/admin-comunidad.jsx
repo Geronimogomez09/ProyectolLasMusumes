@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 
+import { tienePermiso } from "../../utils/permisos";
 import { useAuth } from "../../context/AuthContext";
 
 import {
@@ -25,8 +26,8 @@ import "../../styles/AdminComunidad.css";
  * y cada acción destructiva vuelve a verificar el permiso antes de ejecutarse.
  */
 export default function AdminComunidad({ posts = [], onSalir }) {
-  const { esAdmin } = useAuth();
-
+ const { perfil } = useAuth();
+const esAdmin = tienePermiso(perfil, "comunidad");
   const [denuncias, setDenuncias] = useState([]);
   const [usuarios, setUsuarios] = useState([]);
   const [adminSeccion, setAdminSeccion] = useState("denuncias");
