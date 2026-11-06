@@ -5,7 +5,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Inicio from "./pages/index";
 import Tienda from "./pages/tienda";
 import Login from "./pages/login";
-import Perfil from "./pages/Perfil";
+import Perfil from "./pages/perfil";
 import Comunidad from "./pages/comunidad";
 import Publicacion from "./pages/Publicacion";
 import Versiones from "./pages/versiones";

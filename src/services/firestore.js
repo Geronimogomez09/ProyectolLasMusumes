@@ -470,3 +470,88 @@ export async function guardarVersion(datos, id = null) {
 export async function borrarVersion(id) {
   return eliminarDocumento(COLECCIONES.versiones, id);
 }
+
+// 1. IMPORTACIONES
+
+// Funciones de Firebase Storage para obtener el almacenamiento,
+// crear referencias a archivos, subir imágenes y recuperar sus URLs.
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+
+// 2. CONFIGURACIÓN DE STORAGE
+
+// Obtiene la instancia de Firebase Storage correspondiente
+// a la aplicación de Firebase inicializada en el proyecto.
+const storage = getStorage();
+
+// 3. ACTUALIZAR DATOS DEL PERFIL
+
+// ACTUALIZAR PERFIL: modifica los datos personales de un usuario
+// dentro de la colección "usuarios" de Firestore.
+// Recibe el UID del usuario y un objeto con los cambios que se quieren guardar.
+export async function actualizarPerfilUsuario(uid, cambios) {
+
+  // Comprueba que se haya proporcionado el identificador del usuario.
+  // Si no existe, detiene la función y genera un error.
+  if (!uid) throw new Error("No hay un usuario autenticado.");
+
+  // CAMPOS PERMITIDOS: define qué propiedades pueden modificarse mediante esta función.
+  // Evita que se envíen otros campos, como el rol o el estado de la cuenta.
+  const permitidos = [
+    "nombreUsuario", "nombre", "apellido", "biografia",
+    "ubicacion", "sitioWeb", "fechaNacimiento", "fotoPerfil",
+  ];
+
+  // FILTRAR CAMBIOS: obtiene las propiedades del objeto recibido y conserva
+  // únicamente aquellas cuyo nombre aparece en el arreglo permitidos.
+  const datos = Object.fromEntries(
+    Object.entries(cambios).filter(([campo]) => permitidos.includes(campo))
+  );
+
+  // ACTUALIZACIÓN EN FIRESTORE:
+  // identifica el documento del usuario mediante su UID y actualiza sus datos.
+  await updateDoc(doc(db, "usuarios", uid), {
+
+    // Copia dentro del documento únicamente los campos que pasaron la validación.
+    ...datos,
+
+    // Guarda automáticamente la fecha y hora de la última actualización.
+    // serverTimestamp() utiliza la hora del servidor de Firebase.
+    fechaActualizacion: serverTimestamp(),
+  });
+}
+
+// 4. SUBIR FOTO DE PERFIL
+
+// SUBIR FOTO: permite cargar una imagen del usuario a Firebase Storage.
+// Recibe el UID del usuario y el archivo de imagen seleccionado.
+export async function subirFotoPerfil(uid, archivo) {
+
+  // COMPROBACIÓN DE DATOS: verifica que existan el UID y el archivo.
+  if (!uid || !archivo) throw new Error("Faltan datos para subir la imagen.");
+
+  // VALIDACIÓN DEL TIPO: comprueba que el archivo seleccionado sea una imagen.
+  // archivo.type contiene el tipo MIME del archivo, por ejemplo image/png o image/jpeg.
+  if (!archivo.type.startsWith("image/")) throw new Error("El archivo debe ser una imagen.");
+
+  // VALIDACIÓN DEL TAMAÑO: impide subir imágenes que superen los 5 MB.
+  // 1024 * 1024 representa un megabyte expresado en bytes.
+  if (archivo.size > 5 * 1024 * 1024) throw new Error("La imagen supera los 5 MB.");
+
+  // EXTENSIÓN: obtiene la parte final del nombre del archivo después del punto.
+  // toLowerCase() convierte la extensión a minúsculas.
+  // Si no se encuentra una extensión, utiliza jpg como alternativa.
+  const extension = archivo.name.split(".").pop()?.toLowerCase() || "jpg";
+
+  // REFERENCIA: establece la ubicación donde se almacenará la fotografía.
+  // Cada usuario tiene una carpeta propia identificada mediante su UID.
+  // El nombre del archivo será foto-perfil seguido de su extensión.
+  const referencia = ref(storage, `usuarios/${uid}/foto-perfil.${extension}`);
+
+  // SUBIR IMAGEN: envía el archivo a Firebase Storage.
+  // contentType permite conservar el tipo de imagen correspondiente.
+  await uploadBytes(referencia, archivo, { contentType: archivo.type });
+
+  // URL DE DESCARGA: obtiene la dirección desde la que se puede acceder
+  // a la imagen almacenada y la devuelve como resultado de la función.
+  return getDownloadURL(referencia);
+}

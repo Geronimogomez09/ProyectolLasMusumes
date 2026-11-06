@@ -383,5 +383,501 @@ export default function Perfil() {
       setGuardando(false);
     }
   }
+  // 8. ESTRUCTURA VISUAL GENERAL
 
+  // 8. ESTRUCTURA VISUAL GENERAL
+
+  return (
+    <>
+      {/* HEADER: muestra el encabezado general del sitio. */}
+      <Header />
+
+      {/* CONTENEDOR PRINCIPAL: agrupa todo el contenido de la página de perfil. */}
+      <main className="perfil-page">
+
+        {/* Muestra los elementos decorativos del fondo. */}
+        <Decoracion />
+
+        <div className="perfil-contenedor">
+
+          {/* TARJETA PRINCIPAL: divide el perfil en dos paneles. */}
+          <div className="perfil-card">
+
+            {/* 9. PANEL IZQUIERDO: avatar, nombre, rol y navegación. */}
+            <aside className="perfil-panel-izq">
+
+              {/* AVATAR: muestra la fotografía o las iniciales del usuario. */}
+              <Avatar foto={foto} nombre={nombreMostrar} className="perfil-avatar--grande" />
+
+              {/* Nombre que aparece en la parte superior del panel. */}
+              <h1 className="perfil-nombre">{nombreMostrar}</h1>
+
+              {/* ROL: muestra una etiqueta según los permisos del usuario. */}
+              <span className={`perfil-rol ${esAdmin ? "perfil-rol--admin" : ""}`}>
+                <i className={`bi ${esAdmin ? "bi-shield-check" : "bi-compass"}`} />
+                {esAdmin ? "Administrador" : "Explorador"}
+              </span>
+
+              {/* MENÚ: genera los botones de navegación a partir del arreglo SECCIONES. */}
+              <nav className="perfil-nav" aria-label="Secciones del perfil">
+                {SECCIONES.map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+
+                    // Aplica la clase activo únicamente a la sección seleccionada.
+                    className={seccion === item.id ? "activo" : ""}
+
+                    // Indica mediante un atributo accesible cuál es la sección actual.
+                    aria-current={seccion === item.id ? "page" : undefined}
+
+                    // Ejecuta irA() cuando el usuario selecciona una sección.
+                    onClick={() => irA(item.id)}
+                  >
+                    {/* Ícono correspondiente a la sección. */}
+                    <i className={`bi ${item.icono}`} aria-hidden="true" />
+
+                    {/* Nombre visible de la sección. */}
+                    {item.nombre}
+                  </button>
+                ))}
+              </nav>
+
+              {/* ESTADO DE CUENTA: indica visualmente que la cuenta está activa. */}
+              <p className="perfil-estado">
+                <span className="perfil-punto" /> Cuenta activa
+              </p>
+            </aside>
+
+            {/* 10. PANEL DERECHO: contiene el encabezado y las secciones del perfil. */}
+            <section className="perfil-panel-der">
+
+              {/* CABECERA: identifica el sitio y muestra un mensaje complementario. */}
+              <div className="perfil-cabecera">
+                <span className="perfil-etiqueta">
+                  <i className="bi bi-flower2" /> Wiki-Craft
+                </span>
+
+                <span className="perfil-nota">
+                  <i className="bi bi-sun" /> Tu espacio personal
+                </span>
+              </div>
+
+              {/* TÍTULO: muestra el nombre del apartado seleccionado. */}
+              <div className="perfil-titulo-fila">
+                <h2 className="perfil-titulo">{seccionActual.nombre}</h2>
+
+                {/* El botón de edición aparece solamente en Datos personales
+                    y cuando el formulario todavía está cerrado. */}
+                {seccion === "datos" && !editando && (
+                  <button
+                    type="button"
+                    className="perfil-btn"
+                    onClick={() => setEditando(true)}
+                  >
+                    <i className="bi bi-pencil-fill" /> Editar datos
+                  </button>
+                )}
+              </div>
+
+              {/* MENSAJE DE ÉXITO: aparece cuando se guardan correctamente los cambios. */}
+              {mensaje && (
+                <div className="perfil-alerta perfil-alerta--exito" role="status">
+                  {mensaje}
+                </div>
+              )}
+
+              {/* MENSAJE DE ERROR: aparece cuando ocurre un problema. */}
+              {error && (
+                <div className="perfil-alerta perfil-alerta--error" role="alert">
+                  {error}
+                </div>
+              )}
+
+              {/* CONTENIDO: muestra el apartado seleccionado.
+                  key={seccion} hace que React vuelva a montar este contenedor
+                  al cambiar de sección y reinicie su animación de entrada. */}
+              <div className="perfil-contenido" key={seccion}>
+
+                {/* 11. SECCIÓN RESUMEN */}
+
+                {/* Se muestra únicamente cuando la sección seleccionada es "resumen". */}
+                {seccion === "resumen" && (
+                  <>
+                    {/* ESTADÍSTICAS: muestra publicaciones, elementos guardados y fecha de registro. */}
+                    <div className="perfil-stats">
+
+                      {/* Cantidad de publicaciones realizadas por el usuario. */}
+                      <article>
+                        <i className="bi bi-chat-square-text" />
+                        <div>
+                          <strong>{publicaciones.length}</strong>
+                          <small>Publicaciones</small>
+                        </div>
+                      </article>
+
+                      {/* Cantidad total de elementos guardados. */}
+                      <article>
+                        <i className="bi bi-heart" />
+                        <div>
+                          <strong>{totalGuardado}</strong>
+                          <small>Elementos guardados</small>
+                        </div>
+                      </article>
+
+                      {/* Fecha en la que se registró el usuario. */}
+                      <article>
+                        <i className="bi bi-calendar-heart" />
+                        <div>
+                          <strong>{fechaLegible(perfil.fechaRegistro)}</strong>
+                          <small>Te uniste</small>
+                        </div>
+                      </article>
+                    </div>
+
+                    {/* TARJETAS INFORMATIVAS: organiza la información en dos columnas. */}
+                    <div className="perfil-grid">
+
+                      {/* ACERCA DE MÍ: muestra los datos personales del usuario. */}
+                      <article className="perfil-bloque">
+                        <div className="perfil-bloque-cab">
+                          <h3>Acerca de mí</h3>
+
+                          {/* Abre la sección de datos personales directamente en modo edición. */}
+                          <button type="button" className="perfil-link" onClick={() => irA("datos", true)}>
+                            Editar
+                          </button>
+                        </div>
+
+                        {/* Muestra la biografía o un mensaje alternativo si está vacía. */}
+                        <p className="perfil-texto">
+                          {perfil.biografia ||
+                            "Todavía no escribiste tu biografía. Contale a la comunidad qué te gusta de Minecraft."}
+                        </p>
+
+                        {/* Muestra el nombre completo solamente si hay algún dato disponible. */}
+                        {nombreCompleto && <p className="perfil-dato"><i className="bi bi-person" /> {nombreCompleto}</p>}
+
+                        {/* Correo electrónico obtenido de Firebase Authentication. */}
+                        <p className="perfil-dato"><i className="bi bi-envelope" /> {usuario.email}</p>
+
+                        {/* Muestra la ubicación o un texto alternativo. */}
+                        <p className="perfil-dato">
+                          <i className="bi bi-geo-alt" /> {perfil.ubicacion || "Ubicación sin especificar"}
+                        </p>
+
+                        {/* El sitio web aparece solamente cuando el usuario guardó una dirección. */}
+                        {perfil.sitioWeb && (
+                          <p className="perfil-dato">
+                            <i className="bi bi-link-45deg" />
+
+                            {/* Abre el sitio externo en una nueva pestaña. */}
+                            <a href={perfil.sitioWeb} target="_blank" rel="noreferrer">{perfil.sitioWeb}</a>
+                          </p>
+                        )}
+                      </article>
+
+                      {/* ÚLTIMAS PUBLICACIONES: muestra hasta tres publicaciones recientes. */}
+                      <article className="perfil-bloque">
+                        <div className="perfil-bloque-cab">
+                          <h3>Últimas publicaciones</h3>
+
+                          {/* Cambia a la sección donde aparecen todas las publicaciones. */}
+                          <button type="button" className="perfil-link" onClick={() => irA("publicaciones")}>
+                            Ver todas
+                          </button>
+                        </div>
+
+                        {/* Comprueba si el usuario tiene publicaciones. */}
+                        {publicaciones.length ? (
+
+                          // slice(0, 3) limita la lista a las tres primeras publicaciones.
+                          publicaciones.slice(0, 3).map((pub) => (
+                            <Link to={`/publicacion/${pub.id}`} className="perfil-mini" key={pub.id}>
+                              <strong>{pub.categoria || "Publicación"}</strong>
+                              <span>{pub.contenido || "Sin texto"}</span>
+                            </Link>
+                          ))
+                        ) : (
+
+                          // Mensaje que aparece cuando todavía no hay publicaciones.
+                          <p className="perfil-vacio-chico">Todavía no publicaste nada en la comunidad.</p>
+                        )}
+                      </article>
+                    </div>
+
+                    {/* HERRAMIENTAS DE ADMINISTRADOR:
+                        esta tarjeta solamente aparece si el usuario tiene permisos de administrador. */}
+                    {esAdmin && (
+                      <article className="perfil-bloque perfil-bloque--admin">
+                        <div className="perfil-bloque-cab">
+                          <h3><i className="bi bi-shield-check" /> Herramientas de administrador</h3>
+                        </div>
+
+                        <p className="perfil-texto">
+                          En cada página tenés un botón «Modo administrador» (abajo a la derecha) para
+                          agregar, editar o eliminar contenido.
+                        </p>
+
+                        {/* Accesos directos a distintas páginas del sitio. */}
+                        <div className="perfil-accesos">
+                          <Link to="/">Inicio</Link>
+                          <Link to="/historia">Historia</Link>
+                          <Link to="/versiones">Versiones</Link>
+                          <Link to="/comunidad">Comunidad</Link>
+                          <Link to="/musica/maestro">Maestro de melodías</Link>
+                        </div>
+                      </article>
+                    )}
+                  </>
+                )}
+
+                {/* 12. SECCIÓN PUBLICACIONES */}
+
+                {/* Muestra las publicaciones realizadas por el usuario. */}
+                {seccion === "publicaciones" && (
+                  publicaciones.length ? (
+                    <div className="perfil-lista">
+
+                      {/* Recorre todas las publicaciones y genera una tarjeta para cada una. */}
+                      {publicaciones.map((pub) => (
+                        <article className="perfil-bloque perfil-post" key={pub.id}>
+
+                          {/* PARTE SUPERIOR: muestra la categoría y la fecha de creación. */}
+                          <div className="perfil-post-top">
+                            <span className="perfil-chip">{pub.categoria || "General"}</span>
+                            <small>{fechaLegible(pub.fechaCreacion)}</small>
+                          </div>
+
+                          {/* Muestra el texto de la publicación o un mensaje alternativo. */}
+                          <p className="perfil-texto">{pub.contenido || "Publicación sin texto."}</p>
+
+                          {/* Muestra la imagen únicamente si la publicación contiene una. */}
+                          {pub.imagen && (
+                            <img className="perfil-post-imagen" src={pub.imagen} alt="Imagen de la publicación" />
+                          )}
+
+                          {/* PARTE INFERIOR: muestra las interacciones y el acceso al detalle. */}
+                          <div className="perfil-post-pie">
+                            <span>
+                              <i className="bi bi-heart" /> {pub.likes || 0} · <i className="bi bi-chat" />{" "}
+                              {pub.comentarios?.length || 0}
+                            </span>
+
+                            {/* Abre la página individual de la publicación. */}
+                            <Link to={`/publicacion/${pub.id}`} className="perfil-link">Abrir publicación</Link>
+                          </div>
+                        </article>
+                      ))}
+                    </div>
+                  ) : (
+
+                    // ESTADO VACÍO: aparece cuando el usuario todavía no publicó contenido.
+                    <div className="perfil-vacio">
+                      <i className="bi bi-chat-square-text" />
+                      <h3>Tu aventura empieza acá</h3>
+                      <p>Cuando publiques algo en la comunidad, lo vas a ver en esta sección.</p>
+
+                      {/* Permite ir directamente a la página de comunidad. */}
+                      <Link to="/comunidad" className="perfil-btn">Ir a la comunidad</Link>
+                    </div>
+                  )
+                )}
+
+                {/* 13. SECCIÓN CONTENIDO GUARDADO */}
+
+                {/* Muestra las cantidades de canciones, publicaciones y productos favoritos. */}
+                {seccion === "guardado" && (
+                  <div className="perfil-favoritos">
+
+                    {/* CANCIONES: muestra la cantidad de canciones guardadas. */}
+                    <article className="perfil-bloque">
+                      <i className="bi bi-music-note-beamed" />
+                      <strong>{favoritos.canciones.length}</strong>
+                      <h3>Canciones favoritas</h3>
+                      <p>Temas que guardaste para volver a escuchar.</p>
+                      <Link to="/musica" className="perfil-link">Ir a música</Link>
+                    </article>
+
+                    {/* PUBLICACIONES: muestra los aportes de la comunidad guardados. */}
+                    <article className="perfil-bloque">
+                      <i className="bi bi-bookmark-heart" />
+                      <strong>{favoritos.publicaciones.length}</strong>
+                      <h3>Publicaciones guardadas</h3>
+                      <p>Ideas y aportes de la comunidad.</p>
+                      <Link to="/comunidad" className="perfil-link">Ir a la comunidad</Link>
+                    </article>
+
+                    {/* PRODUCTOS: muestra los artículos favoritos de la tienda. */}
+                    <article className="perfil-bloque">
+                      <i className="bi bi-bag-heart" />
+                      <strong>{favoritos.productos.length}</strong>
+                      <h3>Productos favoritos</h3>
+                      <p>Artículos de la tienda que te interesan.</p>
+                      <Link to="/tienda" className="perfil-link">Ir a la tienda</Link>
+                    </article>
+                  </div>
+                )}
+
+                {/* 14. SECCIÓN DATOS PERSONALES */}
+
+                {/* Muestra el formulario de edición o los datos actuales,
+                    dependiendo del valor del estado editando. */}
+                {seccion === "datos" && (
+                  editando ? (
+
+                    // FORMULARIO: permite modificar los datos personales guardados en Firestore.
+                    <form className="perfil-form" onSubmit={guardarCambios}>
+
+                      {/* FOTO DE PERFIL: muestra una vista previa y permite ingresar su enlace. */}
+                      <div className="perfil-form-foto">
+                        <Avatar foto={formulario.fotoPerfil.trim()} nombre={nombreMostrar} />
+
+                        <label>
+                          Foto de perfil (enlace)
+                          <input
+                            name="fotoPerfil"
+                            value={formulario.fotoPerfil}
+                            onChange={cambiarCampo}
+                            placeholder="https://..."
+                          />
+                          <small>Pegá el enlace de una imagen. Si lo dejás vacío se muestran tus iniciales.</small>
+                        </label>
+                      </div>
+
+                      {/* NOMBRE DE USUARIO: campo obligatorio con una longitud limitada. */}
+                      <label>
+                        Nombre de usuario *
+                        <input
+                          name="nombreUsuario"
+                          value={formulario.nombreUsuario}
+                          onChange={cambiarCampo}
+                          required
+                          minLength={3}
+                          maxLength={24}
+                        />
+                      </label>
+
+                      {/* NOMBRE Y APELLIDO: organiza los dos campos en una misma fila. */}
+                      <div className="perfil-form-fila">
+                        <label>
+                          Nombre
+                          <input name="nombre" value={formulario.nombre} onChange={cambiarCampo} maxLength={50} />
+                        </label>
+                        <label>
+                          Apellido
+                          <input name="apellido" value={formulario.apellido} onChange={cambiarCampo} maxLength={50} />
+                        </label>
+                      </div>
+
+                      {/* BIOGRAFÍA: permite escribir una descripción personal de hasta 300 caracteres. */}
+                      <label>
+                        Biografía
+                        <textarea
+                          name="biografia"
+                          value={formulario.biografia}
+                          onChange={cambiarCampo}
+                          rows={4}
+                          maxLength={300}
+                          placeholder="Contá algo sobre vos..."
+                        />
+
+                        {/* Muestra la cantidad de caracteres utilizados. */}
+                        <small>{formulario.biografia.length}/300</small>
+                      </label>
+
+                      {/* UBICACIÓN Y FECHA DE NACIMIENTO: agrupa dos datos personales. */}
+                      <div className="perfil-form-fila">
+                        <label>
+                          Ubicación
+                          <input
+                            name="ubicacion"
+                            value={formulario.ubicacion}
+                            onChange={cambiarCampo}
+                            maxLength={80}
+                            placeholder="Ciudad, país"
+                          />
+                        </label>
+                        <label>
+                          Fecha de nacimiento
+                          <input
+                            type="date"
+                            name="fechaNacimiento"
+                            value={formulario.fechaNacimiento}
+                            onChange={cambiarCampo}
+                          />
+                        </label>
+                      </div>
+
+                      {/* SITIO WEB: permite guardar una dirección web personal. */}
+                      <label>
+                        Sitio web
+                        <input
+                          type="url"
+                          name="sitioWeb"
+                          value={formulario.sitioWeb}
+                          onChange={cambiarCampo}
+                          placeholder="https://..."
+                        />
+                      </label>
+
+                      {/* CORREO ELECTRÓNICO: muestra el correo de la cuenta sin permitir modificarlo. */}
+                      <label>
+                        Correo electrónico
+                        <input value={usuario.email || ""} disabled />
+                        <small>El correo no se puede cambiar desde acá.</small>
+                      </label>
+
+                      {/* ACCIONES: contiene los botones para cancelar o guardar los cambios. */}
+                      <div className="perfil-acciones">
+
+                        {/* CANCELAR: cierra la edición y vuelve a mostrar los datos personales. */}
+                        <button
+                          type="button"
+                          className="perfil-btn perfil-btn--suave"
+                          onClick={() => irA("datos")}
+                        >
+                          Cancelar
+                        </button>
+
+                        {/* GUARDAR: envía los datos y se deshabilita mientras se procesan. */}
+                        <button type="submit" className="perfil-btn" disabled={guardando}>
+                          {guardando ? "Guardando..." : "Guardar cambios"}
+                        </button>
+                      </div>
+                    </form>
+                  ) : (
+
+                    // VISTA DE DATOS: muestra la información guardada cuando no está abierto el formulario.
+                    <div className="perfil-datos">
+
+                      {/* Recorre los datos del usuario y crea una fila por cada campo. */}
+                      {[
+                        ["Nombre de usuario", perfil.nombreUsuario],
+                        ["Nombre", perfil.nombre],
+                        ["Apellido", perfil.apellido],
+                        ["Correo electrónico", usuario.email],
+                        ["Ubicación", perfil.ubicacion],
+                        ["Fecha de nacimiento", perfil.fechaNacimiento],
+                        ["Sitio web", perfil.sitioWeb],
+                        ["Biografía", perfil.biografia],
+                      ].map(([etiqueta, valor]) => (
+                        <div key={etiqueta}>
+                          <small>{etiqueta}</small>
+                          <strong>{valor || "Sin especificar"}</strong>
+                        </div>
+                      ))}
+                    </div>
+                  )
+                )}
+              </div>
+            </section>
+          </div>
+        </div>
+      </main>
+
+      {/* FOOTER: muestra el pie de página compartido del sitio. */}
+      <Footer />
+    </>
+  );
 }
