@@ -252,4 +252,15 @@ export default function Perfil() {
       // La función devuelta por escucharPorCampo permite detener la escucha anterior.
     }, [usuario?.uid]);
 
+    // FAVORITOS: agrupa las listas de canciones, publicaciones y productos guardados.
+      // useMemo evita volver a crear este objeto mientras perfil no cambie.
+      const favoritos = useMemo(
+        () => ({
+          canciones: perfil?.cancionesFavoritas || [],
+          publicaciones: perfil?.publicacionesGuardadas || [],
+          productos: perfil?.productosFavoritos || [],
+        }),
+        [perfil]
+      );
+    
 }
