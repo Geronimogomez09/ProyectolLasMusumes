@@ -151,3 +151,173 @@ function DecoracionAcceso() {
     </div>
   );
 }
+
+
+// COMPONENTE PRINCIPAL: contiene los formularios de inicio de sesión y registro.
+export default function Login() {
+
+  // Obtiene la función para redirigir al usuario a otra página.
+  const navigate = useNavigate();
+
+  // Obtiene la dirección actual para determinar qué formulario mostrar inicialmente.
+  const { pathname } = useLocation();
+
+  // VISTA: indica si se debe mostrar el formulario de inicio de sesión o el de registro.
+  // Si la URL es /registro, comienza mostrando el registro. En caso contrario, muestra el login.
+  const [vista, setVista] = useState(
+    pathname === "/registro" ? "registro" : "login"
+  );
+
+  // ERROR: almacena los mensajes de validación o los errores devueltos por Firebase.
+  const [error, setError] = useState("");
+
+  // CARGANDO: indica si se está realizando una operación de autenticación.
+  // Se utiliza para deshabilitar el botón y mostrar un indicador de carga.
+  const [cargando, setCargando] = useState(false);
+
+  // MOSTRAR PASSWORD: controla si la contraseña del formulario debe mostrarse
+  // como texto normal o permanecer oculta.
+  const [mostrarPassword, setMostrarPassword] = useState(false);
+
+  // MOSTRAR CONFIRM PASSWORD: controla la visibilidad del campo de confirmación
+  // de contraseña durante el registro.
+  const [mostrarConfirmPassword, setMostrarConfirmPassword] = useState(false);
+
+  // FUNCIÓN DE INICIO DE SESIÓN:
+  // obtiene los datos del formulario, los valida y consulta Firebase Authentication.
+  const entrar = async (e) => {
+
+    // Evita que el formulario se envíe de la manera tradicional y recargue la página.
+    e.preventDefault();
+
+    // Limpia cualquier mensaje de error anterior.
+    setError("");
+
+    // FormData permite obtener los valores de los campos del formulario mediante su atributo name.
+    const formData = new FormData(e.currentTarget);
+
+    // Recupera el correo y elimina los espacios al principio y al final.
+    const email = formData.get("loginEmail")?.trim();
+
+    // Recupera la contraseña ingresada.
+    const password = formData.get("loginPassword");
+
+    // Comprueba que ambos campos tengan contenido.
+    if (!email || !password) {
+      setError("Completá todos los campos.");
+      return;
+    }
+
+    // Activa el estado de carga antes de comunicarse con Firebase.
+    setCargando(true);
+
+    try {
+      // Comprueba las credenciales mediante Firebase Authentication.
+      await signInWithEmailAndPassword(auth, email, password);
+
+      // Si el inicio de sesión es correcto, redirige al usuario a la página principal.
+      navigate("/");
+
+    } catch (err) {
+
+      // Si ocurre un error, lo convierte en un mensaje comprensible.
+      setError(traducirErrorFirebase(err.code));
+
+    } finally {
+
+      // Desactiva el estado de carga tanto si la operación fue exitosa como si falló.
+      setCargando(false);
+    }
+  };
+
+  // FUNCIÓN DE REGISTRO:
+  // obtiene los datos del formulario, realiza las validaciones y crea una cuenta en Firebase.
+  const registrarse = async (e) => {
+
+    // Evita el envío tradicional del formulario.
+    e.preventDefault();
+
+    // Limpia los errores anteriores.
+    setError("");
+
+    // Recupera los valores de los diferentes campos mediante FormData.
+    const formData = new FormData(e.currentTarget);
+
+    // Obtiene el nombre y el correo electrónico y elimina los espacios sobrantes.
+    const nombre = formData.get("regNombre")?.trim();
+    const email = formData.get("regEmail")?.trim();
+
+    // Recupera las dos contraseñas para comprobar que coincidan.
+    const password = formData.get("regPassword");
+    const confirmPassword = formData.get("regConfirmPassword");
+
+    // Comprueba si el usuario aceptó los términos y condiciones.
+    const aceptaTerminos = formData.get("regTerminos");
+
+    // Verifica que los campos obligatorios tengan contenido.
+    if (!email || !password || !confirmPassword || !nombre) {
+      setError("Completá todos los campos obligatorios.");
+      return;
+    }
+
+    // Comprueba que la contraseña y su confirmación sean iguales.
+    if (password !== confirmPassword) {
+      setError("Las contraseñas no coinciden.");
+      return;
+    }
+
+    // Impide continuar si el usuario no aceptó los términos.
+    if (!aceptaTerminos) {
+      setError("Debés aceptar los términos y condiciones.");
+      return;
+    }
+
+    // Activa el indicador de carga mientras se crea la cuenta.
+    setCargando(true);
+
+    try {
+
+      // Crea una cuenta nueva utilizando el correo y la contraseña.
+      // Firebase devuelve las credenciales del usuario creado.
+      const credenciales = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+
+      // Actualiza el perfil del usuario para guardar su nombre como displayName.
+      await updateProfile(credenciales.user, {
+        displayName: nombre,
+      });
+
+      // Redirige a la página principal cuando termina el registro.
+      navigate("/");
+
+    } catch (err) {
+
+      // Traduce los posibles errores de Firebase.
+      setError(traducirErrorFirebase(err.code));
+
+    } finally {
+
+      // Finaliza el estado de carga, independientemente del resultado.
+      setCargando(false);
+    }
+  };
+
+  // FUNCIÓN PARA CAMBIAR DE FORMULARIO:
+  // permite pasar del login al registro y viceversa.
+  const cambiarVista = (nuevaVista) => {
+
+    // Limpia los mensajes de error al cambiar de formulario.
+    setError("");
+
+    // Oculta los campos de contraseña al cambiar de vista.
+    setMostrarPassword(false);
+    setMostrarConfirmPassword(false);
+
+    // Actualiza la vista que debe mostrarse.
+    setVista(nuevaVista);
+  };
+  
+}
