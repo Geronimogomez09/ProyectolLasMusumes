@@ -24,3 +24,36 @@ import {
 
 // Importa los estilos específicos de la página de perfil.
 import "../styles/perfil.css";
+
+
+// 2. Contsantes 
+
+// SECCIONES: define las opciones que aparecen en el menú lateral.
+// Cada objeto contiene un identificador, un nombre visible y la clase del ícono.
+const SECCIONES = [
+  { id: "resumen", nombre: "Resumen", icono: "bi-grid" },
+  { id: "publicaciones", nombre: "Mis publicaciones", icono: "bi-chat-square-text" },
+  { id: "guardado", nombre: "Contenido guardado", icono: "bi-heart" },
+  { id: "datos", nombre: "Datos personales", icono: "bi-person-gear" },
+];
+
+// ICONOS: carga automáticamente las imágenes PNG que se encuentran
+// dentro de la carpeta src/assets/iconos.
+// import.meta.glob permite localizar archivos según el patrón indicado.
+// eager hace que se carguen inmediatamente e import: "default" obtiene sus URLs.
+const ICONOS = Object.fromEntries(
+  Object.entries(
+    import.meta.glob("../assets/iconos/*.png", { eager: true, import: "default" })
+  ).map(([ruta, url]) => [ruta.split("/").pop(), url])
+);
+
+// DECORACIÓN: relaciona el nombre de cada imagen con la clase CSS
+// que determina su posición y apariencia en el fondo.
+const DECORACION = [
+  ["grass_block.png", "perfil-deco--1"],
+  ["dirt.png", "perfil-deco--2"],
+  ["diamond.png", "perfil-deco--3"],
+  ["sunflower.png", "perfil-deco--4"],
+  ["pink_petals.png", "perfil-deco--5"],
+  ["wildflowers.png", "perfil-deco--6"],
+];
