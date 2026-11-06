@@ -129,3 +129,23 @@
   background: #e6d3ad;
   color: var(--acc-text);
 }
+
+/* DECORACIÓN GENERAL */
+
+/* CONTENEDOR DECORATIVO: ocupa toda la página y contiene los elementos del fondo.
+   pointer-events: none evita que interfiera con los clics del usuario. */
+.acceso-decoracion {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* CONTENEDOR PRINCIPAL: coloca el contenido por encima de los elementos decorativos. */
+.acceso-contenedor {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+}
