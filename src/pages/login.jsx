@@ -517,7 +517,6 @@ export default function Login() {
                       onClick={() => cambiarVista("registro")}
                     >
                       Registrarse
-                      <i className="bi bi-arrow-right ms-1" />
                     </button>
                   </div>
                 </div>
@@ -643,7 +642,7 @@ export default function Login() {
 
                       {/* Permite alternar la visibilidad de la contraseña. */}
                       <button
-                        className="btn btn-outline-secondary"
+                        className="btn btn-outline-secondary btn-password"
                         type="button"
                         aria-label={
                           mostrarPassword
@@ -654,11 +653,8 @@ export default function Login() {
                           setMostrarPassword(!mostrarPassword)
                         }
                       >
-                        <i
-                          className={`bi ${
-                            mostrarPassword ? "bi-eye" : "bi-eye-slash"
-                          }`}
-                        />
+                        { mostrarPassword ? <ImagenAcceso nombre="ender_eye.png" className="img-password" /> 
+                        : <ImagenAcceso nombre="ender_pearl.png"  className="img-password" /> }
                       </button>
                     </div>
                   </div>
@@ -691,7 +687,7 @@ export default function Login() {
 
                       {/* Permite mostrar u ocultar el campo de confirmación. */}
                       <button
-                        className="btn btn-outline-secondary"
+                        className="btn btn-outline-secondary btn-password"
                         type="button"
                         aria-label={
                           mostrarConfirmPassword
@@ -704,13 +700,8 @@ export default function Login() {
                           )
                         }
                       >
-                        <i
-                          className={`bi ${
-                            mostrarConfirmPassword
-                              ? "bi-eye"
-                              : "bi-eye-slash"
-                          }`}
-                        />
+                        { mostrarConfirmPassword ? <ImagenAcceso nombre="ender_eye.png" className="img-password" /> 
+                        : <ImagenAcceso nombre="ender_pearl.png"  className="img-password" /> }
                       </button>
                     </div>
                   </div>

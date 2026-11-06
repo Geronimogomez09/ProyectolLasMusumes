@@ -471,3 +471,117 @@
     transform: translateX(-1px) !important;
     transition: 0.3s all ease-in-out!important;
 }
+
+
+/* BOTONES Y ACCIONES */
+
+/* CONTENEDOR DE ACCIONES: organiza el botón principal y el botón para cambiar de formulario.
+   Utiliza dos columnas y mantiene ambos elementos alineados. */
+.acceso-acciones {
+  display: grid;
+
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+
+  align-items: center;
+
+  gap: 16px;
+  padding-top: 8px;
+}
+
+/* ESTILO COMPARTIDO: establece las dimensiones, alineación y forma de ambos botones.
+   La misma altura evita que se vean desalineados. */
+.acceso-btn-submit,
+.acceso-btn-cambio {
+  display: inline-flex !important;
+
+  align-items: center;
+  justify-content: center;
+
+  box-sizing: border-box;
+
+  min-height: 30px !important;
+  height: 30px !important;
+
+  padding: 10px 19px !important;
+
+  border-radius: 999px !important;
+
+  font-size: 0.86rem !important;
+  font-weight: 750 !important;
+  line-height: 1.15;
+
+  white-space: nowrap;
+}
+
+/* BOTÓN PRINCIPAL: define el aspecto del botón de inicio de sesión o registro. */
+.acceso-page .btn-primary {
+  border: 1px solid #5f8e31 !important;
+
+  /* Degradado verde para destacar la acción principal. */
+  background: linear-gradient(
+    135deg,
+    #78a83a,
+    #477d2d
+  ) !important;
+
+  color: #fffdf6 !important;
+  letter-spacing: 0.1rem  !important;
+  font-family: "MinecraftSeven", "Segoe UI", sans-serif;
+  /* Sombra exterior y un pequeño brillo interior. */
+  box-shadow:
+    0 8px 18px -10px rgba(72, 119, 43, 0.72),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+
+  transition:
+    background var(--acc-duration-fast) var(--acc-ease),
+    border-color var(--acc-duration-fast) var(--acc-ease),
+    box-shadow var(--acc-duration) var(--acc-ease-soft),
+    transform var(--acc-duration) var(--acc-ease-soft);
+}
+
+/* HOVER DEL BOTÓN PRINCIPAL: oscurece ligeramente el degradado y eleva el botón. */
+.acceso-page .btn-primary:hover:not(:disabled) {
+  border-color: #3c7028 !important;
+
+  background: linear-gradient(
+    135deg,
+    #679631,
+    #3e7029
+  ) !important;
+
+  box-shadow: 0 13px 24px -10px rgba(66, 112, 39, 0.55);
+
+  transform: translateY(-2px);
+}
+
+/* ACTIVE DEL BOTÓN PRINCIPAL: simula una pequeña presión al hacer clic. */
+.acceso-page .btn-primary:active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
+  transition-duration: 120ms;
+}
+
+/* BOTÓN DESHABILITADO: muestra un aspecto más apagado mientras se procesa una solicitud. */
+.acceso-page .btn-primary:disabled {
+  border-color: rgba(120, 134, 79, 0.40) !important;
+
+  background: #aab98a !important;
+
+  box-shadow: none;
+  opacity: 0.78;
+}
+
+.acceso-btn-cambio{
+    background-color: var(--acc-paper-strong) !important;
+    color: var(--acc-wood-dark) !important;
+    border: 1px solid rgba(128, 96, 68, 0.527) !important;
+    
+    transition: 0.3s all ease-in-out!important;
+}
+
+.acceso-btn-cambio:hover{
+    background-color: var(--acc-paper) !important;
+    color: var(--acc-brand) !important;
+    border: 1px solid rgba(128, 96, 68, 0.527) !important;
+    transition: 0.3s all ease-in-out!important;
+    transform: translateY(-1px)!important;
+}
