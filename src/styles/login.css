@@ -388,3 +388,63 @@
   height: auto;
   margin:0;
 }
+
+
+/* ENCABEZADO DEL FORMULARIO */
+
+/* CABECERA: distribuye la marca del sitio y el mensaje de bienvenida en una misma fila. */
+.acceso-form-cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: "MinecraftSeven", "Segoe UI", sans-serif;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+/* ETIQUETAS DE CABECERA: alinea los íconos con sus textos. */
+.acceso-form-etiqueta,
+.acceso-form-nota {
+  display: inline-flex;
+  align-items: center;
+
+  gap: 7px;
+
+  color: #85745d;
+
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+/* NOMBRE DEL SITIO: destaca la marca Wiki-Craft con un color verde. */
+.acceso-form-etiqueta {
+  color: var(--acc-moss-dark);
+  letter-spacing: 0.035em;
+  font-family: "MinecraftSeven", "Segoe UI", sans-serif;
+  margin-bottom: 0;
+}
+
+.img-wiki {
+  width: 20px;
+  height: auto;
+  margin:0;
+}
+
+/* TEXTO SECUNDARIO: sobrescribe el color de los elementos muted de Bootstrap
+   dentro de esta página. */
+.acceso-page .text-muted {
+  color: var(--acc-muted) !important;
+}
+
+/* LABELS E INPUTS */
+
+/* ETIQUETAS DE FORMULARIO: define el aspecto de los nombres de cada campo. */
+.acceso-page .form-label {
+  margin-bottom: 7px;
+
+  color: #57402b;
+
+  font-family: "MinecraftSeven", "Segoe UI", sans-serif;
+  font-size: 0.82rem;
+  letter-spacing: 0.01em;
+}

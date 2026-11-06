@@ -377,7 +377,7 @@ export default function Login() {
             {/* ENCABEZADO: muestra la marca del sitio y un mensaje de bienvenida. */}
             <div className="acceso-form-cabecera">
               <span className="acceso-form-etiqueta">
-                <i className="bi bi-flower2" />
+                <ImagenAcceso nombre="glint.png" className="img-wiki" />
                 WIKI-CRAFT
               </span>
 
