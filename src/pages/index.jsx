@@ -4,6 +4,7 @@ import Header from "../components/header.jsx";
 import Footer from "../components/Footer.jsx";
 import BotonAdmin from "../components/botonAdmin";
 import { useAuth } from "../context/AuthContext";
+import { tienePermiso } from "../utils/permisos";
 import "../styles/index.css";
 
 /* ============================================================================
@@ -723,36 +724,37 @@ function ModalAdmin({ modal, onGuardar, onEliminar, onCerrar }) {
    ============================================================================ */
 
 export default function Inicio() {
-    const { usuario, esAdmin } = useAuth();
+    const { usuario, perfil } = useAuth();
+    const puedeAdministrar = tienePermiso(perfil, "inicio");
 
     // Estado del modo de edición: solo los administradores pueden activarlo.
     const [modoAdminAbierto, setModoAdmin] = useState(false);
 
-    const rol = esAdmin && modoAdminAbierto
+    const rol = puedeAdministrar && modoAdminAbierto
         ? ROLES.ADMIN
         : usuario
             ? ROLES.USUARIO
             : ROLES.VISITANTE;
 
     const puede = useCallback(
-        (accion) => esAdmin && modoAdminAbierto && puedeHacer(rol, accion),
-        [rol, esAdmin, modoAdminAbierto]
+        (accion) => puedeAdministrar && modoAdminAbierto && puedeHacer(rol, accion),
+        [rol, puedeAdministrar, modoAdminAbierto]
     );
 
-    const editando = esAdmin && modoAdminAbierto;
+    const editando = puedeAdministrar && modoAdminAbierto;
 
     const [contenido, setContenido] = useState(CONTENIDO_INICIAL);
     const [modal, setModal] = useState(null);
 
     const cerrarModal = useCallback(() => setModal(null), []);
 
-    // Si el usuario deja de ser administrador, se cierra la edición.
+    // Si el usuario pierde el permiso de administrar Inicio, se cierra la edición.
     useEffect(() => {
-        if (!esAdmin) {
+        if (!puedeAdministrar) {
             setModoAdmin(false);
             setModal(null);
         }
-    }, [esAdmin]);
+    }, [puedeAdministrar]);
 
     const abrirNuevo = (tipo) => {
         if (!puede("crear")) return;
@@ -1157,8 +1159,9 @@ export default function Inicio() {
                 </div>
 
                 {/* ---------- Panel de administración ---------- */}
-                {esAdmin && (
+                {puedeAdministrar && (
                     <BotonAdmin
+                        permiso="inicio"
                         activo={editando}
                         alAlternar={() => {
                             setModoAdmin((actual) => !actual);

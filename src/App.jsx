@@ -76,7 +76,7 @@ function AppRoutes() {
                 <Route path="/musica/playlist/:id" element={<RutaProtegida><Playlist /></RutaProtegida>} />
                 <Route path="/musica/album/:id" element={<RutaProtegida><Album /></RutaProtegida>} />
                 <Route path="/musica/compositor/:id" element={<RutaProtegida><Compositor /></RutaProtegida>} />
-                <Route path="/musica/maestro" element={<RutaProtegida soloAdmin><MaestroMelodias /></RutaProtegida>}/>
+                <Route path="/musica/maestro" element={<RutaProtegida permiso="musica"><MaestroMelodias /></RutaProtegida>}/>
                 <Route path="/nosotros" element={<RutaProtegida><Nosotros /></RutaProtegida>} />
             </Routes>
 
