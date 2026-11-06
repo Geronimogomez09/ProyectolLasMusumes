@@ -345,7 +345,7 @@ export default function Login() {
             {/* El título y la descripción cambian según el formulario seleccionado. */}
             <h2 className="fw-bold">
               {vista === "login"
-                ? "¡Qué bueno verte!"
+                ? "¡Que bueno verte!"
                 : "Creá tu aventura"}
             </h2>
 
@@ -358,15 +358,15 @@ export default function Login() {
             {/* PUNTOS DESTACADOS: muestra algunas de las actividades que ofrece el sitio. */}
             <div className="acceso-panel-puntos" aria-hidden="true">
               <span>
-                <i className="bi bi-compass" /> Explorar
+                <ImagenAcceso nombre="cartography_table.png" className="img-span" />Explorar
               </span>
 
               <span>
-                <i className="bi bi-tree" /> Crear
+                <ImagenAcceso nombre="knowledge_book.png" className="img-span" /> Crear
               </span>
 
               <span>
-                <i className="bi bi-stars" /> Compartir
+                <ImagenAcceso nombre="AllayPixel.png" className="img-span" /> Compartir
               </span>
             </div>
           </div>
