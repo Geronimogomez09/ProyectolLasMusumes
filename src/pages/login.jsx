@@ -103,15 +103,15 @@ function DecoracionAcceso() {
 
       {/* BLOQUES: agrega imágenes de bloques de diferentes materiales. */}
       <span className="acceso-recurso acceso-recurso--bloque acceso-recurso--bloque-uno">
-        <ImagenAcceso nombre="grass_block.png" className="acceso-recurso-imagen" />
+        <ImagenAcceso nombre="wildflowers.png" className="acceso-recurso-imagen" />
       </span>
 
       <span className="acceso-recurso acceso-recurso--bloque acceso-recurso--bloque-dos">
-        <ImagenAcceso nombre="dirt.png" className="acceso-recurso-imagen" />
+        <ImagenAcceso nombre="BeePixel.png" className="acceso-recurso-imagen" />
       </span>
 
       <span className="acceso-recurso acceso-recurso--bloque acceso-recurso--bloque-tres">
-        <ImagenAcceso nombre="stone.png" className="acceso-recurso-imagen" />
+        <ImagenAcceso nombre="MoobloomPixel.png" className="acceso-recurso-imagen" />
       </span>
 
       {/* FLORES Y VEGETACIÓN: agrega elementos naturales para complementar el fondo. */}
@@ -137,7 +137,7 @@ function DecoracionAcceso() {
       </span>
 
       <span className="acceso-animal acceso-animal--rana">
-        <ImagenAcceso nombre="FrogPixel.png" className="acceso-animal-img" />
+        <ImagenAcceso nombre="BeePixel.png" className="acceso-animal-img" />
       </span>
 
       <span className="acceso-animal acceso-animal--moobloom">
