@@ -262,5 +262,18 @@ export default function Perfil() {
         }),
         [perfil]
       );
-    
+// ESTADO DE CARGA: mientras se obtienen los datos o todavía no existe el perfil,
+  // muestra un indicador de espera en lugar de presentar información incompleta.
+  if (cargando || !perfil) {
+    return (
+      <>
+        <Header />
+
+        <main className="perfil-page perfil-page--cargando">
+          <span className="spinner-border" role="status" />
+          <p>Cargando tu perfil...</p>
+        </main>
+      </>
+    );
+  }
 }
