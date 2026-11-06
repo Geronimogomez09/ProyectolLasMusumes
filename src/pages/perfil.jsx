@@ -212,6 +212,44 @@ export default function Perfil() {
         fotoPerfil: perfil.fotoPerfil || "",
       });
     }, [perfil]);
+  // ESCUCHAR PUBLICACIONES: obtiene las publicaciones del usuario
+    // y mantiene la lista actualizada mediante un listener de Firestore.
+    useEffect(() => {
   
+      // Comprueba que exista un usuario autenticado y que tenga un UID.
+      // Si no existe, no inicia la consulta.
+      if (!usuario?.uid) return undefined;
+  
+      // escucharPorCampo consulta una colección y escucha los documentos
+      // que coincidan con el campo y el valor indicados.
+      return escucharPorCampo(
+        COLECCIONES.publicaciones,
+  
+        // Campo que identifica al autor de cada publicación.
+        "autorId",
+  
+        // UID del usuario actual: permite obtener solamente sus publicaciones.
+        usuario.uid,
+  
+        // Función que recibe los documentos encontrados.
+        (items) =>
+  
+          // Actualiza el estado publicaciones con una copia de los resultados.
+          // sort ordena los elementos desde el más reciente hasta el más antiguo.
+          setPublicaciones(
+            [...items].sort(
+              (a, b) =>
+                (b.fechaCreacion?.toMillis?.() || 0) -
+                (a.fechaCreacion?.toMillis?.() || 0)
+            )
+          ),
+  
+        // Si ocurre un error durante la consulta, lo muestra en la consola.
+        (err) => console.error("No se pudieron cargar las publicaciones:", err)
+      );
+  
+      // El efecto vuelve a ejecutarse cuando cambia el UID del usuario.
+      // La función devuelta por escucharPorCampo permite detener la escucha anterior.
+    }, [usuario?.uid]);
 
 }
