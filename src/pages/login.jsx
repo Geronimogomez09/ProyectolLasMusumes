@@ -1,324 +1,878 @@
+// Importa React y el hook useState para administrar los estados del componente.
+import React, { useState } from "react";
 
-import { useState } from "react";
+// useLocation permite consultar la URL actual y useNavigate permite cambiar de página.
 import { useLocation, useNavigate } from "react-router-dom";
+
+// Funciones de Firebase Authentication para iniciar sesión, crear cuentas
+// y actualizar los datos del perfil de un usuario.
 import {
-    signInWithEmailAndPassword,
-    createUserWithEmailAndPassword,
-    updateProfile
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  updateProfile,
 } from "firebase/auth";
+
+// Importa la instancia de autenticación configurada en el proyecto.
 import { auth } from "../services/firebase";
-import { crearPerfilUsuario } from "../services/firestore";
+
+// Importa los estilos específicos de la página de acceso y registro.
 import "../styles/login.css";
 
-const PAISES = ["Argentina", "México", "Colombia", "España", "Chile", "Otro"];
+// Lista de países disponibles en el formulario de registro.
+// Se utiliza posteriormente para generar las opciones del selector.
+const PAISES = ["Argentina", "Chile", "Colombia", "España", "México", "Uruguay", "Otro"];
 
-// Traducción de errores de Firebase.
+// Convierte los códigos de error de Firebase en mensajes comprensibles para el usuario.
+// Recibe el código de error y devuelve el mensaje correspondiente.
 function traducirErrorFirebase(code) {
-    switch (code) {
-        case "auth/email-already-in-use":
-            return "Ese email ya está registrado.";
-        case "auth/invalid-email":
-            return "El email no es válido.";
-        case "auth/weak-password":
-            return "La contraseña debe tener al menos 6 caracteres.";
-        case "auth/invalid-credential":
-        case "auth/wrong-password":
-        case "auth/user-not-found":
-            return "Email o contraseña incorrectos.";
-        case "auth/too-many-requests":
-            return "Demasiados intentos. Probá de nuevo en unos minutos.";
-        default:
-            return "Ocurrió un error. Intentá nuevamente.";
-    }
+  switch (code) {
+    case "auth/email-already-in-use":
+      return "Ese email ya está registrado.";
+
+    case "auth/invalid-email":
+      return "El email no es válido.";
+
+    case "auth/weak-password":
+      return "La contraseña debe tener al menos 6 caracteres.";
+
+    // Estos códigos representan problemas con las credenciales ingresadas.
+    case "auth/invalid-credential":
+    case "auth/wrong-password":
+    case "auth/user-not-found":
+      return "Email o contraseña incorrectos.";
+
+    case "auth/too-many-requests":
+      return "Demasiados intentos. Probá de nuevo en unos minutos.";
+
+    // Mensaje general para errores que no se contemplaron anteriormente.
+    default:
+      return "Ocurrió un error. Intentá nuevamente.";
+  }
 }
 
+// Carga automáticamente los archivos de imagen que se encuentran dentro de src/assets.
+// También busca imágenes ubicadas en subcarpetas, como assets/iconos.
+// import.meta.glob es una función de Vite que permite localizar archivos según un patrón.
+const RECURSOS_ACCESO = Object.entries(
+  import.meta.glob("../assets/**/*.{png,jpg,jpeg,webp,gif,avif,svg}", {
+    eager: true,
+    import: "default",
+  })
+).reduce((recursos, [ruta, url]) => {
+  // Elimina la parte inicial de la ruta para conservar únicamente la ubicación dentro de assets.
+  const relativa = ruta.replace("../assets/", "");
+
+  // Obtiene el nombre del archivo sin incluir las carpetas anteriores.
+  const nombre = relativa.split("/").pop();
+
+  // Guarda cada imagen utilizando tanto su ruta relativa como su nombre.
+  // Esto permite buscarla de cualquiera de las dos formas.
+  recursos[relativa] = url;
+  recursos[nombre] = url;
+
+  return recursos;
+}, {});
+
+// COMPONENTE DE IMAGEN: busca una imagen dentro de los recursos cargados anteriormente.
+// Recibe el nombre del archivo y la clase CSS que debe utilizar.
+function ImagenAcceso({ nombre, className }) {
+  // Primero busca la imagen por su nombre y después intenta encontrarla
+  // dentro de la carpeta iconos.
+  const src = RECURSOS_ACCESO[nombre] ?? RECURSOS_ACCESO[`iconos/${nombre}`];
+
+  // Si no encuentra el archivo, no muestra ningún elemento.
+  if (!src) return null;
+
+  // Muestra la imagen encontrada con los estilos recibidos.
+  return (
+    <img
+      src={src}
+      className={className}
+      alt=""
+      aria-hidden="true"
+      draggable="false"
+    />
+  );
+}
+
+// COMPONENTE DECORATIVO: agrupa los bloques, flores, animales y partículas
+// que forman parte de la ambientación inspirada en los biomas de Minecraft.
+function DecoracionAcceso() {
+  return (
+    <div className="acceso-decoracion" aria-hidden="true">
+
+      {/* BLOQUES: agrega imágenes de bloques de diferentes materiales. */}
+      <span className="acceso-recurso acceso-recurso--bloque acceso-recurso--bloque-uno">
+        <ImagenAcceso nombre="wildflowers.png" className="acceso-recurso-imagen" />
+      </span>
+
+      <span className="acceso-recurso acceso-recurso--bloque acceso-recurso--bloque-dos">
+        <ImagenAcceso nombre="BeePixel.png" className="acceso-recurso-imagen" />
+      </span>
+
+      <span className="acceso-recurso acceso-recurso--bloque acceso-recurso--bloque-tres">
+        <ImagenAcceso nombre="MoobloomPixel.png" className="acceso-recurso-imagen" />
+      </span>
+
+      {/* FLORES Y VEGETACIÓN: agrega elementos naturales para complementar el fondo. */}
+      <span className="acceso-recurso acceso-flor acceso-flor--uno">
+        <ImagenAcceso nombre="wildflowers.png" className="acceso-recurso-imagen" />
+      </span>
+
+      <span className="acceso-recurso acceso-flor acceso-flor--dos">
+        <ImagenAcceso nombre="pink_petals.png" className="acceso-recurso-imagen" />
+      </span>
+
+      <span className="acceso-recurso acceso-flor acceso-flor--tres">
+        <ImagenAcceso nombre="sunflower.png" className="acceso-recurso-imagen" />
+      </span>
+
+      {/* ANIMALES: incorpora personajes decorativos del mundo de Minecraft. */}
+      <span className="acceso-animal acceso-animal--zorro">
+        <ImagenAcceso nombre="FoxPixel.png" className="acceso-animal-img" />
+      </span>
+
+      <span className="acceso-animal acceso-animal--abeja">
+        <ImagenAcceso nombre="BeePixel.png" className="acceso-animal-img" />
+      </span>
+
+      <span className="acceso-animal acceso-animal--rana">
+        <ImagenAcceso nombre="BeePixel.png" className="acceso-animal-img" />
+      </span>
+
+      <span className="acceso-animal acceso-animal--moobloom">
+        <ImagenAcceso nombre="MoobloomPixel.png" className="acceso-animal-img" />
+      </span>
+
+      {/* PARTÍCULAS: pequeños elementos de luz que complementan la decoración. */}
+      <span className="acceso-particula acceso-particula--uno" />
+      <span className="acceso-particula acceso-particula--dos" />
+      <span className="acceso-particula acceso-particula--tres" />
+    </div>
+  );
+}
+
+
+// COMPONENTE PRINCIPAL: contiene los formularios de inicio de sesión y registro.
 export default function Login() {
-    const navigate = useNavigate();
-    const { pathname } = useLocation();
 
-    const [vista, setVista] = useState(
-        pathname === "/registro" ? "registro" : "login"
-    );
+  // Obtiene la función para redirigir al usuario a otra página.
+  const navigate = useNavigate();
 
-    const [error, setError] = useState("");
-    const [cargando, setCargando] = useState(false);
+  // Obtiene la dirección actual para determinar qué formulario mostrar inicialmente.
+  const { pathname } = useLocation();
 
-    // Iniciar sesión con Firebase.
-    const entrar = async (evento) => {
-        evento.preventDefault();
-        setError("");
+  // VISTA: indica si se debe mostrar el formulario de inicio de sesión o el de registro.
+  // Si la URL es /registro, comienza mostrando el registro. En caso contrario, muestra el login.
+  const [vista, setVista] = useState(
+    pathname === "/registro" ? "registro" : "login"
+  );
 
-        const formulario = evento.currentTarget;
-        const email = formulario.querySelector("#loginEmail").value.trim();
-        const password = formulario.querySelector("#loginPassword").value;
+  // ERROR: almacena los mensajes de validación o los errores devueltos por Firebase.
+  const [error, setError] = useState("");
 
-        if (!email || !password) {
-            setError("Completá todos los campos.");
-            return;
-        }
+  // CARGANDO: indica si se está realizando una operación de autenticación.
+  // Se utiliza para deshabilitar el botón y mostrar un indicador de carga.
+  const [cargando, setCargando] = useState(false);
 
-        setCargando(true);
+  // MOSTRAR PASSWORD: controla si la contraseña del formulario debe mostrarse
+  // como texto normal o permanecer oculta.
+  const [mostrarPassword, setMostrarPassword] = useState(false);
 
-        try {
-            await signInWithEmailAndPassword(auth, email, password);
-            navigate("/");
-        } catch (err) {
-            setError(traducirErrorFirebase(err.code));
-        } finally {
-            setCargando(false);
-        }
-    };
+  // MOSTRAR CONFIRM PASSWORD: controla la visibilidad del campo de confirmación
+  // de contraseña durante el registro.
+  const [mostrarConfirmPassword, setMostrarConfirmPassword] = useState(false);
 
-    // Crear una cuenta normal con Firebase.
-    const registrarse = async (evento) => {
-        evento.preventDefault();
-        setError("");
+  // FUNCIÓN DE INICIO DE SESIÓN:
+  // obtiene los datos del formulario, los valida y consulta Firebase Authentication.
+  const entrar = async (e) => {
 
-        const formulario = evento.currentTarget;
+    // Evita que el formulario se envíe de la manera tradicional y recargue la página.
+    e.preventDefault();
 
-        const nombre = formulario.querySelector("#regName").value.trim();
-        const email = formulario.querySelector("#regEmail").value.trim();
-        const password = formulario.querySelector("#regPassword").value;
-        const pais = formulario.querySelector("#regLocation").value;
-        const fechaNacimiento =
-            formulario.querySelector("#regBirthDate").value;
+    // Limpia cualquier mensaje de error anterior.
+    setError("");
 
-        if (!nombre || !email || !password || !pais || !fechaNacimiento) {
-            setError("Completá todos los campos.");
-            return;
-        }
+    // FormData permite obtener los valores de los campos del formulario mediante su atributo name.
+    const formData = new FormData(e.currentTarget);
 
-        setCargando(true);
+    // Recupera el correo y elimina los espacios al principio y al final.
+    const email = formData.get("loginEmail")?.trim();
 
-        try {
-            const credenciales = await createUserWithEmailAndPassword(
-                auth,
-                email,
-                password
-            );
+    // Recupera la contraseña ingresada.
+    const password = formData.get("loginPassword");
 
-            // Guardar el nombre como nombre de perfil de Firebase.
-            await updateProfile(credenciales.user, {
-                displayName: nombre
-            });
+    // Comprueba que ambos campos tengan contenido.
+    if (!email || !password) {
+      setError("Completá todos los campos.");
+      return;
+    }
 
-            navigate("/");
-        } catch (err) {
-            setError(traducirErrorFirebase(err.code));
-        } finally {
-            setCargando(false);
-        }
-    };
+    // Activa el estado de carga antes de comunicarse con Firebase.
+    setCargando(true);
 
-    return (
-        <main className="acceso">
-            <div className="container d-flex justify-content-center align-items-center min-vh-100">
-                <div className="row w-100 justify-content-center">
-                    <div className="col-md-8 col-lg-6">
+    try {
+      // Comprueba las credenciales mediante Firebase Authentication.
+      await signInWithEmailAndPassword(auth, email, password);
 
-                        <div className="acceso-tarjeta">
-                            <div className="row g-0">
+      // Si el inicio de sesión es correcto, redirige al usuario a la página principal.
+      navigate("/");
 
-                                {/* INICIAR SESIÓN */}
-                                {vista === "login" && (
-                                    <div
-                                        id="loginSection"
-                                        className="col-12 acceso-seccion"
-                                        key="login"
-                                    >
-                                        <h1 className="acceso-titulo">
-                                            Iniciar Sesión
-                                        </h1>
+    } catch (err) {
 
-                                        {error && (
-                                            <div className="alert alert-danger" role="alert">
-                                                {error}
-                                            </div>
-                                        )}
+      // Si ocurre un error, lo convierte en un mensaje comprensible.
+      setError(traducirErrorFirebase(err.code));
 
-                                        <form onSubmit={entrar}>
-                                            <div className="acceso-campo">
-                                                <label htmlFor="loginEmail">
-                                                    Gmail
-                                                </label>
-                                                <input
-                                                    type="email"
-                                                    className="acceso-input"
-                                                    id="loginEmail"
-                                                    required
-                                                    placeholder="correo@gmail.com"
-                                                />
-                                            </div>
+    } finally {
 
-                                            <div className="acceso-campo">
-                                                <label htmlFor="loginPassword">
-                                                    Contraseña
-                                                </label>
-                                                <input
-                                                    type="password"
-                                                    className="acceso-input"
-                                                    id="loginPassword"
-                                                    required
-                                                    placeholder="****"
-                                                />
-                                            </div>
+      // Desactiva el estado de carga tanto si la operación fue exitosa como si falló.
+      setCargando(false);
+    }
+  };
 
-                                            <button
-                                                type="submit"
-                                                className="acceso-btn"
-                                                disabled={cargando}
-                                            >
-                                                {cargando
-                                                    ? "Ingresando..."
-                                                    : "Entrar"}
-                                            </button>
-                                        </form>
+  // FUNCIÓN DE REGISTRO:
+  // obtiene los datos del formulario, realiza las validaciones y crea una cuenta en Firebase.
+  const registrarse = async (e) => {
 
-                                        <div className="acceso-cambio">
-                                            <p>¿No tienes una cuenta?</p>
-                                            <button
-                                                type="button"
-                                                id="btnShowRegister"
-                                                className="acceso-btn-secundario"
-                                                onClick={() => {
-                                                    setError("");
-                                                    setVista("registro");
-                                                }}
-                                            >
-                                                Ir a Registrarse
-                                            </button>
-                                        </div>
-                                    </div>
-                                )}
+    // Evita el envío tradicional del formulario.
+    e.preventDefault();
 
-                                {/* REGISTRO */}
-                                {vista === "registro" && (
-                                    <div
-                                        id="registerSection"
-                                        className="col-12 acceso-seccion"
-                                        key="registro"
-                                    >
-                                        <h1 className="acceso-titulo">
-                                            Registrarse
-                                        </h1>
+    // Limpia los errores anteriores.
+    setError("");
 
-                                        {error && (
-                                            <div className="alert alert-danger" role="alert">
-                                                {error}
-                                            </div>
-                                        )}
+    // Recupera los valores de los diferentes campos mediante FormData.
+    const formData = new FormData(e.currentTarget);
 
-                                        <form onSubmit={registrarse}>
-                                            <div className="acceso-campo">
-                                                <label htmlFor="regName">
-                                                    Nombre
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    className="acceso-input"
-                                                    id="regName"
-                                                    required
-                                                    placeholder="Tu nombre completo"
-                                                />
-                                            </div>
+    // Obtiene el nombre y el correo electrónico y elimina los espacios sobrantes.
+    const nombre = formData.get("regNombre")?.trim();
+    const email = formData.get("regEmail")?.trim();
 
-                                            <div className="acceso-campo">
-                                                <label htmlFor="regEmail">
-                                                    Gmail
-                                                </label>
-                                                <input
-                                                    type="email"
-                                                    className="acceso-input"
-                                                    id="regEmail"
-                                                    required
-                                                    placeholder="correo@gmail.com"
-                                                />
-                                            </div>
+    // Recupera las dos contraseñas para comprobar que coincidan.
+    const password = formData.get("regPassword");
+    const confirmPassword = formData.get("regConfirmPassword");
 
-                                            <div className="acceso-campo">
-                                                <label htmlFor="regPassword">
-                                                    Contraseña
-                                                </label>
-                                                <input
-                                                    type="password"
-                                                    className="acceso-input"
-                                                    id="regPassword"
-                                                    required
-                                                    minLength={6}
-                                                    placeholder="Mínimo 6 caracteres"
-                                                />
-                                            </div>
+    // Comprueba si el usuario aceptó los términos y condiciones.
+    const aceptaTerminos = formData.get("regTerminos");
 
-                                            <div className="acceso-campo">
-                                                <label htmlFor="regLocation">
-                                                    Ubicación (País)
-                                                </label>
-                                                <select
-                                                    className="acceso-input"
-                                                    id="regLocation"
-                                                    required
-                                                    defaultValue=""
-                                                >
-                                                    <option value="" disabled>
-                                                        Selecciona tu país
-                                                    </option>
-                                                    {PAISES.map((pais) => (
-                                                        <option
-                                                            key={pais}
-                                                            value={pais}
-                                                        >
-                                                            {pais}
-                                                        </option>
-                                                    ))}
-                                                </select>
-                                            </div>
+    // Verifica que los campos obligatorios tengan contenido.
+    if (!email || !password || !confirmPassword || !nombre) {
+      setError("Completá todos los campos obligatorios.");
+      return;
+    }
 
-                                            <div className="acceso-campo">
-                                                <label htmlFor="regBirthDate">
-                                                    Fecha de Nacimiento
-                                                </label>
-                                                <input
-                                                    type="date"
-                                                    className="acceso-input"
-                                                    id="regBirthDate"
-                                                    required
-                                                />
-                                            </div>
+    // Comprueba que la contraseña y su confirmación sean iguales.
+    if (password !== confirmPassword) {
+      setError("Las contraseñas no coinciden.");
+      return;
+    }
 
-                                            <button
-                                                type="submit"
-                                                className="acceso-btn"
-                                                disabled={cargando}
-                                            >
-                                                {cargando
-                                                    ? "Creando cuenta..."
-                                                    : "Crear Cuenta"}
-                                            </button>
-                                        </form>
+    // Impide continuar si el usuario no aceptó los términos.
+    if (!aceptaTerminos) {
+      setError("Debés aceptar los términos y condiciones.");
+      return;
+    }
 
-                                        <div className="acceso-cambio">
-                                            <p>¿Ya tienes cuenta?</p>
-                                            <button
-                                                type="button"
-                                                id="btnShowLogin"
-                                                className="acceso-btn-secundario"
-                                                onClick={() => {
-                                                    setError("");
-                                                    setVista("login");
-                                                }}
-                                            >
-                                                Ir a Iniciar Sesión
-                                            </button>
-                                        </div>
-                                    </div>
-                                )}
+    // Activa el indicador de carga mientras se crea la cuenta.
+    setCargando(true);
 
-                            </div>
-                        </div>
+    try {
 
-                    </div>
-                </div>
+      // Crea una cuenta nueva utilizando el correo y la contraseña.
+      // Firebase devuelve las credenciales del usuario creado.
+      const credenciales = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+
+      // Actualiza el perfil del usuario para guardar su nombre como displayName.
+      await updateProfile(credenciales.user, {
+        displayName: nombre,
+      });
+
+      // Redirige a la página principal cuando termina el registro.
+      navigate("/");
+
+    } catch (err) {
+
+      // Traduce los posibles errores de Firebase.
+      setError(traducirErrorFirebase(err.code));
+
+    } finally {
+
+      // Finaliza el estado de carga, independientemente del resultado.
+      setCargando(false);
+    }
+  };
+
+  // FUNCIÓN PARA CAMBIAR DE FORMULARIO:
+  // permite pasar del login al registro y viceversa.
+  const cambiarVista = (nuevaVista) => {
+
+    // Limpia los mensajes de error al cambiar de formulario.
+    setError("");
+
+    // Oculta los campos de contraseña al cambiar de vista.
+    setMostrarPassword(false);
+    setMostrarConfirmPassword(false);
+
+    // Actualiza la vista que debe mostrarse.
+    setVista(nuevaVista);
+  };
+  
+    // RENDERIZADO: define la estructura visual de la página.
+  return (
+    <div className="acceso-page">
+
+      {/* Muestra los elementos decorativos del fondo. */}
+      <DecoracionAcceso />
+
+      {/* CONTENEDOR: centra la tarjeta en la pantalla y permite adaptarla a distintos tamaños. */}
+      <div className="container min-vh-100 d-flex align-items-center justify-content-center py-5 acceso-contenedor">
+
+        {/* TARJETA: divide el contenido en dos columnas, una informativa y otra para el formulario. */}
+        <div className="row border rounded p-4 w-100 acceso-card g-0">
+
+          {/* PANEL IZQUIERDO: presenta información y una descripción del proyecto. */}
+          <div className="col-md-4 border-end d-flex flex-column justify-content-center p-4 acceso-panel-izq">
+
+            {/* Etiqueta decorativa que identifica el propósito de la sección. */}
+            <span className="acceso-panel-etiqueta">
+              <i className="bi bi-flower1" />
+              UN MUNDO POR DESCUBRIR
+            </span>
+
+            {/* El título y la descripción cambian según el formulario seleccionado. */}
+            <h2 className="fw-bold">
+              {vista === "login"
+                ? "¡Que bueno verte!"
+                : "Creá tu aventura"}
+            </h2>
+
+            <p>
+              {vista === "login"
+                ? "Ingresá a tu cuenta y seguí explorando todo lo que la comunidad tiene para compartir."
+                : "Unite a Wiki-Craft, compartí tus ideas y empezá a formar parte de nuestra comunidad."}
+            </p>
+
+            {/* PUNTOS DESTACADOS: muestra algunas de las actividades que ofrece el sitio. */}
+            <div className="acceso-panel-puntos" aria-hidden="true">
+              <span>
+                <ImagenAcceso nombre="cartography_table.png" className="img-span" />Explorar
+              </span>
+
+              <span>
+                <ImagenAcceso nombre="knowledge_book.png" className="img-span" /> Crear
+              </span>
+
+              <span>
+                <ImagenAcceso nombre="AllayPixel.png" className="img-span" /> Compartir
+              </span>
             </div>
-        </main>
-    );
+          </div>
+
+          {/* PANEL DERECHO: contiene el encabezado, los mensajes de error y los formularios. */}
+          <div className="col-md-8 p-4 acceso-panel-form">
+
+            {/* ENCABEZADO: muestra la marca del sitio y un mensaje de bienvenida. */}
+            <div className="acceso-form-cabecera">
+              <span className="acceso-form-etiqueta">
+                <ImagenAcceso nombre="glint.png" className="img-wiki" />
+                WIKI-CRAFT
+              </span>
+
+              <span className="acceso-form-nota">
+                <i className="bi bi-sun" />
+                Tu próxima aventura empieza acá
+              </span>
+            </div>
+
+            {/* MENSAJE DE ERROR: aparece únicamente cuando existe un error registrado. */}
+            {error && (
+              <div className="alert alert-danger mb-3" role="alert">
+                {error}
+              </div>
+            )}
+
+            {/* FORMULARIO DE LOGIN:
+                se muestra solamente cuando la variable vista tiene el valor "login". */}
+            {vista === "login" && (
+              <form
+                onSubmit={entrar}
+                key="login"
+                className="acceso-form"
+              >
+
+                {/* CAMPO DE CORREO: solicita el email utilizado para registrar la cuenta. */}
+                <div className="mb-3">
+                  <label
+                    className="form-label fw-bold"
+                    htmlFor="loginEmail"
+                  >
+                    Correo electrónico *
+                  </label>
+
+                  <div className="input-group">
+
+                    {/* Ícono que identifica el campo de correo. */}
+                    <span className="input-group-text">
+                      <i className="bi bi-envelope" />
+                    </span>
+
+                    <input
+                      id="loginEmail"
+                      type="email"
+                      name="loginEmail"
+                      className="form-control"
+                      placeholder="Ingresá tu correo electrónico"
+                      autoComplete="email"
+                      required
+                    />
+                  </div>
+                </div>
+
+                {/* CAMPO DE CONTRASEÑA: solicita la contraseña de la cuenta. */}
+                <div className="mb-4">
+                  <label
+                    className="form-label fw-bold"
+                    htmlFor="loginPassword"
+                  >
+                    Contraseña *
+                  </label>
+
+                  <div className="input-group">
+
+                    {/* Ícono del campo de contraseña. */}
+                    <span className="input-group-text">
+                      <i className="bi bi-lock" />
+                    </span>
+
+                    <input
+                      id="loginPassword"
+
+                      // Cambia el tipo de input dependiendo de la visibilidad seleccionada.
+                      type={mostrarPassword ? "text" : "password"}
+
+                      name="loginPassword"
+                      className="form-control"
+                      placeholder="Ingresá tu contraseña"
+                      autoComplete="current-password"
+                      required
+                    />
+
+                    {/* BOTÓN DE VISIBILIDAD: alterna entre mostrar y ocultar la contraseña. */}
+                    <button
+                      className="btn btn-outline-secondary btn-password"
+                      type="button"
+                      aria-label={
+                        mostrarPassword
+                          ? "Ocultar contraseña"
+                          : "Mostrar contraseña"
+                      }
+                      onClick={() =>
+                        setMostrarPassword(!mostrarPassword)
+                      }
+                    >
+                        { mostrarPassword ? <ImagenAcceso nombre="ender_eye.png" className="img-password" /> 
+                        : <ImagenAcceso nombre="ender_pearl.png"  className="img-password" /> }
+
+                    </button>
+                  </div>
+                </div>
+
+                {/* ACCIONES: contiene el botón para ingresar y el acceso al registro. */}
+                <div className="acceso-acciones">
+
+                  {/* BOTÓN PRINCIPAL: envía los datos del formulario para iniciar sesión. */}
+                  <button
+                    type="submit"
+                    className="btn btn-primary acceso-btn-submit"
+                    disabled={cargando}
+                  >
+
+                    {/* El contenido del botón cambia mientras se procesa la solicitud. */}
+                    {cargando ? (
+                      <>
+                        <span
+                          className="spinner-border spinner-border-sm me-2"
+                          role="status"
+                        />
+                        Ingresando...
+                      </>
+                    ) : (
+                      <>
+                        <i className="bi bi-box-arrow-in-right me-2" />
+                        Entrar
+                      </>
+                    )}
+                  </button>
+
+                  {/* CAMBIO DE VISTA: ofrece un acceso al formulario de registro. */}
+                  <div className="acceso-cambio-vista">
+                    <span>¿No tenés una cuenta?</span>
+
+                    <button
+                      type="button"
+                      className="btn btn-outline-secondary acceso-btn-cambio"
+                      onClick={() => cambiarVista("registro")}
+                    >
+                      Registrarse
+                    </button>
+                  </div>
+                </div>
+              </form>
+            )}
+
+            {/* FORMULARIO DE REGISTRO:
+                se muestra únicamente cuando la variable vista tiene el valor "registro". */}
+            {vista === "registro" && (
+              <form
+                onSubmit={registrarse}
+                key="registro"
+                className="acceso-form"
+              >
+
+                {/* DATOS PERSONALES: agrupa los campos de usuario y nombre. */}
+                <div className="row g-3 mb-3">
+
+                  {/* CAMPO DE NOMBRE DE USUARIO. */}
+                  <div className="col-md-6">
+                    <label
+                      className="form-label fw-bold"
+                      htmlFor="regUsername"
+                    >
+                      Nombre de usuario *
+                    </label>
+
+                    <div className="input-group">
+                      <span className="input-group-text">
+                        <i className="bi bi-person-badge" />
+                      </span>
+
+                      <input
+                        id="regUsername"
+                        type="text"
+                        name="regUsername"
+                        className="form-control"
+                        placeholder="Elegí un usuario"
+                      />
+                    </div>
+                  </div>
+
+                  {/* CAMPO DE NOMBRE: solicita el nombre que se guardará en el perfil de Firebase. */}
+                  <div className="col-md-6">
+                    <label
+                      className="form-label fw-bold"
+                      htmlFor="regNombre"
+                    >
+                      Nombre *
+                    </label>
+
+                    <div className="input-group">
+                      <span className="input-group-text">
+                        <i className="bi bi-person" />
+                      </span>
+
+                      <input
+                        id="regNombre"
+                        type="text"
+                        name="regNombre"
+                        className="form-control"
+                        placeholder="Ingresá tu nombre"
+                        autoComplete="name"
+                        required
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* CORREO ELECTRÓNICO: solicita el email que se utilizará para autenticar la cuenta. */}
+                <div className="mb-3">
+                  <label
+                    className="form-label fw-bold"
+                    htmlFor="regEmail"
+                  >
+                    Correo electrónico *
+                  </label>
+
+                  <div className="input-group">
+                    <span className="input-group-text">
+                      <i className="bi bi-envelope" />
+                    </span>
+
+                    <input
+                      id="regEmail"
+                      type="email"
+                      name="regEmail"
+                      className="form-control"
+                      placeholder="Ingresá tu correo electrónico"
+                      autoComplete="email"
+                      required
+                    />
+                  </div>
+                </div>
+
+                {/* CONTRASEÑAS: agrupa la contraseña nueva y su confirmación. */}
+                <div className="row g-3 mb-3">
+
+                  {/* CAMPO DE CONTRASEÑA: permite establecer la contraseña de la cuenta. */}
+                  <div className="col-md-6">
+                    <label
+                      className="form-label fw-bold"
+                      htmlFor="regPassword"
+                    >
+                      Contraseña *
+                    </label>
+
+                    <div className="input-group">
+                      <span className="input-group-text">
+                        <i className="bi bi-lock" />
+                      </span>
+
+                      <input
+                        id="regPassword"
+                        type={mostrarPassword ? "text" : "password"}
+                        name="regPassword"
+                        className="form-control"
+                        placeholder="Mínimo 6 caracteres"
+                        minLength={6}
+                        autoComplete="new-password"
+                        required
+                      />
+
+                      {/* Permite alternar la visibilidad de la contraseña. */}
+                      <button
+                        className="btn btn-outline-secondary btn-password"
+                        type="button"
+                        aria-label={
+                          mostrarPassword
+                            ? "Ocultar contraseña"
+                            : "Mostrar contraseña"
+                        }
+                        onClick={() =>
+                          setMostrarPassword(!mostrarPassword)
+                        }
+                      >
+                        { mostrarPassword ? <ImagenAcceso nombre="ender_eye.png" className="img-password" /> 
+                        : <ImagenAcceso nombre="ender_pearl.png"  className="img-password" /> }
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* CAMPO DE CONFIRMACIÓN: solicita repetir la contraseña anterior. */}
+                  <div className="col-md-6">
+                    <label
+                      className="form-label fw-bold"
+                      htmlFor="regConfirmPassword"
+                    >
+                      Repetir contraseña *
+                    </label>
+
+                    <div className="input-group">
+                      <span className="input-group-text">
+                        <i className="bi bi-lock-fill" />
+                      </span>
+
+                      <input
+                        id="regConfirmPassword"
+                        type={
+                          mostrarConfirmPassword ? "text" : "password"
+                        }
+                        name="regConfirmPassword"
+                        className="form-control"
+                        placeholder="Confirmá tu contraseña"
+                        autoComplete="new-password"
+                        required
+                      />
+
+                      {/* Permite mostrar u ocultar el campo de confirmación. */}
+                      <button
+                        className="btn btn-outline-secondary btn-password"
+                        type="button"
+                        aria-label={
+                          mostrarConfirmPassword
+                            ? "Ocultar confirmación"
+                            : "Mostrar confirmación"
+                        }
+                        onClick={() =>
+                          setMostrarConfirmPassword(
+                            !mostrarConfirmPassword
+                          )
+                        }
+                      >
+                        { mostrarConfirmPassword ? <ImagenAcceso nombre="ender_eye.png" className="img-password" /> 
+                        : <ImagenAcceso nombre="ender_pearl.png"  className="img-password" /> }
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* PAÍS Y TÉRMINOS: permite seleccionar un país y aceptar las condiciones de uso. */}
+                <div className="row g-3 mb-3 align-items-center">
+
+                  {/* SELECTOR DE PAÍS: genera sus opciones utilizando el arreglo PAISES. */}
+                  <div className="col-md-6">
+                    <label
+                      className="form-label fw-bold"
+                      htmlFor="regPais"
+                    >
+                      País
+                    </label>
+
+                    <div className="input-group">
+                      <span className="input-group-text">
+                        <i className="bi bi-globe-americas" />
+                      </span>
+
+                      <select
+                        id="regPais"
+                        name="regPais"
+                        className="form-select"
+                        defaultValue=""
+                      >
+                        <option value="" disabled>
+                          Seleccioná un país
+                        </option>
+
+                        {/* Recorre el arreglo y crea una opción por cada país. */}
+                        {PAISES.map((pais) => (
+                          <option key={pais} value={pais}>
+                            {pais}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* CASILLA DE TÉRMINOS: permite aceptar las condiciones para completar el registro. */}
+                  <div className="col-md-6 acceso-opcion-check">
+                    <span className="form-label fw-bold d-block">
+                      Términos y condiciones
+                    </span>
+
+                    <div className="form-check">
+                      <input
+                        className="form-check-input"
+                        type="checkbox"
+                        id="regTerminos"
+                        name="regTerminos"
+                      />
+
+                      <label
+                        className="form-check-label"
+                        htmlFor="regTerminos"
+                      >
+                        Acepto los términos y condiciones
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                {/* ROL Y NOTIFICACIONES: agrupa las opciones adicionales del registro. */}
+                <div className="row g-3 mb-4 align-items-center">
+
+                  {/* SELECTOR DE ROL: permite elegir entre usuario y administrador. */}
+                  <div className="col-md-6">
+                    <label
+                      className="form-label fw-bold"
+                      htmlFor="regRol"
+                    >
+                      Rol (solo en modo admin)
+                    </label>
+
+                    <div className="input-group">
+                      <span className="input-group-text">
+                        <i className="bi bi-gear" />
+                      </span>
+
+                      <select
+                        id="regRol"
+                        name="regRol"
+                        className="form-select"
+                        defaultValue=""
+                      >
+                        <option value="" disabled>
+                          Seleccioná un rol
+                        </option>
+
+                        <option value="user">Usuario</option>
+                        <option value="admin">Administrador</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* NOTIFICACIONES: permite activar o desactivar la recepción de novedades por email. */}
+                  <div className="col-md-6 acceso-opcion-check">
+                    <span className="form-label fw-bold d-block">
+                      Notificaciones por email
+                    </span>
+
+                    <div className="form-check form-switch">
+                      <input
+                        className="form-check-input"
+                        type="checkbox"
+                        role="switch"
+                        id="regNotificaciones"
+                        name="regNotificaciones"
+                        defaultChecked
+                      />
+
+                      <label
+                        className="form-check-label"
+                        htmlFor="regNotificaciones"
+                      >
+                        Sí, quiero recibir novedades
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                {/* ACCIONES: contiene el botón de registro y el acceso al inicio de sesión. */}
+                <div className="acceso-acciones">
+
+                  {/* BOTÓN PRINCIPAL: envía los datos para crear una cuenta. */}
+                  <button
+                    type="submit"
+                    className="btn btn-primary acceso-btn-submit"
+                    disabled={cargando}
+                  >
+
+                    {/* Cambia el texto y muestra un indicador mientras se crea la cuenta. */}
+                    {cargando ? (
+                      <>
+                        <span
+                          className="spinner-border spinner-border-sm me-2"
+                          role="status"
+                        />
+                        Creando cuenta...
+                      </>
+                    ) : (
+                      <>
+                        <i className="bi bi-person-plus me-2" />
+                        Registrarse
+                      </>
+                    )}
+                  </button>
+
+                  {/* CAMBIO DE VISTA: permite volver al formulario de inicio de sesión. */}
+                  <div className="acceso-cambio-vista">
+                    <span>¿Ya tenés una cuenta?</span>
+
+                    <button
+                      type="button"
+                      className="btn btn-outline-secondary acceso-btn-cambio"
+                      onClick={() => cambiarVista("login")}
+                    >
+                      Iniciar sesión
+                      <i className="bi bi-arrow-right ms-1" />
+                    </button>
+                  </div>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
