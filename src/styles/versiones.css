@@ -208,6 +208,17 @@
   background-repeat: no-repeat;
   background-attachment: fixed;
 }
+.restaurar-versiones {
+  background: var(--oro);
+  color: #3a2e05;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease-in-out;
+}
 /* ---------- RESPONSIVE ---------- */
 @media (max-width: 600px) {
   .versiones-hero {
