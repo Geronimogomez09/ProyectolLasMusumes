@@ -462,7 +462,7 @@ export default function Login() {
 
                     {/* BOTÓN DE VISIBILIDAD: alterna entre mostrar y ocultar la contraseña. */}
                     <button
-                      className="btn btn-outline-secondary"
+                      className="btn btn-outline-secondary btn-password"
                       type="button"
                       aria-label={
                         mostrarPassword
@@ -473,11 +473,9 @@ export default function Login() {
                         setMostrarPassword(!mostrarPassword)
                       }
                     >
-                      <i
-                        className={`bi ${
-                          mostrarPassword ? "bi-eye" : "bi-eye-slash"
-                        }`}
-                      />
+                        { mostrarPassword ? <ImagenAcceso nombre="ender_eye.png" className="img-password" /> 
+                        : <ImagenAcceso nombre="ender_pearl.png"  className="img-password" /> }
+
                     </button>
                   </div>
                 </div>

@@ -448,3 +448,26 @@
   font-size: 0.82rem;
   letter-spacing: 0.01em;
 }
+
+.img-password {
+  width: 20px;
+  height: auto;
+  margin:0;
+}
+
+.btn-password{
+    background-color: var(--acc-honey) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border: 1px solid rgba(128, 96, 68, 0.12) !important;
+    transform: translateX(+1px)!important;
+    transition: 0.3s all ease-in-out!important;
+}
+
+.btn-password:hover{
+    background-color: var(--acc-peach) !important;
+    border: 1px solid rgba(128, 96, 68, 0.12) !important;
+    transform: translateX(-1px) !important;
+    transition: 0.3s all ease-in-out!important;
+}
