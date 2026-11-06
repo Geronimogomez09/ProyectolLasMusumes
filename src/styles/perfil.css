@@ -1,362 +1,1293 @@
-/* ==========================================================================
-   perfil.css — página de perfil (carrito, publicaciones y favoritas)
-   ========================================================================== */
-.perfil-pagina {
-  --perfil-borde: #dcdcdc;
-  --perfil-texto: #1c1c1c;
-  --perfil-suave: #5b5b57;
-  --perfil-peligro: #b3462c;
+/* Archivo: perfil.css
+   Define los estilos de la página de perfil de usuario.
+   Mantiene la misma estética que login.css, utilizando tonos crema, miel,
+   madera y verde musgo.
+   Las fuentes personalizadas se encuentran declaradas en login.css.
+   Las clases utilizan el prefijo perfil- para evitar conflictos con otras páginas. */
 
-  min-height: 100vh;
+/* 1. VARIABLES Y FONDO */
+
+/* PÁGINA DE PERFIL: define los colores, tamaños, tipografías y efectos generales.
+   Las variables permiten reutilizar los mismos valores en diferentes selectores. */
+.perfil-page {
+  /* Colores claros utilizados en fondos y superficies. */
+  --per-cream: #f5ead1;
+  --per-paper: #fff8e7;
+  --per-paper-strong: #fffdf4;
+  --per-sand: #ead5aa;
+  --per-honey: #e8b247;
+
+  /* Tonos de madera utilizados en textos y detalles. */
+  --per-wood: #966039;
+  --per-wood-dark: #69452a;
+
+  /* Tonos verdes utilizados en botones y elementos decorativos. */
+  --per-moss: #83a73b;
+  --per-moss-dark: #4e7b2f;
+  --per-moss-soft: #e1e9bb;
+
+  /* Colores generales de los textos y de los mensajes de error. */
+  --per-text: #352b20;
+  --per-muted: #7e6b50;
+  --per-danger: #914b37;
+
+  /* Colores para los bordes normales y los bordes al enfocar campos. */
+  --per-border: rgba(113, 79, 37, 0.19);
+  --per-border-focus: rgba(91, 139, 48, 0.62);
+
+  /* Radio de borde y curvas utilizadas en las animaciones. */
+  --per-radius: 30px;
+  --per-ease: cubic-bezier(0.22, 0.8, 0.24, 1);
+  --per-ease-soft: cubic-bezier(0.25, 1, 0.5, 1);
+
+  /* Fuentes personalizadas para títulos y textos con estilo pixelado. */
+  --per-fuente-titulo: "Minecrafttitulo", "MinecraftSeven", sans-serif;
+  --per-fuente-pixel: "MinecraftSeven", "Segoe UI", sans-serif;
+
+  /* Establece la posición y el orden de apilamiento del contenedor. */
+  position: relative;
+  isolation: isolate;
+
+  /* Incluye los bordes y el padding dentro de las dimensiones del elemento. */
   box-sizing: border-box;
-  padding: 7.5rem 1rem 3rem;
-  background: #f4f4f2;
-  color: var(--perfil-texto);
-  font-family: 'Segoe UI', Roboto, sans-serif;
+
+  /* Hace que la página ocupe como mínimo toda la altura de la ventana. */
+  min-height: 100vh;
+
+  /* El header está fijado en la parte superior.
+     Se utiliza su altura para dejar espacio y evitar que tape el contenido.
+     clamp() permite adaptar los espacios según el tamaño de la pantalla. */
+  padding: calc(var(--header-alto, 76px) + clamp(24px, 4vh, 48px)) 20px clamp(40px, 6vh, 72px);
+
+  /* Evita que los elementos decorativos sobresalgan del área de la página. */
+  overflow: hidden;
+
+  /* Define el color base y combina varios degradados para crear el fondo. */
+  background-color: var(--per-cream);
+  background-image:
+    linear-gradient(112deg, rgba(255, 246, 220, 0.82) 0%, rgba(250, 232, 190, 0.66) 38%, rgba(225, 204, 147, 0.46) 100%),
+    radial-gradient(ellipse at 13% 15%, rgba(232, 176, 74, 0.38), transparent 38%),
+    radial-gradient(ellipse at 89% 82%, rgba(91, 139, 54, 0.28), transparent 36%);
+
+  /* Mantiene el fondo fijo mientras se desplaza la página. */
+  background-attachment: fixed;
+
+  /* Define el color y la tipografía general del contenido. */
+  color: var(--per-text);
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
 }
 
-.perfil-cabecera,
-.perfil-tabs,
-.perfil-panel {
-  max-width: 920px;
+/* BOX-SIZING: aplica border-box a todos los elementos de la página
+   y también a sus pseudoelementos. */
+.perfil-page *,
+.perfil-page *::before,
+.perfil-page *::after {
+  box-sizing: border-box;
+}
+
+/* SELECCIÓN DE TEXTO: personaliza los colores del texto cuando se selecciona. */
+.perfil-page ::selection {
+  background: #e6d3ad;
+  color: var(--per-text);
+}
+
+/* ACCESIBILIDAD: muestra un contorno visible al navegar por enlaces,
+   botones y campos utilizando el teclado. */
+.perfil-page a:focus-visible,
+.perfil-page button:focus-visible,
+.perfil-page input:focus-visible,
+.perfil-page textarea:focus-visible {
+  outline: 2px solid var(--per-moss);
+  outline-offset: 3px;
+}
+
+/* ESTADO DE CARGA: centra el indicador y el mensaje mientras se obtiene el perfil. */
+.perfil-page--cargando {
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 12px;
+  color: var(--per-moss-dark);
+}
+
+/* 2. DECORACIÓN DEL FONDO */
+
+/* CONTENEDOR DECORATIVO: ocupa toda el área de la página y contiene
+   las imágenes de bloques y flores que aparecen detrás de la tarjeta.
+   pointer-events: none evita que interfiera con los clics. */
+.perfil-decoracion {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* IMÁGENES DECORATIVAS: establece el tamaño, la posición y la apariencia
+   de los recursos de Minecraft. También aplica una sombra y una animación. */
+.perfil-deco {
+  position: absolute;
+  width: 62px;
+  height: 62px;
+  object-fit: contain;
+
+  /* Conserva la apariencia pixelada de las imágenes. */
+  image-rendering: pixelated;
+  user-select: none;
+
+  /* Agrega una sombra para separar las imágenes del fondo. */
+  filter: drop-shadow(0 12px 13px rgba(74, 65, 34, 0.2));
+
+  /* Aplica el movimiento de flotación de manera continua. */
+  animation: perfil-flota 7.5s ease-in-out infinite;
+}
+
+/* POSICIONES: determina dónde aparece cada imagen decorativa.
+   Las reglas individuales también modifican su tamaño, opacidad y retraso. */
+.perfil-deco--1 { top: 16%; left: 4%; }
+.perfil-deco--2 { bottom: 12%; left: 7%; width: 50px; height: 50px; opacity: 0.76; animation-delay: -2.4s; }
+.perfil-deco--3 { top: 22%; right: 4%; width: 52px; height: 52px; opacity: 0.8; animation-delay: -4.2s; }
+.perfil-deco--4 { bottom: 14%; right: 5%; width: 64px; height: 64px; animation-delay: -2.8s; }
+.perfil-deco--5 { top: 9%; left: 30%; width: 44px; height: 44px; opacity: 0.76; animation-delay: -4s; }
+.perfil-deco--6 { bottom: 6%; right: 26%; width: 56px; height: 56px; opacity: 0.8; animation-delay: -1.2s; }
+
+/* ANIMACIÓN DE FLOTACIÓN: mueve las imágenes ligeramente hacia arriba
+   y modifica su rotación para darles movimiento. */
+@keyframes perfil-flota {
+  0%, 100% { translate: 0 0; rotate: -5deg; }
+  50%      { translate: 0 -10px; rotate: 2deg; }
+}
+
+/* 3. TARJETA PRINCIPAL */
+
+/* CONTENEDOR: limita el ancho de la tarjeta, la centra horizontalmente
+   y la mantiene por encima de los elementos decorativos. */
+.perfil-contenedor {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 1040px;
   margin-inline: auto;
 }
 
+/* TARJETA: organiza el perfil en dos columnas mediante CSS Grid.
+   Aplica transparencia, desenfoque, bordes redondeados y sombras. */
+.perfil-card {
+  display: grid;
+
+  /* La primera columna ocupa 290px y la segunda utiliza el espacio restante.
+     minmax(0, 1fr) permite que la segunda columna se reduzca sin desbordarse. */
+  grid-template-columns: 290px minmax(0, 1fr);
+
+  /* Evita que los elementos internos sobresalgan de los bordes redondeados. */
+  overflow: hidden;
+
+  border: 1px solid rgba(255, 255, 255, 0.82);
+  border-radius: var(--per-radius);
+
+  /* Fondo semitransparente con un efecto de vidrio esmerilado. */
+  background: rgba(255, 249, 233, 0.87);
+  -webkit-backdrop-filter: blur(24px) saturate(1.14);
+  backdrop-filter: blur(24px) saturate(1.14);
+
+  /* Combina sombras exteriores con una iluminación interior. */
+  box-shadow:
+    0 28px 72px -34px rgba(73, 55, 34, 0.4),
+    0 10px 28px -16px rgba(126, 94, 54, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.92);
+
+  /* Ejecuta la animación de entrada una sola vez al cargar la tarjeta. */
+  animation: perfil-entrada 780ms var(--per-ease-soft) both;
+}
+
+/* ANIMACIÓN DE ENTRADA: hace que la tarjeta aparezca gradualmente
+   mientras se desplaza ligeramente desde abajo y aumenta de tamaño. */
+@keyframes perfil-entrada {
+  from { opacity: 0; transform: translateY(20px) scale(0.985); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* 4. PANEL IZQUIERDO */
+
+/* PANEL IZQUIERDO: contiene el avatar, el nombre, el rol y el menú.
+   Utiliza un fondo con degradados verdes y cálidos. */
+.perfil-panel-izq {
+  position: relative;
+  z-index: 0;
+
+  /* Organiza verticalmente los elementos y los centra horizontalmente. */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  padding: 34px 22px 26px;
+  overflow: hidden;
+  text-align: center;
+
+  /* Separa visualmente el panel izquierdo del derecho. */
+  border-right: 1px solid rgba(87, 127, 47, 0.25);
+
+  /* Combina un efecto de luz radial con un degradado de diferentes tonos naturales. */
+  background:
+    radial-gradient(circle at 86% 14%, rgba(255, 255, 255, 0.72), transparent 34%),
+    linear-gradient(145deg, rgba(218, 232, 175, 0.96), rgba(241, 211, 145, 0.91) 58%, rgba(248, 232, 190, 0.93));
+}
+
+/* FORMAS DECORATIVAS: utiliza pseudoelementos para agregar bloques
+   geométricos al fondo sin necesidad de introducir más elementos HTML. */
+.perfil-panel-izq::before,
+.perfil-panel-izq::after {
+  position: absolute;
+  z-index: -1;
+  content: "";
+  pointer-events: none;
+}
+
+/* PRIMER BLOQUE DECORATIVO: crea una figura grande en la esquina inferior derecha. */
+.perfil-panel-izq::before {
+  right: -54px;
+  bottom: -70px;
+  width: 190px;
+  height: 190px;
+  border: 1px solid rgba(125, 137, 85, 0.16);
+  border-radius: 42px;
+  background: rgba(255, 250, 239, 0.2);
+  transform: rotate(28deg);
+}
+
+/* SEGUNDO BLOQUE DECORATIVO: agrega una figura más pequeña sobre el fondo. */
+.perfil-panel-izq::after {
+  right: 22px;
+  bottom: 24px;
+  width: 54px;
+  height: 54px;
+  border: 1px solid rgba(128, 96, 68, 0.12);
+  border-radius: 15px;
+  background: rgba(213, 173, 112, 0.12);
+  transform: rotate(18deg);
+}
+
+/* 4.1 AVATAR */
+
+/* AVATAR: crea un contenedor circular para la fotografía o las iniciales.
+   Grid permite centrar su contenido en ambas direcciones. */
+.perfil-avatar {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  overflow: hidden;
+
+  border: 3px solid var(--per-paper-strong);
+  border-radius: 50%;
+
+  background: var(--per-moss-dark);
+  color: var(--per-paper-strong);
+
+  font-family: var(--per-fuente-titulo);
+  font-size: 1.3rem;
+
+  /* Agrega un borde luminoso y una sombra exterior. */
+  box-shadow:
+    0 0 0 3px rgba(232, 178, 71, 0.55),
+    0 10px 22px -10px rgba(73, 55, 34, 0.55);
+}
+
+/* FOTOGRAFÍA: hace que la imagen ocupe todo el avatar sin deformarse. */
+.perfil-avatar img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* AVATAR GRANDE: modifica las dimensiones del avatar utilizado en el panel izquierdo. */
+.perfil-avatar--grande {
+  width: 112px;
+  height: 112px;
+  font-size: 2rem;
+}
+
+/* NOMBRE: establece el aspecto del nombre visible debajo del avatar.
+   overflow-wrap permite dividir nombres largos para evitar desbordamientos. */
+.perfil-nombre {
+  max-width: 100%;
+  margin: 18px 0 8px;
+  color: var(--per-wood-dark);
+  font-family: var(--per-fuente-titulo);
+  font-size: 1.3rem;
+  font-weight: 400;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+/* ROL: presenta el tipo de cuenta dentro de una etiqueta con forma de cápsula. */
+.perfil-rol {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 13px;
+
+  border: 1px solid rgba(116, 126, 76, 0.16);
+  border-radius: 999px;
+
+  background: rgba(255, 250, 229, 0.74);
+  color: #436e2d;
+
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+/* ÍCONO DEL ROL: aplica un color cálido al símbolo de la etiqueta. */
+.perfil-rol i {
+  color: #a47d45;
+}
+
+/* ROL DE ADMINISTRADOR: cambia el fondo, el borde y el texto
+   para diferenciarlo del rol de explorador. */
+.perfil-rol--admin {
+  border-color: rgba(150, 96, 57, 0.3);
+  background: var(--per-wood);
+  color: var(--per-paper-strong);
+}
+
+/* ÍCONO DE ADMINISTRADOR: utiliza un tono dorado para destacar el símbolo. */
+.perfil-rol--admin i {
+  color: var(--per-honey);
+}
+
+/* 4.2 MENÚ DE NAVEGACIÓN */
+
+/* MENÚ: organiza verticalmente los botones de las diferentes secciones. */
+.perfil-nav {
+  display: grid;
+  gap: 6px;
+  width: 100%;
+  margin-top: 26px;
+}
+
+/* BOTONES DEL MENÚ: alinea los íconos y los textos y define
+   los estilos normales de cada opción. */
+.perfil-nav button {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+  padding: 11px 15px;
+
+  border: 1px solid transparent;
+  border-radius: 999px;
+
+  background: transparent;
+  color: #665039;
+
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 700;
+  text-align: left;
+
+  cursor: pointer;
+
+  /* Anima los cambios de fondo, texto y sombra al interactuar. */
+  transition:
+    background-color 220ms var(--per-ease),
+    color 220ms var(--per-ease),
+    box-shadow 520ms var(--per-ease-soft);
+}
+
+/* ÍCONOS DEL MENÚ: define su tamaño y color. */
+.perfil-nav button i {
+  font-size: 1rem;
+  color: var(--per-moss-dark);
+  transition: color 220ms var(--per-ease);
+}
+
+/* HOVER DEL MENÚ: cambia el fondo y el color del texto al pasar el cursor. */
+.perfil-nav button:hover {
+  background: rgba(255, 251, 232, 0.72);
+  color: var(--per-moss-dark);
+}
+
+/* SECCIÓN ACTIVA: destaca el botón correspondiente al apartado seleccionado. */
+.perfil-nav button.activo {
+  border-color: #5f8e31;
+  background: linear-gradient(135deg, #78a83a, #477d2d);
+  color: #fffdf6;
+
+  box-shadow:
+    0 8px 18px -10px rgba(72, 119, 43, 0.72),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+/* ÍCONO ACTIVO: cambia su color para mantener el contraste con el fondo verde. */
+.perfil-nav button.activo i {
+  color: #fffdf6;
+}
+
+/* ESTADO DE CUENTA: muestra el texto de cuenta activa en la parte inferior del panel. */
+.perfil-estado {
+  margin: auto 0 0;
+  padding-top: 24px;
+  color: #806b4e;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+/* INDICADOR DE ESTADO: crea un pequeño punto verde al lado del texto. */
+.perfil-punto {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 7px;
+  border-radius: 2px;
+  background: var(--per-moss-dark);
+  box-shadow: 0 0 10px rgba(78, 123, 47, 0.6);
+}
+
+/* 5. PANEL DERECHO */
+
+/* PANEL DERECHO: contiene el encabezado, el título y el contenido
+   de la sección seleccionada. min-width evita desbordamientos dentro del Grid. */
+.perfil-panel-der {
+  min-width: 0;
+  padding: 30px 34px 36px;
+}
+
+/* CABECERA: distribuye la marca del sitio y el mensaje complementario. */
 .perfil-cabecera {
   display: flex;
   align-items: center;
-  gap: 1.25rem;
-  padding: 1.5rem;
-  background: var(--blanco, #fffdf9);
-  border: 1px solid var(--perfil-borde);
-  border-bottom: 4px solid var(--verde, #1db53c);
-  border-radius: 6px;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
 }
 
-.perfil-cabecera h1 {
-  margin: 0;
-  font-size: 1.6rem;
-}
-
-.perfil-cabecera p {
-  margin: 0.15rem 0 0.4rem;
-  color: var(--perfil-suave);
-}
-
-.perfil-avatar {
-  flex: none;
-  width: 72px;
-  height: 72px;
-  display: grid;
-  place-items: center;
-  overflow: hidden;
-  font-size: 2rem;
+/* ETIQUETAS: alinea los íconos con sus respectivos textos. */
+.perfil-etiqueta,
+.perfil-nota {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.75rem;
   font-weight: 700;
-  color: #fff;
-  background: var(--verde, #1db53c);
-  border: 3px solid var(--marron, #7a573a);
 }
 
-.perfil-avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+/* MARCA: destaca el nombre del sitio con el color verde principal. */
+.perfil-etiqueta {
+  color: var(--per-moss-dark);
+  letter-spacing: 0.035em;
 }
 
-/* ------------------------------ pestañas ------------------------------ */
-.perfil-tabs {
+/* ÍCONO DE MARCA: utiliza un tono cálido para complementar la paleta. */
+.perfil-etiqueta i {
+  color: #bd9255;
+  font-size: 1rem;
+}
+
+/* MENSAJE COMPLEMENTARIO: aplica un color secundario al texto de bienvenida. */
+.perfil-nota {
+  color: #85745d;
+}
+
+/* ÍCONO DEL MENSAJE: define el color del símbolo decorativo. */
+.perfil-nota i {
+  color: #9a9b70;
+}
+
+/* FILA DEL TÍTULO: organiza el nombre de la sección y el botón de edición.
+   flex-wrap permite que los elementos bajen de línea si no hay espacio. */
+.perfil-titulo-fila {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-block: 1.25rem 1rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
 }
 
-.perfil-tab {
-  padding: 0.6rem 1.1rem;
-  font: inherit;
+/* TÍTULO: aplica la tipografía personalizada y un tamaño adaptable a la pantalla. */
+.perfil-titulo {
+  margin: 0;
+  color: var(--per-wood-dark);
+  font-family: var(--per-fuente-titulo);
+  font-size: clamp(1.4rem, 2.4vw, 1.9rem);
+  font-weight: 400;
+  line-height: 1.3;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+/* CONTENIDO: organiza verticalmente los elementos de cada sección
+   y aplica una animación cuando se muestra un nuevo apartado. */
+.perfil-contenido {
+  display: grid;
+  gap: 16px;
+  animation: perfil-contenido-entra 520ms var(--per-ease-soft) both;
+}
+
+/* ANIMACIÓN DEL CONTENIDO: hace que los elementos aparezcan
+   gradualmente mientras se desplazan ligeramente desde abajo. */
+@keyframes perfil-contenido-entra {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* 5.1 MENSAJES */
+
+/* ALERTAS: establece los espacios, bordes redondeados y tamaño de los mensajes. */
+.perfil-alerta {
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  border-radius: 15px;
+  font-size: 0.88rem;
+}
+
+/* MENSAJE DE ÉXITO: utiliza tonos verdes para confirmar una operación correcta. */
+.perfil-alerta--exito {
+  border: 1px solid rgba(91, 139, 48, 0.3);
+  background: rgba(225, 233, 187, 0.8);
+  color: var(--per-moss-dark);
+}
+
+/* MENSAJE DE ERROR: utiliza tonos rojizos para comunicar problemas. */
+.perfil-alerta--error {
+  border: 1px solid rgba(174, 89, 65, 0.22);
+  background: rgba(255, 239, 229, 0.92);
+  color: var(--per-danger);
+}
+
+/* 6. BLOQUES Y TARJETAS INTERNAS */
+
+/* TARJETAS: define el espacio interior, los bordes y el fondo
+   de los distintos bloques de información del perfil. */
+.perfil-bloque {
+  padding: 20px 22px;
+  border: 1px solid var(--per-border);
+  border-radius: 20px;
+  background: rgba(255, 251, 238, 0.9);
+}
+
+/* CABECERA DE TARJETAS: distribuye el título y las acciones
+   en extremos opuestos de cada bloque. */
+.perfil-bloque-cab {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+/* TÍTULOS DE TARJETAS: establece su margen, color y tipografía. */
+.perfil-bloque h3,
+.perfil-bloque-cab h3 {
+  margin: 0;
+  color: #57402b;
+  font-family: var(--per-fuente-pixel);
+  font-size: 0.95rem;
+  font-weight: 400;
+}
+
+/* ÍCONOS DE TÍTULOS: agrega un pequeño espacio y un color dorado. */
+.perfil-bloque-cab h3 i {
+  margin-right: 6px;
+  color: var(--per-honey);
+}
+
+/* TEXTO: define el tamaño, el color y la altura de línea de las descripciones. */
+.perfil-texto {
+  margin: 0 0 12px;
+  color: #665039;
+  font-size: 0.9rem;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+
+/* DATOS: organiza los íconos y los textos de información personal en una fila. */
+.perfil-dato {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  margin: 0 0 7px;
+  color: var(--per-muted);
+  font-size: 0.84rem;
+  overflow-wrap: anywhere;
+}
+
+/* ÍCONOS DE DATOS: aplica el color verde utilizado en el resto del perfil. */
+.perfil-dato i {
+  color: var(--per-moss-dark);
+}
+
+/* ENLACES DE DATOS: destaca las direcciones web con un color verde y negrita. */
+.perfil-dato a {
+  color: var(--per-moss-dark);
   font-weight: 600;
-  color: var(--perfil-texto);
-  background: #e9e9e9;
-  border: 1px solid transparent;
-  border-radius: 999px;
+}
+
+/* GRID DE INFORMACIÓN: organiza las tarjetas del resumen en dos columnas iguales. */
+.perfil-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+/* ENLACES INTERNOS: crea enlaces visuales sin fondo ni borde.
+   También se utiliza en botones que cambian de sección. */
+.perfil-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--per-moss-dark);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
 }
 
-.perfil-tab:hover {
-  background: #dcdcdc;
+/* HOVER DE ENLACES: cambia su color cuando el usuario pasa el cursor. */
+.perfil-link:hover {
+  color: var(--per-wood-dark);
 }
 
-.perfil-tab.activo {
-  color: #fff;
-  background: var(--verde, #1db53c);
+/* TEXTO VACÍO: define la apariencia del mensaje cuando no hay publicaciones recientes. */
+.perfil-vacio-chico {
+  margin: 0;
+  color: var(--per-muted);
+  font-size: 0.86rem;
 }
 
-/* ------------------------------ panel ------------------------------ */
-.perfil-panel {
-  padding: 1.25rem;
-  background: var(--blanco, #fffdf9);
-  border: 1px solid var(--perfil-borde);
-  border-radius: 6px;
+/* 6.1 ESTADÍSTICAS */
+
+/* ESTADÍSTICAS: distribuye las tarjetas de información en tres columnas iguales. */
+.perfil-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
 }
 
+/* TARJETAS DE ESTADÍSTICAS: alinea el ícono con los datos y crea una cápsula visual. */
+.perfil-stats article {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  padding: 14px 16px;
+  border: 1px solid rgba(116, 126, 76, 0.16);
+  border-radius: 999px;
+  background: rgba(255, 250, 229, 0.74);
+}
+
+/* ÍCONOS: utiliza círculos verdes claros para destacar los símbolos. */
+.perfil-stats i {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--per-moss-soft);
+  color: var(--per-moss-dark);
+  font-size: 1.05rem;
+}
+
+/* VALORES: muestra las cantidades y fechas con un color más oscuro y destacado. */
+.perfil-stats strong {
+  display: block;
+  color: var(--per-wood-dark);
+  font-size: 0.95rem;
+  line-height: 1.25;
+}
+
+/* DESCRIPCIONES: aplica un tamaño menor a los nombres de las estadísticas. */
+.perfil-stats small {
+  color: var(--per-muted);
+  font-size: 0.75rem;
+}
+
+/* 6.2 ÚLTIMAS PUBLICACIONES */
+
+/* PUBLICACIONES MINIATURA: organiza los datos de cada publicación
+   y agrega un borde superior para separarlas. */
+.perfil-mini {
+  display: grid;
+  gap: 2px;
+  padding: 10px 0;
+  border-top: 1px dashed var(--per-border);
+  color: inherit;
+  text-decoration: none;
+}
+
+/* CATEGORÍA: destaca el tipo de publicación con el color verde. */
+.perfil-mini strong {
+  color: var(--per-moss-dark);
+  font-size: 0.8rem;
+}
+
+/* CONTENIDO: limita el texto a dos líneas para mantener un tamaño uniforme.
+   -webkit-line-clamp determina la cantidad máxima de líneas visibles. */
+.perfil-mini span {
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--per-muted);
+  font-size: 0.85rem;
+  line-height: 1.5;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+/* HOVER DE PUBLICACIONES: cambia el color de la categoría al pasar el cursor. */
+.perfil-mini:hover strong {
+  color: var(--per-wood-dark);
+}
+
+/* 6.3 HERRAMIENTAS DE ADMINISTRADOR */
+
+/* TARJETA DE ADMINISTRACIÓN: diferencia este bloque del resto mediante
+   un borde marrón y un fondo con tonos cálidos. */
+.perfil-bloque--admin {
+  border-color: rgba(150, 96, 57, 0.3);
+  background: linear-gradient(135deg, rgba(241, 211, 145, 0.35), rgba(255, 251, 238, 0.9));
+}
+
+/* ACCESOS: organiza los enlaces administrativos en una fila
+   y permite que bajen de línea cuando no hay espacio. */
+.perfil-accesos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* ENLACES ADMINISTRATIVOS: crea pequeños botones con forma de cápsula. */
+.perfil-accesos a {
+  padding: 8px 14px;
+  border: 1px solid rgba(128, 96, 68, 0.3);
+  border-radius: 999px;
+  background: rgba(255, 253, 246, 0.82);
+  color: var(--per-wood-dark);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-decoration: none;
+
+  /* Anima los cambios de color y borde al interactuar. */
+  transition: background-color 220ms var(--per-ease), color 220ms var(--per-ease), border-color 220ms var(--per-ease);
+}
+
+/* HOVER ADMINISTRATIVO: modifica el fondo, el borde y el color de los enlaces. */
+.perfil-accesos a:hover {
+  border-color: rgba(83, 132, 46, 0.56);
+  background: #fffdf6;
+  color: var(--per-moss-dark);
+}
+
+/* 7. PUBLICACIONES */
+
+/* LISTA DE PUBLICACIONES: organiza verticalmente las tarjetas
+   y establece la separación entre ellas. */
 .perfil-lista {
   display: grid;
-  gap: 0.75rem;
-  margin: 0;
-  padding: 0;
-  list-style: none;
+  gap: 14px;
 }
 
-.perfil-item {
-  display: grid;
-  grid-template-columns: 64px 1fr auto auto auto;
+/* CABECERA DE PUBLICACIÓN: coloca la categoría y la fecha en extremos opuestos. */
+.perfil-post-top {
+  display: flex;
   align-items: center;
-  gap: 0.9rem;
-  padding: 0.75rem;
-  border: 1px solid var(--perfil-borde);
-  border-radius: 6px;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
 }
 
-.perfil-item__imagen {
-  width: 64px;
-  height: 64px;
-  display: grid;
-  place-items: center;
-  overflow: hidden;
-  font-size: 1.6rem;
-  font-weight: 700;
-  color: var(--marron, #7a573a);
-  background: #e9e9e9;
-  border-radius: 4px;
+/* FECHA: aplica un color secundario y un tamaño reducido al dato temporal. */
+.perfil-post-top small {
+  color: var(--per-muted);
+  font-size: 0.76rem;
 }
 
-.perfil-item__imagen img {
-  width: 100%;
-  height: 100%;
+/* CATEGORÍA: presenta el tipo de publicación dentro de una etiqueta verde clara. */
+.perfil-chip {
+  padding: 5px 11px;
+  border-radius: 999px;
+  background: var(--per-moss-soft);
+  color: var(--per-moss-dark);
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+/* IMAGEN DE PUBLICACIÓN: limita sus dimensiones para evitar que ocupe
+   demasiado espacio dentro de la tarjeta. */
+.perfil-post-imagen {
+  display: block;
+  max-width: 100%;
+  max-height: 280px;
+  margin-bottom: 12px;
+  border-radius: 14px;
   object-fit: cover;
 }
 
-.perfil-item__datos {
+/* PIE DE PUBLICACIÓN: organiza las interacciones y el enlace al detalle. */
+.perfil-post-pie {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  color: var(--per-muted);
+  font-size: 0.8rem;
+}
+
+/* ÍCONOS DE INTERACCIONES: utiliza el verde oscuro para corazones y comentarios. */
+.perfil-post-pie i {
+  color: var(--per-moss-dark);
+}
+
+/* 7.1 ESTADO VACÍO */
+
+.perfil-vacio {
+  /* CENTRADO: organiza todos los elementos del mensaje de estado vacío. */
   display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding: 46px 20px;
+
+  /* Borde discontinuo para diferenciar el bloque de las tarjetas normales. */
+  border: 2px dashed rgba(91, 139, 48, 0.35);
+  border-radius: 22px;
+
+  background: rgba(225, 233, 187, 0.3);
+  text-align: center;
+}
+
+/* ÍCONO: destaca el símbolo central del estado vacío. */
+.perfil-vacio > i {
+  color: var(--per-moss-dark);
+  font-size: 2.2rem;
+}
+
+/* TÍTULO: aplica la fuente pixelada y el color de madera. */
+.perfil-vacio h3 {
+  margin: 0;
+  color: var(--per-wood-dark);
+  font-family: var(--per-fuente-pixel);
+  font-size: 1.05rem;
+  font-weight: 400;
+}
+
+/* DESCRIPCIÓN: limita el ancho del mensaje y mejora su legibilidad. */
+.perfil-vacio p {
+  max-width: 340px;
+  margin: 0 0 8px;
+  color: var(--per-muted);
+  font-size: 0.88rem;
+}
+
+/* 8. CONTENIDO GUARDADO */
+
+/* FAVORITOS: organiza las tarjetas de canciones, publicaciones y productos
+   en tres columnas del mismo tamaño. */
+.perfil-favoritos {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+/* TARJETAS DE FAVORITOS: centra los elementos y organiza su contenido verticalmente. */
+.perfil-favoritos .perfil-bloque {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  padding: 24px 16px;
+  text-align: center;
+}
+
+/* ÍCONOS: aumenta su tamaño para destacar el tipo de contenido guardado. */
+.perfil-favoritos .perfil-bloque > i {
+  color: var(--per-moss-dark);
+  font-size: 1.7rem;
+}
+
+/* CANTIDADES: muestra el número de elementos guardados con una tipografía personalizada. */
+.perfil-favoritos strong {
+  color: var(--per-wood-dark);
+  font-family: var(--per-fuente-titulo);
+  font-size: 1.7rem;
+  font-weight: 400;
+}
+
+/* DESCRIPCIONES: define el tamaño y la altura de línea de los textos explicativos. */
+.perfil-favoritos p {
+  margin: 0 0 8px;
+  color: var(--per-muted);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+/* 9. DATOS PERSONALES */
+
+/* VISTA DE DATOS: organiza la información del usuario en dos columnas. */
+.perfil-datos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 26px;
+}
+
+/* FILAS DE DATOS: organiza cada etiqueta y su valor verticalmente.
+   El borde discontinuo permite distinguir cada registro. */
+.perfil-datos > div {
+  display: grid;
+  gap: 4px;
+  padding: 14px 0;
+  border-bottom: 1px dashed var(--per-border);
+}
+
+/* ETIQUETAS: muestra los nombres de los campos en un tamaño más pequeño. */
+.perfil-datos small {
+  color: var(--per-muted);
+  font-size: 0.76rem;
+}
+
+/* VALORES: destaca la información del usuario con un color más oscuro. */
+.perfil-datos strong {
+  color: #57402b;
+  font-size: 0.92rem;
+  overflow-wrap: anywhere;
+}
+
+/* FORMULARIO: organiza los campos de edición verticalmente
+   y establece la separación entre cada uno. */
+.perfil-form {
+  display: grid;
+  gap: 16px;
+}
+
+/* LABELS: organiza las etiquetas y sus campos correspondientes en columnas verticales. */
+.perfil-form label {
+  display: grid;
+  gap: 7px;
+  color: #57402b;
+  font-family: var(--per-fuente-pixel);
+  font-size: 0.82rem;
+}
+
+/* CAMPOS Y TEXTAREA: define las dimensiones, bordes, colores y transiciones
+   de los campos utilizados para modificar los datos personales. */
+.perfil-form input,
+.perfil-form textarea {
+  width: 100%;
+  min-height: 47px;
+  padding: 10px 16px;
+
+  border: 1px solid rgba(130, 91, 42, 0.24);
+  border-radius: 14px;
+
+  background-color: rgba(255, 251, 238, 0.9);
+  color: var(--per-text);
+
+  /* Utiliza una fuente de texto convencional para facilitar la lectura. */
+  font: 400 0.94rem "Segoe UI", Roboto, Arial, sans-serif;
+
+  /* Agrega una sombra interior muy suave. */
+  box-shadow: inset 0 1px 2px rgba(71, 55, 34, 0.025);
+
+  /* Anima los cambios de color, borde y sombra. */
+  transition:
+    border-color 220ms var(--per-ease),
+    background-color 220ms var(--per-ease),
+    box-shadow 520ms var(--per-ease-soft);
+}
+
+/* TEXTAREA: permite modificar su altura verticalmente
+   y establece la separación entre las líneas del texto. */
+.perfil-form textarea {
+  resize: vertical;
+  line-height: 1.5;
+}
+
+/* PLACEHOLDERS: personaliza el color y el tamaño de los textos de ayuda. */
+.perfil-form input::placeholder,
+.perfil-form textarea::placeholder {
+  color: rgba(112, 99, 79, 0.56);
+  font-size: 0.88rem;
+}
+
+/* HOVER DE CAMPOS: resalta el borde al pasar el cursor,
+   excepto en los campos que están deshabilitados. */
+.perfil-form input:hover:not(:disabled),
+.perfil-form textarea:hover {
+  border-color: rgba(91, 139, 48, 0.5);
+}
+
+/* FOCUS DE CAMPOS: modifica el borde y agrega un resplandor verde
+   cuando el usuario selecciona un campo. */
+.perfil-form input:focus,
+.perfil-form textarea:focus {
+  border-color: var(--per-border-focus);
+  outline: 0;
+  background-color: var(--per-paper-strong);
+  box-shadow: 0 0 0 4px rgba(91, 139, 48, 0.17);
+}
+
+/* CAMPOS DESHABILITADOS: cambia el fondo y el color para indicar
+   que el usuario no puede modificar su contenido. */
+.perfil-form input:disabled {
+  background: rgba(235, 218, 177, 0.5);
+  color: var(--per-muted);
+  cursor: not-allowed;
+}
+
+/* TEXTOS DE AYUDA: utiliza una tipografía convencional y un tamaño reducido. */
+.perfil-form label small {
+  color: var(--per-muted);
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+  font-size: 0.74rem;
+}
+
+/* FILAS DE FORMULARIO: organiza dos campos en columnas iguales. */
+.perfil-form-fila {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+/* FOTO DE PERFIL: alinea la vista previa del avatar con el campo para ingresar su enlace. */
+.perfil-form-foto {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* CAMPO DE FOTO: permite que la etiqueta utilice el espacio restante de la fila. */
+.perfil-form-foto label {
+  flex: 1;
   min-width: 0;
 }
 
-.perfil-item__titulo {
-  font-weight: 700;
-  color: var(--perfil-texto);
-  text-decoration: none;
-  overflow-wrap: anywhere;
-}
-
-.perfil-item__titulo:hover {
-  color: var(--verde-hover, #00a521);
-}
-
-.perfil-item__detalle {
-  font-size: 0.85rem;
-  color: var(--perfil-suave);
-}
-
-.perfil-item__subtotal {
-  min-width: 6rem;
-  text-align: right;
-}
-
-.perfil-cantidad {
-  display: inline-flex;
-  align-items: center;
-  border: 1px solid var(--perfil-borde);
-  border-radius: 999px;
-}
-
-.perfil-cantidad button {
-  width: 2rem;
-  height: 2rem;
-  font: inherit;
-  font-size: 1.1rem;
-  background: none;
-  border: 0;
-  cursor: pointer;
-}
-
-.perfil-cantidad button:disabled {
-  opacity: 0.35;
-  cursor: not-allowed;
-}
-
-.perfil-cantidad span {
-  min-width: 1.6rem;
-  text-align: center;
-  font-weight: 600;
-}
-
-.perfil-icono-peligro {
-  width: 2rem;
-  height: 2rem;
-  font-size: 1.3rem;
-  line-height: 1;
-  color: var(--perfil-peligro);
-  background: none;
-  border: 1px solid transparent;
-  border-radius: 50%;
-  cursor: pointer;
-}
-
-.perfil-icono-peligro:hover {
-  border-color: var(--perfil-peligro);
-}
-
-.perfil-total {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-top: 1.25rem;
-  padding-top: 1rem;
-  border-top: 1px dashed var(--perfil-borde);
-}
-
-.perfil-total div {
-  display: grid;
-  text-align: right;
-}
-
-.perfil-total strong {
-  font-size: 1.4rem;
-}
-
-/* ------------------------------ publicaciones ------------------------------ */
-.perfil-publicacion {
-  padding: 1rem;
-  border: 1px solid var(--perfil-borde);
-  border-radius: 6px;
-}
-
-.perfil-publicacion__cabecera {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-  color: var(--perfil-suave);
-}
-
-.perfil-publicacion p {
-  margin: 0.6rem 0;
-  overflow-wrap: anywhere;
-}
-
-.perfil-publicacion__imagen {
-  max-width: 100%;
-  max-height: 260px;
-  margin-bottom: 0.6rem;
-  border-radius: 4px;
-}
-
-.perfil-textarea {
-  width: 100%;
-  margin-block: 0.6rem;
-  padding: 0.6rem;
-  font: inherit;
-  border: 1px solid var(--perfil-borde);
-  border-radius: 4px;
-  resize: vertical;
-}
-
+/* ACCIONES DEL FORMULARIO: coloca los botones hacia la derecha
+   y permite que bajen de línea cuando no hay espacio. */
 .perfil-acciones {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 6px;
 }
 
-.perfil-etiqueta {
-  display: inline-block;
-  padding: 0.15rem 0.6rem;
-  font-size: 0.78rem;
-  font-weight: 600;
-  background: var(--verde-claro, #67ff6767);
+/* 10. BOTONES */
+
+/* BOTÓN PRINCIPAL: define la apariencia compartida de los botones del perfil.
+   Utiliza un degradado verde, forma de cápsula, sombra y transiciones. */
+.perfil-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 46px;
+  padding: 10px 22px;
+
+  border: 1px solid #5f8e31;
   border-radius: 999px;
-}
 
-.perfil-etiqueta--admin {
-  color: #fff;
-  background: var(--marron, #7a573a);
-}
+  background: linear-gradient(135deg, #78a83a, #477d2d);
+  color: #fffdf6;
 
-/* ------------------------------ comunes ------------------------------ */
-.perfil-boton {
-  display: inline-block;
-  padding: 0.55rem 1.1rem;
-  font: inherit;
-  font-weight: 600;
-  color: #fff;
+  font-family: var(--per-fuente-pixel);
+  font-size: 0.84rem;
+  font-weight: 700;
+  line-height: 1.15;
+
   text-decoration: none;
-  background: var(--verde, #1db53c);
-  border: 0;
-  border-radius: 4px;
+  white-space: nowrap;
   cursor: pointer;
+
+  /* Sombra exterior y brillo interior para dar profundidad al botón. */
+  box-shadow:
+    0 8px 18px -10px rgba(72, 119, 43, 0.72),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+
+  /* Transiciones utilizadas en los estados hover y active. */
+  transition:
+    background 220ms var(--per-ease),
+    border-color 220ms var(--per-ease),
+    box-shadow 520ms var(--per-ease-soft),
+    transform 520ms var(--per-ease-soft);
 }
 
-.perfil-boton:hover:not(:disabled) {
-  background: var(--verde-hover, #00a521);
+/* HOVER DEL BOTÓN: oscurece ligeramente el degradado,
+   eleva el botón y modifica su sombra. */
+.perfil-btn:hover:not(:disabled) {
+  border-color: #3c7028;
+  background: linear-gradient(135deg, #679631, #3e7029);
+  color: #fffdf6;
+  box-shadow: 0 13px 24px -10px rgba(66, 112, 39, 0.55);
+  transform: translateY(-2px);
 }
 
-.perfil-boton:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+/* ACTIVE DEL BOTÓN: simula una pequeña presión al hacer clic. */
+.perfil-btn:active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
+  transition-duration: 120ms;
 }
 
-.perfil-boton--secundario {
-  color: var(--perfil-texto);
-  background: #e9e9e9;
+/* BOTÓN DESHABILITADO: cambia su apariencia cuando no se puede utilizar.
+   El cursor wait indica que puede haber una operación en proceso. */
+.perfil-btn:disabled {
+  border-color: rgba(120, 134, 79, 0.4);
+  background: #aab98a;
+  box-shadow: none;
+  opacity: 0.78;
+  cursor: wait;
 }
 
-.perfil-boton--secundario:hover:not(:disabled) {
-  background: #dcdcdc;
+/* BOTÓN SECUNDARIO: crea una variante más discreta para acciones como cancelar. */
+.perfil-btn--suave {
+  border: 1px solid rgba(128, 96, 68, 0.3);
+  background: rgba(255, 253, 246, 0.82);
+  color: var(--per-wood-dark);
+  box-shadow: none;
 }
 
-.perfil-enlace {
-  padding: 0;
-  font: inherit;
-  font-weight: 600;
-  color: var(--marron, #7a573a);
-  text-decoration: underline;
-  background: none;
-  border: 0;
-  cursor: pointer;
+/* HOVER SECUNDARIO: resalta el botón sin utilizar el degradado verde principal. */
+.perfil-btn--suave:hover:not(:disabled) {
+  border-color: rgba(83, 132, 46, 0.56);
+  background: #fffdf6;
+  color: var(--per-moss-dark);
+  box-shadow: 0 7px 18px -12px rgba(83, 75, 51, 0.44);
 }
 
-.perfil-enlace--peligro {
-  color: var(--perfil-peligro);
-}
+/* 11. DISEÑO RESPONSIVE */
 
-.perfil-vacio,
-.perfil-estado {
-  display: grid;
-  justify-items: center;
-  gap: 0.75rem;
-  padding: 2rem 1rem;
-  color: var(--perfil-suave);
-  text-align: center;
-}
+/* TABLETS Y PANTALLAS MEDIANAS:
+   adapta las tarjetas y algunos elementos cuando el ancho no supera los 991.98px. */
+@media (max-width: 991.98px) {
 
-@media (max-width: 680px) {
-  .perfil-item {
-    grid-template-columns: 56px 1fr auto;
+  /* Oculta dos elementos decorativos para liberar espacio visual. */
+  .perfil-deco--5,
+  .perfil-deco--6 {
+    display: none;
   }
 
-  .perfil-item__imagen {
-    width: 56px;
-    height: 56px;
+  /* Reduce la opacidad de las imágenes decorativas restantes. */
+  .perfil-deco {
+    opacity: 0.4;
   }
 
-  .perfil-cantidad,
-  .perfil-item__subtotal {
-    grid-column: 2;
+  /* Coloca las estadísticas una debajo de la otra. */
+  .perfil-stats {
+    grid-template-columns: 1fr;
   }
 
-  .perfil-item__subtotal {
-    text-align: left;
+  /* Reduce el redondeado de las tarjetas de estadísticas. */
+  .perfil-stats article {
+    border-radius: 22px;
+  }
+
+  /* Convierte las tarjetas del resumen y de favoritos en una sola columna. */
+  .perfil-grid,
+  .perfil-favoritos {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* DISPOSITIVOS MÓVILES:
+   reorganiza los paneles y los formularios cuando el ancho no supera los 767.98px. */
+@media (max-width: 767.98px) {
+
+  /* Reduce los márgenes laterales y desactiva el fondo fijo. */
+  .perfil-page {
+    padding-right: 12px;
+    padding-left: 12px;
+    background-attachment: scroll;
+  }
+
+  /* La tarjeta pasa de dos columnas a una sola. */
+  .perfil-card {
+    grid-template-columns: 1fr;
+    border-radius: 25px;
+  }
+
+  /* El panel izquierdo pasa a ocupar toda la fila superior.
+     El borde lateral se reemplaza por uno inferior. */
+  .perfil-panel-izq {
+    padding: 26px 18px 20px;
+    border-right: 0;
+    border-bottom: 1px solid rgba(125, 137, 85, 0.22);
+  }
+
+  /* Reduce el tamaño del avatar principal en pantallas pequeñas. */
+  .perfil-avatar--grande {
+    width: 92px;
+    height: 92px;
+    font-size: 1.7rem;
+  }
+
+  /* MENÚ MÓVIL: coloca las opciones en una fila horizontal
+     que puede desplazarse hacia los costados cuando no entran todas. */
+  .perfil-nav {
+    display: flex;
+    overflow-x: auto;
+    margin-top: 18px;
+    padding-bottom: 4px;
+  }
+
+  /* Evita que los botones del menú se estiren y permite mantenerlos en una fila. */
+  .perfil-nav button {
+    width: auto;
+    white-space: nowrap;
+  }
+
+  /* Oculta el indicador de cuenta activa para ahorrar espacio. */
+  .perfil-estado {
+    display: none;
+  }
+
+  /* Reduce los espacios interiores del panel derecho. */
+  .perfil-panel-der {
+    padding: 22px 18px 28px;
+  }
+
+  /* Los datos personales y las filas del formulario pasan a una sola columna. */
+  .perfil-datos,
+  .perfil-form-fila {
+    grid-template-columns: 1fr;
+  }
+
+  /* La fotografía y su campo de enlace se organizan verticalmente. */
+  .perfil-form-foto {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  /* Centra el avatar dentro del formulario de edición. */
+  .perfil-form-foto .perfil-avatar {
+    align-self: center;
+  }
+
+  /* Permite que los botones de acción compartan el espacio disponible. */
+  .perfil-acciones .perfil-btn {
+    flex: 1 1 auto;
+  }
+}
+
+/* TELÉFONOS PEQUEÑOS:
+   oculta el mensaje complementario de la cabecera cuando el ancho no supera los 420px. */
+@media (max-width: 420px) {
+  .perfil-cabecera .perfil-nota {
+    display: none;
+  }
+}
+
+/* 12. ACCESIBILIDAD: REDUCIR MOVIMIENTO */
+
+/* RESPETO A LAS PREFERENCIAS DEL USUARIO:
+   desactiva las animaciones y reduce las transiciones cuando el sistema operativo
+   indica que el usuario prefiere evitar los movimientos visuales. */
+@media (prefers-reduced-motion: reduce) {
+  .perfil-page *,
+  .perfil-page *::before,
+  .perfil-page *::after {
+    animation: none !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
   }
 }
