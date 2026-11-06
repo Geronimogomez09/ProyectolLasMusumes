@@ -1,0 +1,131 @@
+/* Archivo: login.css
+   Contiene los estilos de los formularios de inicio de sesión y registro de Wiki-Craft.
+   La ambientación está inspirada en un bosque de Minecraft, utilizando tonos naturales,
+   como verdes, oliva, madera, dorado y crema. */
+
+/* FUENTES PERSONALIZADAS: carga las tipografías utilizadas en los títulos y etiquetas. */
+@font-face {
+  font-family: "MinecraftSeven";
+  src: url("/fonts/Minecraft.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Minecrafttitulo";
+  src: url("/fonts/MinecraftV.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* VARIABLES Y ESTILOS BASE */
+
+/* PÁGINA DE ACCESO: define los colores, tamaños, animaciones y estilos generales.
+   Las variables permiten reutilizar los mismos valores en distintas partes del CSS. */
+.acceso-page {
+  /* Tonos claros utilizados para fondos y superficies. */
+  --acc-cream: #f5ead1;
+  --acc-paper: #fff8e7;
+  --acc-paper-strong: #fffdf4;
+  --acc-sand: #ead5aa;
+  --acc-peach: #e6b66f;
+  --acc-honey: #e8b247;
+
+  /* Tonos de madera utilizados en textos y detalles. */
+  --acc-wood: #966039;
+  --acc-wood-dark: #69452a;
+
+  /* Tonos verdes utilizados en botones y elementos decorativos. */
+  --acc-moss: #83a73b;
+  --acc-moss-dark: #4e7b2f;
+  --acc-moss-soft: #e1e9bb;
+
+  /* Colores generales de la marca y los textos. */
+  --acc-brand: #4da52f;
+  --acc-text: #352b20;
+  --acc-muted: #7e6b50;
+
+  /* Colores para los bordes normales y los bordes al enfocar los campos. */
+  --acc-border: rgba(113, 79, 37, 0.19);
+  --acc-border-focus: rgba(91, 139, 48, 0.62);
+
+  /* Radios de borde para las tarjetas y sus elementos internos. */
+  --acc-radius: 30px;
+  --acc-radius-inner: 17px;
+
+  /* Duraciones utilizadas en las transiciones y animaciones. */
+  --acc-duration: 520ms;
+  --acc-duration-fast: 220ms;
+  --acc-duration-slow: 850ms;
+
+  /* Curvas de aceleración para controlar cómo se desarrollan las animaciones. */
+  --acc-ease: cubic-bezier(0.22, 0.8, 0.24, 1);
+  --acc-ease-soft: cubic-bezier(0.25, 1, 0.5, 1);
+
+  /* Permite establecer una imagen de fondo adicional.
+     Actualmente no se utiliza ninguna imagen porque el valor es none. */
+  --acceso-fondo-imagen: none;
+
+  /* Aísla los elementos de esta página para controlar su posición y capas. */
+  position: relative;
+  isolation: isolate;
+
+  /* Centra el contenido horizontal y verticalmente. */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  /* Ocupa como mínimo toda la altura de la ventana y establece espacios internos. */
+  min-height: 100vh;
+  padding: clamp(28px, 5vh, 58px) 20px;
+  overflow: hidden;
+
+  /* Define el color base del fondo. */
+  background-color: var(--acc-cream);
+
+  /* FONDO: combina degradados y efectos radiales para simular una ambientación natural. */
+  background-image:
+    linear-gradient(
+      112deg,
+      rgba(255, 246, 220, 0.82) 0%,
+      rgba(250, 232, 190, 0.66) 38%,
+      rgba(225, 204, 147, 0.46) 100%
+    ),
+    radial-gradient(
+      ellipse at 13% 15%,
+      rgba(232, 176, 74, 0.38),
+      transparent 38%
+    ),
+    radial-gradient(
+      ellipse at 89% 82%,
+      rgba(91, 139, 54, 0.28),
+      transparent 36%
+    ),
+    var(--acceso-fondo-imagen);
+
+  /* Evita que el fondo se repita y lo centra dentro del contenedor. */
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+  background-attachment: fixed;
+
+  /* Establece el color y la tipografía general de la página. */
+  color: var(--acc-text);
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+/* BOX-SIZING: hace que el padding y los bordes se incluyan dentro de las dimensiones
+   de los elementos de esta página. */
+.acceso-page *,
+.acceso-page *::before,
+.acceso-page *::after {
+  box-sizing: border-box;
+}
+
+/* SELECCIÓN DE TEXTO: personaliza el color del texto cuando el usuario lo selecciona. */
+.acceso-page ::selection {
+  background: #e6d3ad;
+  color: var(--acc-text);
+}
