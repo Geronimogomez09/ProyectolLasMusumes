@@ -276,4 +276,27 @@ export default function Perfil() {
       </>
     );
   }
+  // 6. DATOS CALCULADOS DEL PERFIL
+
+  // NOMBRE A MOSTRAR: utiliza el nombre de usuario, el nombre de Firebase
+  // o la parte anterior a la arroba del correo, siguiendo ese orden de prioridad.
+  const nombreMostrar =
+    perfil.nombreUsuario || usuario?.displayName || usuario?.email?.split("@")[0] || "Jugador";
+
+  // NOMBRE COMPLETO: combina el nombre y el apellido.
+  // filter(Boolean) elimina los valores vacíos antes de unirlos.
+  const nombreCompleto = [perfil.nombre, perfil.apellido].filter(Boolean).join(" ");
+
+  // FOTO: utiliza primero la fotografía guardada en Firestore.
+  // Si no existe, intenta utilizar la fotografía del perfil de Firebase.
+  const foto = perfil.fotoPerfil || usuario?.photoURL || "";
+
+  // TOTAL GUARDADO: suma la cantidad de canciones, publicaciones y productos favoritos.
+  const totalGuardado =
+    favoritos.canciones.length + favoritos.publicaciones.length + favoritos.productos.length;
+
+  // SECCIÓN ACTUAL: busca en el arreglo SECCIONES el apartado seleccionado.
+  // Se utiliza para mostrar el título correspondiente en el panel derecho.
+  const seccionActual = SECCIONES.find((s) => s.id === seccion);
+
 }
