@@ -585,3 +585,63 @@
     transition: 0.3s all ease-in-out!important;
     transform: translateY(-1px)!important;
 }
+
+
+/* CAMBIO DE VISTA: organiza el texto y el botón secundario que permite cambiar de formulario. */
+.acceso-cambio-vista {
+  display: flex;
+
+  align-items: center;
+  justify-content: flex-end;
+
+  gap: 10px;
+
+  min-width: 0;
+  min-height: 50px;
+}
+
+/* TEXTO DEL CAMBIO: aplica un estilo secundario al mensaje que acompaña al botón. */
+.acceso-cambio-vista > span {
+  color: #806b4e;
+
+  font-size: 0.77rem;
+  line-height: 1.35;
+
+  text-align: right;
+}
+
+/* BOTÓN SECUNDARIO: establece la apariencia del botón para pasar de login a registro. */
+.acceso-page button.btn-outline-secondary.acceso-btn-cambio {
+  flex: 0 0 auto;
+
+  border: 1px solid rgba(128, 96, 68, 0.30);
+
+  background: rgba(255, 253, 246, 0.82);
+
+  color: var(--acc-wood-dark);
+
+  transition:
+    background-color var(--acc-duration-fast) var(--acc-ease),
+    border-color var(--acc-duration-fast) var(--acc-ease),
+    color var(--acc-duration-fast) var(--acc-ease),
+    transform var(--acc-duration) var(--acc-ease-soft),
+    box-shadow var(--acc-duration) var(--acc-ease-soft);
+}
+
+/* HOVER DEL BOTÓN SECUNDARIO: resalta el botón sin quitarle importancia al principal. */
+.acceso-page button.btn-outline-secondary.acceso-btn-cambio:hover {
+  border-color: rgba(83, 132, 46, 0.56);
+
+  background: #fffdf6;
+
+  color: var(--acc-moss-dark);
+
+  box-shadow: 0 7px 18px -12px rgba(83, 75, 51, 0.44);
+
+  transform: translateY(-2px);
+}
+
+/* ACTIVE DEL BOTÓN SECUNDARIO: reduce ligeramente su tamaño al hacer clic. */
+.acceso-page button.btn-outline-secondary.acceso-btn-cambio:active {
+  transform: scale(0.98);
+}
