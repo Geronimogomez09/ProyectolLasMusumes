@@ -299,4 +299,89 @@ export default function Perfil() {
   // Se utiliza para mostrar el título correspondiente en el panel derecho.
   const seccionActual = SECCIONES.find((s) => s.id === seccion);
 
+  // 7. FUNCIONES DE ACCIÓN
+
+  // CAMBIAR SECCIÓN: modifica el apartado que se muestra
+  // y permite abrir directamente el formulario de edición.
+  function irA(id, abrirEdicion = false) {
+
+    // Actualiza la sección seleccionada.
+    setSeccion(id);
+
+    // Determina si debe mostrarse el formulario de edición.
+    setEditando(abrirEdicion);
+
+    // Limpia los mensajes anteriores al cambiar de apartado.
+    setMensaje("");
+    setError("");
+  }
+
+  // CAMBIAR CAMPO: actualiza el valor de un campo del formulario cuando el usuario escribe.
+  function cambiarCampo(evento) {
+
+    // Conserva los demás campos utilizando el estado anterior.
+    // evento.target.name identifica el campo que cambió.
+    // evento.target.value contiene el nuevo valor ingresado.
+    setFormulario((actual) => ({ ...actual, [evento.target.name]: evento.target.value }));
+  }
+
+  // GUARDAR CAMBIOS: valida los datos personales y actualiza el documento del usuario.
+  async function guardarCambios(evento) {
+
+    // Evita que el formulario se envíe de forma tradicional y recargue la página.
+    evento.preventDefault();
+
+    // Limpia los mensajes anteriores.
+    setError("");
+    setMensaje("");
+
+    // Obtiene el enlace de la fotografía y elimina los espacios sobrantes.
+    const fotoUrl = formulario.fotoPerfil.trim();
+
+    // Comprueba que el enlace comience con http:// o https://.
+    // Si no cumple esta condición, muestra un error y detiene el guardado.
+    if (fotoUrl && !/^https?:\/\//i.test(fotoUrl)) {
+      setError("El enlace de la foto tiene que empezar con http:// o https://");
+      return;
+    }
+
+    // Activa el indicador de carga mientras se guardan los cambios.
+    setGuardando(true);
+
+    try {
+      // Actualiza el documento del usuario dentro de la colección de usuarios.
+      // Solo se envían los datos personales del formulario.
+      // El rol y el estado de la cuenta no se modifican.
+      await actualizarDocumento(COLECCIONES.usuarios, usuario.uid, {
+        nombreUsuario: formulario.nombreUsuario.trim(),
+        nombre: formulario.nombre.trim(),
+        apellido: formulario.apellido.trim(),
+        biografia: formulario.biografia.trim(),
+        ubicacion: formulario.ubicacion.trim(),
+        sitioWeb: formulario.sitioWeb.trim(),
+        fechaNacimiento: formulario.fechaNacimiento,
+        fotoPerfil: fotoUrl,
+      });
+
+      // Cierra el modo de edición cuando la actualización termina correctamente.
+      setEditando(false);
+
+      // Muestra un mensaje de confirmación.
+      setMensaje("Guardamos los cambios de tu perfil.");
+
+    } catch (err) {
+
+      // Muestra el error técnico en la consola para facilitar su diagnóstico.
+      console.error(err);
+
+      // Informa al usuario que no se pudieron guardar los cambios.
+      setError("No pudimos guardar los cambios. Revisá tu conexión e intentá de nuevo.");
+
+    } finally {
+
+      // Desactiva el estado de carga tanto si la operación fue exitosa como si falló.
+      setGuardando(false);
+    }
+  }
+
 }
