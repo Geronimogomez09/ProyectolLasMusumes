@@ -274,9 +274,12 @@ function Header() {
 
                                             <li>
                                                 <Link
-                                                    to="/"
+                                                    to="/perfil"
                                                     className="profile-menu-item"
-                                                    onClick={cerrarMenu}
+                                                    onClick={() => {
+                                                        cerrarMenu();
+                                                        setPerfilAbierto(false);
+                                                    }}
                                                 >
                                                     Mi perfil
                                                 </Link>

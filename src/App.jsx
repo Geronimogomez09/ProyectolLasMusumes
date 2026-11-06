@@ -5,6 +5,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Inicio from "./pages/index";
 import Tienda from "./pages/tienda";
 import Login from "./pages/login";
+import Perfil from "./pages/Perfil";
 import Comunidad from "./pages/comunidad";
 import Publicacion from "./pages/Publicacion";
 import Versiones from "./pages/versiones";
@@ -67,6 +68,7 @@ function AppRoutes() {
                 <Route path="/" element={<RutaProtegida><Inicio /></RutaProtegida>} />
                 <Route path="/tienda" element={<RutaProtegida><Tienda /></RutaProtegida>} />
                 <Route path="/login" element={<Login />} />
+                <Route path="/perfil" element={<RutaProtegida><Perfil /></RutaProtegida>} />
                 <Route path="/comunidad" element={<RutaProtegida><Comunidad /></RutaProtegida>} />
                 <Route path="/publicacion/:id" element={<RutaProtegida><Publicacion /></RutaProtegida>} />
                 <Route path="/versiones" element={<RutaProtegida><Versiones /></RutaProtegida>} />
