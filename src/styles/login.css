@@ -657,9 +657,257 @@
 
 /* ERROR: utiliza tonos rojizos suaves para comunicar errores de validación o autenticación. */
 .acceso-page .alert-danger {
-  border: 1px solid rgba(174, 89, 65, 0.22);
+  border: 1px solid rgba(174, 65, 65, 0.349);
 
   background: rgba(255, 239, 229, 0.92);
 
-  color: #914b37;
+  color: #913737;
+}
+
+
+/* BLOQUES, FLORES Y ANIMALES */
+
+/* ELEMENTOS DECORATIVOS: establece la posición de las imágenes del fondo
+   y agrega una sombra para separarlas visualmente. */
+.acceso-recurso,
+.acceso-animal {
+  position: absolute;
+
+  display: block;
+
+  pointer-events: none;
+
+  filter: drop-shadow(
+    0 12px 13px rgba(74, 65, 34, 0.20)
+  );
+}
+
+/* IMÁGENES DECORATIVAS: hace que las imágenes ocupen todo el espacio disponible
+   sin deformarse y conserva su apariencia pixelada. */
+.acceso-recurso-imagen,
+.acceso-animal-img {
+  display: block;
+
+  width: 100%;
+  height: 100%;
+
+  object-fit: contain;
+
+  image-rendering: pixelated;
+
+  user-select: none;
+}
+
+/* BLOQUES DE MINECRAFT: establece el tamaño y la animación general de los bloques. */
+.acceso-recurso--bloque {
+  width: 62px;
+  height: 62px;
+
+  animation: acceso-bloque-flota 7.5s ease-in-out infinite;
+}
+
+/* Posiciona el bloque de césped en la parte superior izquierda. */
+.acceso-recurso--bloque-uno {
+  top: 12%;
+  left: 5%;
+}
+
+/* Posiciona el bloque de tierra en la parte inferior izquierda
+   y le aplica una transparencia y un retraso a su animación. */
+.acceso-recurso--bloque-dos {
+  bottom: 12%;
+  left: 17%;
+
+  width: 52px;
+  height: 52px;
+
+  opacity: 0.76;
+
+  animation-delay: -2.4s;
+}
+
+/* Posiciona el bloque de piedra en la parte superior derecha. */
+.acceso-recurso--bloque-tres {
+  top: 17%;
+  right: 5%;
+
+  width: 43px;
+  height: 43px;
+
+  opacity: 0.62;
+
+  animation-delay: -4.2s;
+}
+
+/* FLORES Y VEGETACIÓN: define el tamaño y la animación de los elementos naturales. */
+.acceso-flor {
+  width: 66px;
+  height: 66px;
+
+  animation: acceso-particula-flota 7s ease-in-out infinite;
+}
+
+/* Ubica las flores en diferentes sectores del fondo. */
+.acceso-flor--uno {
+  top: 22%;
+  right: 16%;
+}
+
+.acceso-flor--dos {
+  bottom: 17%;
+  right: 7%;
+
+  width: 58px;
+  height: 58px;
+
+  animation-delay: -2.8s;
+}
+
+.acceso-flor--tres {
+  top: 10%;
+  left: 24%;
+
+  width: 42px;
+  height: 42px;
+
+  opacity: 0.76;
+
+  animation-delay: -4s;
+}
+
+/* ANIMALES: aplica una animación de flotación a los personajes decorativos. */
+.acceso-animal {
+  animation: acceso-animal-flota 7s ease-in-out infinite;
+}
+
+/* Posiciona y dimensiona individualmente cada animal. */
+.acceso-animal--zorro {
+  right: 7%;
+  bottom: 5%;
+
+  width: 126px;
+  height: 94px;
+}
+
+.acceso-animal--abeja {
+  top: 10%;
+  right: 29%;
+
+  width: 70px;
+  height: 57px;
+
+  animation-delay: -2.5s;
+}
+
+.acceso-animal--rana {
+  bottom: 16%;
+  left: 6%;
+
+  width: 86px;
+  height: 56px;
+
+  animation-delay: -3.8s;
+}
+
+.acceso-animal--moobloom {
+  right: 20%;
+  bottom: 19%;
+
+  width: 104px;
+  height: 92px;
+
+  animation-delay: -1.2s;
+}
+
+/* PARTÍCULAS DE LUZ: crea pequeños cuadrados luminosos que complementan el fondo. */
+.acceso-particula {
+  position: absolute;
+
+  width: 7px;
+  height: 7px;
+
+  border-radius: 2px;
+
+  background: #f0bd4f;
+
+  box-shadow: 0 0 14px rgba(240, 189, 79, 0.55);
+
+  animation: acceso-particula-brillo 4.8s ease-in-out infinite;
+}
+
+/* Posiciona las partículas en diferentes lugares de la página. */
+.acceso-particula--uno {
+  top: 35%;
+  left: 18%;
+}
+
+.acceso-particula--dos {
+  top: 16%;
+  right: 14%;
+
+  animation-delay: -1.6s;
+}
+
+.acceso-particula--tres {
+  bottom: 28%;
+  right: 33%;
+
+  width: 5px;
+  height: 5px;
+
+  animation-delay: -3s;
+}
+
+/* ANIMACIONES */
+
+/* FLOTACIÓN DE BLOQUES: mueve los bloques verticalmente y modifica levemente su rotación. */
+@keyframes acceso-bloque-flota {
+  0%, 100% {
+    translate: 0 0;
+    rotate: -5deg;
+  }
+
+  50% {
+    translate: 0 -10px;
+    rotate: 2deg;
+  }
+}
+
+/* FLOTACIÓN DE FLORES: hace que las flores suban y bajen suavemente. */
+@keyframes acceso-particula-flota {
+  0%, 100% {
+    translate: 0 0;
+    rotate: -4deg;
+  }
+
+  50% {
+    translate: 0 -9px;
+    rotate: 5deg;
+  }
+}
+
+/* FLOTACIÓN DE ANIMALES: genera un movimiento vertical y una pequeña inclinación. */
+@keyframes acceso-animal-flota {
+  0%, 100% {
+    translate: 0 0;
+    rotate: -2deg;
+  }
+
+  50% {
+    translate: 0 -8px;
+    rotate: 2deg;
+  }
+}
+
+/* BRILLO DE PARTÍCULAS: modifica la opacidad y el tamaño para simular un efecto luminoso. */
+@keyframes acceso-particula-brillo {
+  0%, 100% {
+    opacity: 0.34;
+    scale: 0.8;
+  }
+
+  50% {
+    opacity: 0.95;
+    scale: 1.2;
+  }
 }
