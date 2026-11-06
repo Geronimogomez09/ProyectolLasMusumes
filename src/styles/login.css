@@ -911,3 +911,221 @@
     scale: 1.2;
   }
 }
+
+
+/* RESPONSIVE */
+
+/* TABLETS Y DISPOSITIVOS MÓVILES:
+   adapta la tarjeta y sus columnas cuando el ancho de pantalla es menor a 768 píxeles. */
+@media (max-width: 767.98px) {
+
+  /* Ajusta el fondo y evita mantenerlo fijo durante el desplazamiento. */
+  .acceso-page {
+    align-items: flex-start;
+
+    padding: 24px 14px;
+
+    overflow: hidden;
+
+    background-attachment: scroll;
+  }
+
+  /* Permite que el contenedor se adapte a la altura de su contenido. */
+  .acceso-contenedor {
+    min-height: auto !important;
+
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+
+  /* Reduce el ancho máximo, el relleno y los bordes de la tarjeta. */
+  .acceso-card {
+    max-width: 580px;
+
+    padding: 16px !important;
+
+    border-radius: 25px;
+  }
+
+  /* El panel informativo pasa a ocupar una fila completa.
+     El borde lateral se reemplaza por uno inferior. */
+  .acceso-panel-izq {
+    border-right: 0 !important;
+
+    border-bottom: 1px solid rgba(125, 137, 85, 0.22) !important;
+
+    border-radius: 20px 20px 0 0;
+
+    text-align: center;
+  }
+
+  /* Centra la etiqueta del panel informativo. */
+  .acceso-panel-etiqueta {
+    align-self: center;
+  }
+
+  /* Centra horizontalmente la descripción del panel. */
+  .acceso-panel-izq > p {
+    margin-right: auto;
+    margin-left: auto;
+  }
+
+  /* Centra las etiquetas destacadas. */
+  .acceso-panel-puntos {
+    justify-content: center;
+    margin-top: 18px;
+  }
+
+  /* Reduce el espacio inferior de la cabecera del formulario. */
+  .acceso-form-cabecera {
+    margin-bottom: 18px;
+  }
+
+  /* Coloca los botones de acción uno debajo del otro. */
+  .acceso-acciones {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  /* Hace que el botón principal ocupe todo el ancho disponible. */
+  .acceso-btn-submit {
+    width: 100%;
+  }
+
+  /* Distribuye el texto y el botón secundario en extremos opuestos. */
+  .acceso-cambio-vista {
+    justify-content: space-between;
+  }
+
+  /* Alinea el texto del cambio de formulario hacia la izquierda. */
+  .acceso-cambio-vista > span {
+    text-align: left;
+  }
+
+  /* DECORACIÓN MÓVIL: reduce el tamaño y la opacidad de algunos elementos
+     para evitar que interfieran visualmente con los formularios. */
+
+  .acceso-animal--zorro {
+    right: -24px;
+    bottom: 1%;
+
+    opacity: 0.42;
+
+    scale: 0.72;
+  }
+
+  .acceso-animal--abeja {
+    top: 6%;
+    right: 4%;
+
+    opacity: 0.58;
+
+    scale: 0.78;
+  }
+
+  /* Disminuye la visibilidad de algunos elementos decorativos. */
+  .acceso-animal--rana,
+  .acceso-animal--moobloom,
+  .acceso-recurso--bloque-tres,
+  .acceso-flor--tres {
+    opacity: 0.25;
+  }
+
+  /* Reubica los bloques para adaptarlos al ancho de la pantalla. */
+  .acceso-recurso--bloque-uno {
+    top: 4%;
+    left: -20px;
+
+    opacity: 0.38;
+  }
+
+  .acceso-recurso--bloque-dos {
+    right: -25px;
+    bottom: 7%;
+    left: auto;
+
+    opacity: 0.32;
+  }
+
+  /* Ajusta la posición de una de las flores. */
+  .acceso-flor--uno {
+    top: 11%;
+    right: 3%;
+  }
+}
+
+/* TELÉFONOS PEQUEÑOS: aplica ajustes adicionales cuando el ancho no supera los 420 píxeles. */
+@media (max-width: 420px) {
+
+  /* Reduce los márgenes exteriores de la página. */
+  .acceso-page {
+    padding: 16px 10px;
+  }
+
+  /* Reduce el espacio interior y el redondeado de la tarjeta. */
+  .acceso-card {
+    padding: 11px !important;
+
+    border-radius: 21px;
+  }
+
+  /* Reduce el tamaño del título para evitar desbordamientos. */
+  .acceso-page h2 {
+    font-size: 1.4rem;
+  }
+
+  /* Ajusta el tamaño de las etiquetas de los campos. */
+  .acceso-page .form-label {
+    font-size: 0.78rem;
+  }
+
+  /* Alinea la cabecera hacia arriba cuando el espacio horizontal es limitado. */
+  .acceso-form-cabecera {
+    align-items: flex-start;
+  }
+
+  /* Reduce el tamaño del mensaje de bienvenida y alinea su texto a la derecha. */
+  .acceso-form-nota {
+    font-size: 0.68rem;
+    text-align: right;
+  }
+
+  /* Coloca el texto y el botón de cambio de formulario en columnas. */
+  .acceso-cambio-vista {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  /* Centra el texto que acompaña al botón secundario. */
+  .acceso-cambio-vista > span {
+    text-align: center;
+  }
+
+  /* Hace que el botón secundario ocupe todo el ancho disponible. */
+  .acceso-btn-cambio {
+    width: 100%;
+  }
+
+  /* Reduce el tamaño de las etiquetas del panel informativo. */
+  .acceso-panel-puntos span {
+    padding: 6px 8px;
+    font-size: 0.68rem;
+  }
+}
+
+/* ACCESIBILIDAD: REDUCIR MOVIMIENTO */
+
+/* Respeta la preferencia del sistema operativo para reducir las animaciones.
+   Desactiva los movimientos y limita las transiciones a una duración casi imperceptible. */
+@media (prefers-reduced-motion: reduce) {
+  .acceso-page *,
+  .acceso-page *::before,
+  .acceso-page *::after {
+    animation: none !important;
+
+    transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
+
+    scroll-behavior: auto !important;
+  }
+}
