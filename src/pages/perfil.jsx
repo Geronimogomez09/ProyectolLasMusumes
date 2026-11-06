@@ -190,5 +190,28 @@ export default function Perfil() {
     fotoPerfil: "",
   });
 
+    // 5. EFECTOS DE REACT
+  
+    // ACTUALIZAR FORMULARIO: copia los datos del perfil de Firestore
+    // dentro del estado formulario cada vez que cambia la información del perfil.
+    useEffect(() => {
+  
+      // Si todavía no existe información del perfil, no realiza ninguna operación.
+      if (!perfil) return;
+  
+      // Actualiza los campos utilizando los datos disponibles.
+      // El operador || "" establece una cadena vacía cuando un dato no existe.
+      setFormulario({
+        nombreUsuario: perfil.nombreUsuario || "",
+        nombre: perfil.nombre || "",
+        apellido: perfil.apellido || "",
+        biografia: perfil.biografia || "",
+        ubicacion: perfil.ubicacion || "",
+        sitioWeb: perfil.sitioWeb || "",
+        fechaNacimiento: perfil.fechaNacimiento || "",
+        fotoPerfil: perfil.fotoPerfil || "",
+      });
+    }, [perfil]);
+  
 
 }
