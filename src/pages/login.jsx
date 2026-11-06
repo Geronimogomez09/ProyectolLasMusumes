@@ -320,4 +320,570 @@ export default function Login() {
     setVista(nuevaVista);
   };
   
+    // RENDERIZADO: define la estructura visual de la página.
+  return (
+    <div className="acceso-page">
+
+      {/* Muestra los elementos decorativos del fondo. */}
+      <DecoracionAcceso />
+
+      {/* CONTENEDOR: centra la tarjeta en la pantalla y permite adaptarla a distintos tamaños. */}
+      <div className="container min-vh-100 d-flex align-items-center justify-content-center py-5 acceso-contenedor">
+
+        {/* TARJETA: divide el contenido en dos columnas, una informativa y otra para el formulario. */}
+        <div className="row border rounded p-4 w-100 acceso-card g-0">
+
+          {/* PANEL IZQUIERDO: presenta información y una descripción del proyecto. */}
+          <div className="col-md-4 border-end d-flex flex-column justify-content-center p-4 acceso-panel-izq">
+
+            {/* Etiqueta decorativa que identifica el propósito de la sección. */}
+            <span className="acceso-panel-etiqueta">
+              <i className="bi bi-flower1" />
+              UN MUNDO POR DESCUBRIR
+            </span>
+
+            {/* El título y la descripción cambian según el formulario seleccionado. */}
+            <h2 className="fw-bold">
+              {vista === "login"
+                ? "¡Qué bueno verte!"
+                : "Creá tu aventura"}
+            </h2>
+
+            <p>
+              {vista === "login"
+                ? "Ingresá a tu cuenta y seguí explorando todo lo que la comunidad tiene para compartir."
+                : "Unite a Wiki-Craft, compartí tus ideas y empezá a formar parte de nuestra comunidad."}
+            </p>
+
+            {/* PUNTOS DESTACADOS: muestra algunas de las actividades que ofrece el sitio. */}
+            <div className="acceso-panel-puntos" aria-hidden="true">
+              <span>
+                <i className="bi bi-compass" /> Explorar
+              </span>
+
+              <span>
+                <i className="bi bi-tree" /> Crear
+              </span>
+
+              <span>
+                <i className="bi bi-stars" /> Compartir
+              </span>
+            </div>
+          </div>
+
+          {/* PANEL DERECHO: contiene el encabezado, los mensajes de error y los formularios. */}
+          <div className="col-md-8 p-4 acceso-panel-form">
+
+            {/* ENCABEZADO: muestra la marca del sitio y un mensaje de bienvenida. */}
+            <div className="acceso-form-cabecera">
+              <span className="acceso-form-etiqueta">
+                <i className="bi bi-flower2" />
+                WIKI-CRAFT
+              </span>
+
+              <span className="acceso-form-nota">
+                <i className="bi bi-sun" />
+                Tu próxima aventura empieza acá
+              </span>
+            </div>
+
+            {/* MENSAJE DE ERROR: aparece únicamente cuando existe un error registrado. */}
+            {error && (
+              <div className="alert alert-danger mb-3" role="alert">
+                {error}
+              </div>
+            )}
+
+            {/* FORMULARIO DE LOGIN:
+                se muestra solamente cuando la variable vista tiene el valor "login". */}
+            {vista === "login" && (
+              <form
+                onSubmit={entrar}
+                key="login"
+                className="acceso-form"
+              >
+
+                {/* CAMPO DE CORREO: solicita el email utilizado para registrar la cuenta. */}
+                <div className="mb-3">
+                  <label
+                    className="form-label fw-bold"
+                    htmlFor="loginEmail"
+                  >
+                    Correo electrónico *
+                  </label>
+
+                  <div className="input-group">
+
+                    {/* Ícono que identifica el campo de correo. */}
+                    <span className="input-group-text">
+                      <i className="bi bi-envelope" />
+                    </span>
+
+                    <input
+                      id="loginEmail"
+                      type="email"
+                      name="loginEmail"
+                      className="form-control"
+                      placeholder="Ingresá tu correo electrónico"
+                      autoComplete="email"
+                      required
+                    />
+                  </div>
+                </div>
+
+                {/* CAMPO DE CONTRASEÑA: solicita la contraseña de la cuenta. */}
+                <div className="mb-4">
+                  <label
+                    className="form-label fw-bold"
+                    htmlFor="loginPassword"
+                  >
+                    Contraseña *
+                  </label>
+
+                  <div className="input-group">
+
+                    {/* Ícono del campo de contraseña. */}
+                    <span className="input-group-text">
+                      <i className="bi bi-lock" />
+                    </span>
+
+                    <input
+                      id="loginPassword"
+
+                      // Cambia el tipo de input dependiendo de la visibilidad seleccionada.
+                      type={mostrarPassword ? "text" : "password"}
+
+                      name="loginPassword"
+                      className="form-control"
+                      placeholder="Ingresá tu contraseña"
+                      autoComplete="current-password"
+                      required
+                    />
+
+                    {/* BOTÓN DE VISIBILIDAD: alterna entre mostrar y ocultar la contraseña. */}
+                    <button
+                      className="btn btn-outline-secondary"
+                      type="button"
+                      aria-label={
+                        mostrarPassword
+                          ? "Ocultar contraseña"
+                          : "Mostrar contraseña"
+                      }
+                      onClick={() =>
+                        setMostrarPassword(!mostrarPassword)
+                      }
+                    >
+                      <i
+                        className={`bi ${
+                          mostrarPassword ? "bi-eye" : "bi-eye-slash"
+                        }`}
+                      />
+                    </button>
+                  </div>
+                </div>
+
+                {/* ACCIONES: contiene el botón para ingresar y el acceso al registro. */}
+                <div className="acceso-acciones">
+
+                  {/* BOTÓN PRINCIPAL: envía los datos del formulario para iniciar sesión. */}
+                  <button
+                    type="submit"
+                    className="btn btn-primary acceso-btn-submit"
+                    disabled={cargando}
+                  >
+
+                    {/* El contenido del botón cambia mientras se procesa la solicitud. */}
+                    {cargando ? (
+                      <>
+                        <span
+                          className="spinner-border spinner-border-sm me-2"
+                          role="status"
+                        />
+                        Ingresando...
+                      </>
+                    ) : (
+                      <>
+                        <i className="bi bi-box-arrow-in-right me-2" />
+                        Entrar
+                      </>
+                    )}
+                  </button>
+
+                  {/* CAMBIO DE VISTA: ofrece un acceso al formulario de registro. */}
+                  <div className="acceso-cambio-vista">
+                    <span>¿No tenés una cuenta?</span>
+
+                    <button
+                      type="button"
+                      className="btn btn-outline-secondary acceso-btn-cambio"
+                      onClick={() => cambiarVista("registro")}
+                    >
+                      Registrarse
+                      <i className="bi bi-arrow-right ms-1" />
+                    </button>
+                  </div>
+                </div>
+              </form>
+            )}
+
+            {/* FORMULARIO DE REGISTRO:
+                se muestra únicamente cuando la variable vista tiene el valor "registro". */}
+            {vista === "registro" && (
+              <form
+                onSubmit={registrarse}
+                key="registro"
+                className="acceso-form"
+              >
+
+                {/* DATOS PERSONALES: agrupa los campos de usuario y nombre. */}
+                <div className="row g-3 mb-3">
+
+                  {/* CAMPO DE NOMBRE DE USUARIO. */}
+                  <div className="col-md-6">
+                    <label
+                      className="form-label fw-bold"
+                      htmlFor="regUsername"
+                    >
+                      Nombre de usuario *
+                    </label>
+
+                    <div className="input-group">
+                      <span className="input-group-text">
+                        <i className="bi bi-person-badge" />
+                      </span>
+
+                      <input
+                        id="regUsername"
+                        type="text"
+                        name="regUsername"
+                        className="form-control"
+                        placeholder="Elegí un usuario"
+                      />
+                    </div>
+                  </div>
+
+                  {/* CAMPO DE NOMBRE: solicita el nombre que se guardará en el perfil de Firebase. */}
+                  <div className="col-md-6">
+                    <label
+                      className="form-label fw-bold"
+                      htmlFor="regNombre"
+                    >
+                      Nombre *
+                    </label>
+
+                    <div className="input-group">
+                      <span className="input-group-text">
+                        <i className="bi bi-person" />
+                      </span>
+
+                      <input
+                        id="regNombre"
+                        type="text"
+                        name="regNombre"
+                        className="form-control"
+                        placeholder="Ingresá tu nombre"
+                        autoComplete="name"
+                        required
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* CORREO ELECTRÓNICO: solicita el email que se utilizará para autenticar la cuenta. */}
+                <div className="mb-3">
+                  <label
+                    className="form-label fw-bold"
+                    htmlFor="regEmail"
+                  >
+                    Correo electrónico *
+                  </label>
+
+                  <div className="input-group">
+                    <span className="input-group-text">
+                      <i className="bi bi-envelope" />
+                    </span>
+
+                    <input
+                      id="regEmail"
+                      type="email"
+                      name="regEmail"
+                      className="form-control"
+                      placeholder="Ingresá tu correo electrónico"
+                      autoComplete="email"
+                      required
+                    />
+                  </div>
+                </div>
+
+                {/* CONTRASEÑAS: agrupa la contraseña nueva y su confirmación. */}
+                <div className="row g-3 mb-3">
+
+                  {/* CAMPO DE CONTRASEÑA: permite establecer la contraseña de la cuenta. */}
+                  <div className="col-md-6">
+                    <label
+                      className="form-label fw-bold"
+                      htmlFor="regPassword"
+                    >
+                      Contraseña *
+                    </label>
+
+                    <div className="input-group">
+                      <span className="input-group-text">
+                        <i className="bi bi-lock" />
+                      </span>
+
+                      <input
+                        id="regPassword"
+                        type={mostrarPassword ? "text" : "password"}
+                        name="regPassword"
+                        className="form-control"
+                        placeholder="Mínimo 6 caracteres"
+                        minLength={6}
+                        autoComplete="new-password"
+                        required
+                      />
+
+                      {/* Permite alternar la visibilidad de la contraseña. */}
+                      <button
+                        className="btn btn-outline-secondary"
+                        type="button"
+                        aria-label={
+                          mostrarPassword
+                            ? "Ocultar contraseña"
+                            : "Mostrar contraseña"
+                        }
+                        onClick={() =>
+                          setMostrarPassword(!mostrarPassword)
+                        }
+                      >
+                        <i
+                          className={`bi ${
+                            mostrarPassword ? "bi-eye" : "bi-eye-slash"
+                          }`}
+                        />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* CAMPO DE CONFIRMACIÓN: solicita repetir la contraseña anterior. */}
+                  <div className="col-md-6">
+                    <label
+                      className="form-label fw-bold"
+                      htmlFor="regConfirmPassword"
+                    >
+                      Repetir contraseña *
+                    </label>
+
+                    <div className="input-group">
+                      <span className="input-group-text">
+                        <i className="bi bi-lock-fill" />
+                      </span>
+
+                      <input
+                        id="regConfirmPassword"
+                        type={
+                          mostrarConfirmPassword ? "text" : "password"
+                        }
+                        name="regConfirmPassword"
+                        className="form-control"
+                        placeholder="Confirmá tu contraseña"
+                        autoComplete="new-password"
+                        required
+                      />
+
+                      {/* Permite mostrar u ocultar el campo de confirmación. */}
+                      <button
+                        className="btn btn-outline-secondary"
+                        type="button"
+                        aria-label={
+                          mostrarConfirmPassword
+                            ? "Ocultar confirmación"
+                            : "Mostrar confirmación"
+                        }
+                        onClick={() =>
+                          setMostrarConfirmPassword(
+                            !mostrarConfirmPassword
+                          )
+                        }
+                      >
+                        <i
+                          className={`bi ${
+                            mostrarConfirmPassword
+                              ? "bi-eye"
+                              : "bi-eye-slash"
+                          }`}
+                        />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* PAÍS Y TÉRMINOS: permite seleccionar un país y aceptar las condiciones de uso. */}
+                <div className="row g-3 mb-3 align-items-center">
+
+                  {/* SELECTOR DE PAÍS: genera sus opciones utilizando el arreglo PAISES. */}
+                  <div className="col-md-6">
+                    <label
+                      className="form-label fw-bold"
+                      htmlFor="regPais"
+                    >
+                      País
+                    </label>
+
+                    <div className="input-group">
+                      <span className="input-group-text">
+                        <i className="bi bi-globe-americas" />
+                      </span>
+
+                      <select
+                        id="regPais"
+                        name="regPais"
+                        className="form-select"
+                        defaultValue=""
+                      >
+                        <option value="" disabled>
+                          Seleccioná un país
+                        </option>
+
+                        {/* Recorre el arreglo y crea una opción por cada país. */}
+                        {PAISES.map((pais) => (
+                          <option key={pais} value={pais}>
+                            {pais}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* CASILLA DE TÉRMINOS: permite aceptar las condiciones para completar el registro. */}
+                  <div className="col-md-6 acceso-opcion-check">
+                    <span className="form-label fw-bold d-block">
+                      Términos y condiciones
+                    </span>
+
+                    <div className="form-check">
+                      <input
+                        className="form-check-input"
+                        type="checkbox"
+                        id="regTerminos"
+                        name="regTerminos"
+                      />
+
+                      <label
+                        className="form-check-label"
+                        htmlFor="regTerminos"
+                      >
+                        Acepto los términos y condiciones
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                {/* ROL Y NOTIFICACIONES: agrupa las opciones adicionales del registro. */}
+                <div className="row g-3 mb-4 align-items-center">
+
+                  {/* SELECTOR DE ROL: permite elegir entre usuario y administrador. */}
+                  <div className="col-md-6">
+                    <label
+                      className="form-label fw-bold"
+                      htmlFor="regRol"
+                    >
+                      Rol (solo en modo admin)
+                    </label>
+
+                    <div className="input-group">
+                      <span className="input-group-text">
+                        <i className="bi bi-gear" />
+                      </span>
+
+                      <select
+                        id="regRol"
+                        name="regRol"
+                        className="form-select"
+                        defaultValue=""
+                      >
+                        <option value="" disabled>
+                          Seleccioná un rol
+                        </option>
+
+                        <option value="user">Usuario</option>
+                        <option value="admin">Administrador</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* NOTIFICACIONES: permite activar o desactivar la recepción de novedades por email. */}
+                  <div className="col-md-6 acceso-opcion-check">
+                    <span className="form-label fw-bold d-block">
+                      Notificaciones por email
+                    </span>
+
+                    <div className="form-check form-switch">
+                      <input
+                        className="form-check-input"
+                        type="checkbox"
+                        role="switch"
+                        id="regNotificaciones"
+                        name="regNotificaciones"
+                        defaultChecked
+                      />
+
+                      <label
+                        className="form-check-label"
+                        htmlFor="regNotificaciones"
+                      >
+                        Sí, quiero recibir novedades
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                {/* ACCIONES: contiene el botón de registro y el acceso al inicio de sesión. */}
+                <div className="acceso-acciones">
+
+                  {/* BOTÓN PRINCIPAL: envía los datos para crear una cuenta. */}
+                  <button
+                    type="submit"
+                    className="btn btn-primary acceso-btn-submit"
+                    disabled={cargando}
+                  >
+
+                    {/* Cambia el texto y muestra un indicador mientras se crea la cuenta. */}
+                    {cargando ? (
+                      <>
+                        <span
+                          className="spinner-border spinner-border-sm me-2"
+                          role="status"
+                        />
+                        Creando cuenta...
+                      </>
+                    ) : (
+                      <>
+                        <i className="bi bi-person-plus me-2" />
+                        Registrarse
+                      </>
+                    )}
+                  </button>
+
+                  {/* CAMBIO DE VISTA: permite volver al formulario de inicio de sesión. */}
+                  <div className="acceso-cambio-vista">
+                    <span>¿Ya tenés una cuenta?</span>
+
+                    <button
+                      type="button"
+                      className="btn btn-outline-secondary acceso-btn-cambio"
+                      onClick={() => cambiarVista("login")}
+                    >
+                      Iniciar sesión
+                      <i className="bi bi-arrow-right ms-1" />
+                    </button>
+                  </div>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
