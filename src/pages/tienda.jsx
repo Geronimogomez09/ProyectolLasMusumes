@@ -1,3 +1,4 @@
+
 import { useEffect, useMemo, useState } from "react";
 
 import Header from '../components/header';
@@ -13,6 +14,18 @@ import { tienePermiso } from "../utils/permisos";
 import DetalleProducto from "../components/tiendaComponentes/DetalleProducto";
 
 import { productosIniciales } from "../data/productos";
+import {
+    crearProducto,
+    actualizarProducto,
+    eliminarProducto as eliminarProductoFirebase,
+    escucharProductos,
+    crearHero,
+    actualizarHero,
+    eliminarHero,
+    escucharHeroes,
+    inicializarTiendaSiVacia,
+    restaurarTiendaPredeterminada
+} from "../services/firestore"
 
 import "../styles/tienda.css";
 
@@ -39,6 +52,10 @@ const slidesBanner = [
         imagen: "/fondos/banner-coleccion-diamante.png"
     }
 ];
+
+function imagenComoUrl(imagen) {
+    return imagen ? new URL(imagen, window.location.origin).href : "";
+}
 
 function BannerTienda({ irProductos, abrirProducto, slidesBanner, productos }) {
     const [slideActual, setSlideActual] = useState(1);
@@ -129,7 +146,7 @@ function BannerTienda({ irProductos, abrirProducto, slidesBanner, productos }) {
                                 onClick={() => {
                                     const destino = productos.find(
                                         (producto) =>
-                                            Number(producto.id) === Number(slide.productoId)
+                                            String(producto.id) === String(slide.productoId)
                                     );
 
                                     if (destino) {
@@ -175,7 +192,13 @@ function BannerTienda({ irProductos, abrirProducto, slidesBanner, productos }) {
     );
 }
 
-function AdministrarBanners({ banners, setBanners, productos }) {
+function AdministrarBanners({
+    banners,
+    agregarBanner,
+    modificarBanner,
+    eliminarBanner,
+    productos
+}) {
     const formularioInicial = {
         subtitulo: "",
         titulo: "",
@@ -184,17 +207,20 @@ function AdministrarBanners({ banners, setBanners, productos }) {
         imagen: "",
         productoId: ""
     };
+
     const [form, setForm] = useState(formularioInicial);
     const [bannerEditando, setBannerEditando] = useState(null);
     const [busquedaProducto, setBusquedaProducto] = useState("");
+    const [guardando, setGuardando] = useState(false);
 
     const productosCoincidentes = productos.filter((producto) =>
-        producto.nombre
+        (producto.nombre || "")
             .toLocaleLowerCase("es")
             .includes(busquedaProducto.trim().toLocaleLowerCase("es"))
     );
+
     const productoSeleccionado = productos.find(
-        (producto) => Number(producto.id) === Number(form.productoId)
+        (producto) => String(producto.id) === String(form.productoId)
     );
 
     function cambiarCampo(event) {
@@ -202,59 +228,77 @@ function AdministrarBanners({ banners, setBanners, productos }) {
         setForm((actual) => ({ ...actual, [name]: value }));
     }
 
-    function guardarBanner(event) {
+    async function guardarBanner(event) {
         event.preventDefault();
+        setGuardando(true);
 
-        if (bannerEditando === null) {
-            setBanners((actuales) => [...actuales, form]);
-        } else {
-            setBanners((actuales) =>
-                actuales.map((banner, indice) =>
-                    indice === bannerEditando ? form : banner
-                )
-            );
+        try {
+            const datos = {
+                ...form,
+                productoId: form.productoId ? String(form.productoId) : ""
+            };
+
+            if (bannerEditando === null) {
+                await agregarBanner(datos);
+                window.alert("Hero agregado correctamente.");
+            } else {
+                await modificarBanner(bannerEditando, datos);
+                window.alert("Hero modificado correctamente.");
+            }
+
+            setForm(formularioInicial);
+            setBannerEditando(null);
+            setBusquedaProducto("");
+        } catch (error) {
+            console.error("Error al guardar Hero:", error);
+            window.alert(error.message || "No se pudo guardar el Hero.");
+        } finally {
+            setGuardando(false);
         }
-
-        setForm(formularioInicial);
-        setBannerEditando(null);
-        setBusquedaProducto("");
     }
 
-    function editarBanner(indice) {
-        const banner = banners[indice];
+    function editarBanner(banner) {
         const destino = productos.find(
-            (producto) => Number(producto.id) === Number(banner.productoId)
+            (producto) => String(producto.id) === String(banner.productoId)
         );
 
-        setForm({ ...formularioInicial, ...banner });
-        setBannerEditando(indice);
+        setForm({
+            ...formularioInicial,
+            ...banner,
+            imagen: imagenComoUrl(banner.imagen)
+        });
+        setBannerEditando(banner.id);
         setBusquedaProducto(destino?.nombre ?? "");
     }
 
-    function eliminarBanner(indice) {
+    async function borrarBanner(banner) {
         if (banners.length <= 1) {
             window.alert("Debe quedar al menos un banner en la tienda.");
             return;
         }
 
         const confirmar = window.confirm(
-            `¿Querés eliminar el banner "${banners[indice].titulo}"? Esta acción no se puede deshacer.`
+            `¿Querés eliminar el banner "${banner.titulo}"? Esta acción no se puede deshacer.`
         );
+        if (!confirmar) return;
 
-        if (!confirmar) {
-            return;
+        try {
+            await eliminarBanner(banner.id);
+            if (bannerEditando === banner.id) {
+                setForm(formularioInicial);
+                setBannerEditando(null);
+                setBusquedaProducto("");
+            }
+        } catch (error) {
+            console.error("Error al eliminar Hero:", error);
+            window.alert(error.message || "No se pudo eliminar el Hero.");
         }
+    }
 
-        setBanners((actuales) =>
-            actuales.filter((_, posicion) => posicion !== indice)
-        );
-
-        if (bannerEditando === indice) {
-            setForm(formularioInicial);
-            setBannerEditando(null);
-        } else if (bannerEditando !== null && bannerEditando > indice) {
-            setBannerEditando((actual) => actual - 1);
-        }
+    function cancelarEdicion() {
+        setForm(formularioInicial);
+        setBannerEditando(null);
+        setBusquedaProducto("");
     }
 
     return (
@@ -263,9 +307,9 @@ function AdministrarBanners({ banners, setBanners, productos }) {
             <p>Agregá o modificá las imágenes y los textos del carrusel.</p>
 
             <div className="admin-banners-lista">
-                {banners.map((banner, indice) => (
-                    <article className="admin-banner-tarjeta" key={`${banner.titulo}-${indice}`}>
-                        <img src={banner.imagen} alt={banner.titulo} />
+                {banners.map((banner) => (
+                    <article className="admin-banner-tarjeta" key={banner.id}>
+                        <img src={banner.imagen} alt={banner.titulo || "Banner de tienda"} />
                         <div className="admin-banner-textos">
                             <strong>{banner.titulo || "Sin título"}</strong>
                             <span>{banner.subtitulo}</span>
@@ -273,18 +317,18 @@ function AdministrarBanners({ banners, setBanners, productos }) {
                             <small>Botón: {banner.boton}</small>
                             <small>
                                 Destino: {productos.find(
-                                    (producto) => Number(producto.id) === Number(banner.productoId)
+                                    (producto) => String(producto.id) === String(banner.productoId)
                                 )?.nombre || "Todos los productos"}
                             </small>
                         </div>
                         <div className="admin-banner-acciones">
-                            <button type="button" onClick={() => editarBanner(indice)}>
+                            <button type="button" onClick={() => editarBanner(banner)}>
                                 Modificar
                             </button>
                             <button
                                 className="eliminar-btn"
                                 type="button"
-                                onClick={() => eliminarBanner(indice)}
+                                onClick={() => borrarBanner(banner)}
                             >
                                 Eliminar
                             </button>
@@ -312,12 +356,14 @@ function AdministrarBanners({ banners, setBanners, productos }) {
                     <input name="boton" value={form.boton} onChange={cambiarCampo} required />
                 </label>
                 <label className="admin-banner-campo-completo">
-                    Ruta de la imagen
+                    URL de la imagen
                     <input
                         name="imagen"
+                        type="url"
                         value={form.imagen}
                         onChange={cambiarCampo}
-                        placeholder="/fondos/mi-banner.png"
+                        placeholder="https://ejemplo.com/banner.jpg"
+                        pattern="https?://.+"
                         required
                     />
                 </label>
@@ -357,14 +403,12 @@ function AdministrarBanners({ banners, setBanners, productos }) {
                                         onClick={() => {
                                             setForm((actual) => ({
                                                 ...actual,
-                                                productoId: producto.id
+                                                productoId: String(producto.id)
                                             }));
                                             setBusquedaProducto(producto.nombre);
                                         }}
                                     >
-                                        {producto.imagen && (
-                                            <img src={producto.imagen} alt="" />
-                                        )}
+                                        {producto.imagen && <img src={producto.imagen} alt="" />}
                                         <span>{producto.nombre}</span>
                                     </button>
                                 ))
@@ -390,18 +434,11 @@ function AdministrarBanners({ banners, setBanners, productos }) {
                     <img className="admin-banner-vista-previa" src={form.imagen} alt="Vista previa del banner" />
                 )}
                 <div className="admin-banner-form-acciones">
-                    <button className="agregar-producto-btn" type="submit">
-                        {bannerEditando === null ? "Agregar banner" : "Guardar cambios"}
+                    <button className="agregar-producto-btn" type="submit" disabled={guardando}>
+                        {guardando ? "Guardando..." : bannerEditando === null ? "Agregar banner" : "Guardar cambios"}
                     </button>
                     {bannerEditando !== null && (
-                        <button
-                            type="button"
-                            onClick={() => {
-                                setForm(formularioInicial);
-                                setBannerEditando(null);
-                                setBusquedaProducto("");
-                            }}
-                        >
+                        <button type="button" onClick={cancelarEdicion} disabled={guardando}>
                             Cancelar
                         </button>
                     )}
@@ -421,14 +458,21 @@ function cargarProductos() {
 
     if (guardados) {
 
-        const productosGuardados = JSON.parse(guardados);
+        let productosGuardados = [];
+        try {
+            productosGuardados = JSON.parse(guardados);
+        } catch (error) {
+            console.error("No se pudieron leer los productos locales:", error);
+        }
+
         const remeraInicial = productosIniciales.find(
-            (producto) => producto.id === 1
+            (producto) => String(producto.id) === "1"
         );
 
         return productosGuardados.map((producto) => {
             if (
-                Number(producto.id) === Number(remeraInicial.id)
+                remeraInicial
+                && String(producto.id) === String(remeraInicial.id)
                 && !Array.isArray(producto.imagenes)
                 && !producto.imagen
             ) {
@@ -457,7 +501,12 @@ function cargarBanners() {
         return slidesBanner;
     }
 
-    const bannersGuardados = JSON.parse(guardados);
+    let bannersGuardados = [];
+    try {
+        bannersGuardados = JSON.parse(guardados);
+    } catch (error) {
+        console.error("No se pudieron leer los banners locales:", error);
+    }
 
     if (migracionRealizada === "true") {
         return bannersGuardados;
@@ -485,11 +534,9 @@ export default function Tienda() {
     const { perfil } = useAuth();
     const puedeAdministrar = tienePermiso(perfil, "tienda");
 
-    const [productos, setProductos] =
-        useState(cargarProductos);
-
-    const [banners, setBanners] =
-        useState(cargarBanners);
+    const [productos, setProductos] = useState([]);
+    const [banners, setBanners] = useState([]);
+    const [restaurandoTienda, setRestaurandoTienda] = useState(false);
 
     const [administradorAbierto, setAdministradorAbierto] =
         useState(false);
@@ -520,24 +567,29 @@ export default function Tienda() {
         useState(null);
 
 
-    /*
-    ==========================================
-    GUARDAR PRODUCTOS
-    ==========================================
-    */
-
+    // Firebase es la fuente principal de productos y banners.
+    // Los datos locales/iniciales se migran solamente si Firestore está vacío.
     useEffect(() => {
-
-        localStorage.setItem(
-            "productosTienda",
-            JSON.stringify(productos)
+        const cancelarProductos = escucharProductos(
+            setProductos,
+            (error) => console.error("Error al escuchar productos:", error)
+        );
+        const cancelarHeroes = escucharHeroes(
+            setBanners,
+            (error) => console.error("Error al escuchar banners:", error)
         );
 
-    }, [productos]);
+        if (puedeAdministrar) {
+            inicializarTiendaSiVacia(cargarProductos(), cargarBanners()).catch((error) => {
+                console.error("Error al inicializar la tienda en Firestore:", error);
+            });
+        }
 
-    useEffect(() => {
-        localStorage.setItem("bannersTienda", JSON.stringify(banners));
-    }, [banners]);
+        return () => {
+            cancelarProductos();
+            cancelarHeroes();
+        };
+    }, [puedeAdministrar]);
 
 
     /*
@@ -560,11 +612,8 @@ export default function Tienda() {
                 )
             ) {
 
-                const id = Number(hash.slice("#producto=".length));
-
-                setProductoDetalleId(
-                    Number.isFinite(id) ? id : null
-                );
+                const id = hash.slice("#producto=".length).trim();
+                setProductoDetalleId(id || null);
 
             } else {
 
@@ -605,8 +654,7 @@ export default function Tienda() {
     const productoDetalle =
         productos.find(
             (producto) =>
-                Number(producto.id) ===
-                productoDetalleId
+                String(producto.id) === String(productoDetalleId)
         ) || null;
 
 
@@ -619,8 +667,9 @@ export default function Tienda() {
     const productosFiltrados =
         useMemo(() => {
 
-            let resultado =
-                [...productos];
+            let resultado = productos.filter(
+                (producto) => producto.estado !== "inactivo"
+            );
 
 
             if (
@@ -654,7 +703,8 @@ export default function Tienda() {
             }
 
             return productos.filter((producto) =>
-                producto.nombre
+                producto.estado !== "inactivo" &&
+                (producto.nombre || "")
                     .toLocaleLowerCase("es")
                     .includes(texto)
             );
@@ -668,11 +718,9 @@ export default function Tienda() {
     */
 
     function abrirProducto(id) {
-        const idProducto = Number(id);
+        const idProducto = String(id);
 
-        window.location.hash =
-            `producto=${idProducto}`;
-
+        window.location.hash = `producto=${idProducto}`;
         setProductoDetalleId(idProducto);
 
 
@@ -788,66 +836,75 @@ export default function Tienda() {
     }
 
 
-    /*
-    ==========================================
-    AGREGAR PRODUCTO
-    ==========================================
-    */
+    // ==========================================
+    // PRODUCTOS: OPERACIONES EN FIRESTORE
+    // ==========================================
 
-    function agregarProducto(
-        nuevoProducto
-    ) {
+    async function agregarProducto(nuevoProducto) {
         if (!puedeAdministrar) return;
-
-        setProductos(
-            (actual) => [
-                ...actual,
-                nuevoProducto
-            ]
-        );
-
+        return crearProducto(nuevoProducto);
     }
 
-    function modificarProducto(id, datosActualizados) {
+    async function modificarProducto(id, datosActualizados) {
         if (!puedeAdministrar) return;
-        setProductos((actuales) =>
-            actuales.map((producto) =>
-                producto.id === id
-                    ? { ...producto, ...datosActualizados }
-                    : producto
-            )
-        );
+        return actualizarProducto(id, datosActualizados);
     }
 
-
-    /*
-    ==========================================
-    ELIMINAR PRODUCTO
-    ==========================================
-    */
-
-    function eliminarProducto(id) {
+    async function eliminarProducto(id) {
         if (!puedeAdministrar) return;
 
-        const confirmar =
-            window.confirm(
-                "¿Querés eliminar este producto?"
-            );
+        const confirmar = window.confirm("¿Querés eliminar este producto?");
+        if (!confirmar) return;
 
-
-        if (!confirmar) {
-            return;
+        try {
+            await eliminarProductoFirebase(id);
+        } catch (error) {
+            console.error("Error al eliminar producto:", error);
+            window.alert(error.message || "No se pudo eliminar el producto.");
         }
+    }
 
+    // ==========================================
+    // HERO: OPERACIONES EN FIRESTORE
+    // ==========================================
 
-        setProductos(
-            (actual) =>
-                actual.filter(
-                    (producto) =>
-                        producto.id !== id
-                )
+    async function agregarBanner(datos) {
+        if (!puedeAdministrar) return;
+        return crearHero(datos);
+    }
+
+    async function modificarBanner(id, datos) {
+        if (!puedeAdministrar) return;
+        return actualizarHero(id, datos);
+    }
+
+    async function borrarBanner(id) {
+        if (!puedeAdministrar) return;
+        return eliminarHero(id);
+    }
+
+    async function restaurarTienda() {
+        if (!puedeAdministrar || restaurandoTienda) return;
+        const confirmar = window.confirm(
+            "Se volverán a agregar los productos y banners predeterminados que falten. Los datos existentes no se modificarán ni eliminarán. ¿Continuar?"
         );
+        if (!confirmar) return;
 
+        setRestaurandoTienda(true);
+        try {
+            const resultado = await restaurarTiendaPredeterminada(
+                productosIniciales,
+                slidesBanner
+            );
+            window.alert(
+                `Restauración completada: ${resultado.productosRestaurados} productos y ${resultado.bannersRestaurados} banners agregados.`
+            );
+        } catch (error) {
+            console.error("Error al restaurar la tienda:", error);
+            window.alert(error.message || "No se pudo restaurar la tienda.");
+        } finally {
+            setRestaurandoTienda(false);
+        }
     }
 
 
@@ -915,7 +972,7 @@ export default function Tienda() {
                         key={banners.length}
                         irProductos={irProductos}
                         abrirProducto={abrirProducto}
-                        slidesBanner={banners}
+                        slidesBanner={banners.length > 0 ? banners : slidesBanner}
                         productos={productos}
                     />
 
@@ -1013,6 +1070,16 @@ export default function Tienda() {
 
                         {modoAdmin && (
                             <div className="tienda-administrador">
+                                <button
+                                    className="restaurar-tienda-btn"
+                                    type="button"
+                                    onClick={restaurarTienda}
+                                    disabled={restaurandoTienda}
+                                >
+                                    {restaurandoTienda
+                                        ? "RESTAURANDO..."
+                                        : "RESTAURAR PRODUCTOS Y BANNERS"}
+                                </button>
                                 <AdministrarProductos
                                     productos={productos}
                                     agregarProducto={agregarProducto}
@@ -1021,7 +1088,9 @@ export default function Tienda() {
                                 />
                                 <AdministrarBanners
                                     banners={banners}
-                                    setBanners={setBanners}
+                                    agregarBanner={agregarBanner}
+                                    modificarBanner={modificarBanner}
+                                    eliminarBanner={borrarBanner}
                                     productos={productos}
                                 />
                             </div>
