@@ -10,79 +10,67 @@ const categoriasAdmin = [
     "Otros"
 ];
 
+const formularioInicial = {
+    nombre: "",
+    categoria: "",
+    precio: "",
+    stock: "",
+    estado: "activo",
+    imagenes: ["", "", "", ""],
+    descripcion: ""
+};
+
 export default function AdministrarProductos({
     productos,
     agregarProducto,
     modificarProducto,
     eliminarProducto
 }) {
-
-    const [form, setForm] = useState({
-        nombre: "",
-        categoria: "",
-        precio: "",
-        stock: "",
-        imagenes: ["", "", "", ""],
-        descripcion: ""
-    });
+    const [form, setForm] = useState(formularioInicial);
     const [productoEditandoId, setProductoEditandoId] = useState(null);
+    const [guardando, setGuardando] = useState(false);
 
-
-    function cambiarCampo(e) {
-
-        const { id, value } = e.target;
-
-        setForm({
-            ...form,
-            [id]: value
-        });
-
+    function cambiarCampo(event) {
+        const { id, value } = event.target;
+        setForm((actual) => ({ ...actual, [id]: value }));
     }
 
-
-    function enviarFormulario(e) {
-
-        e.preventDefault();
-
+    async function enviarFormulario(event) {
+        event.preventDefault();
+        setGuardando(true);
 
         const imagenes = form.imagenes
             .map((imagen) => imagen.trim())
             .filter(Boolean);
+
         const datosProducto = {
-            nombre: form.nombre,
+            nombre: form.nombre.trim(),
             categoria: form.categoria,
             precio: Number(form.precio),
             stock: Number(form.stock),
+            estado: form.estado,
             imagen: imagenes[0] || "",
             imagenes,
-            descripcion: form.descripcion
+            descripcion: form.descripcion.trim()
         };
 
-        if (productoEditandoId === null) {
-            agregarProducto({
-                id: Date.now(),
-                ...datosProducto
-            });
-        } else {
-            modificarProducto(productoEditandoId, datosProducto);
+        try {
+            if (productoEditandoId === null) {
+                await agregarProducto(datosProducto);
+                window.alert("Producto agregado correctamente.");
+            } else {
+                await modificarProducto(productoEditandoId, datosProducto);
+                window.alert("Producto modificado correctamente.");
+            }
+
+            setForm(formularioInicial);
+            setProductoEditandoId(null);
+        } catch (error) {
+            console.error("Error al guardar producto:", error);
+            window.alert(error.message || "No se pudo guardar el producto.");
+        } finally {
+            setGuardando(false);
         }
-
-
-        setForm({
-            nombre: "",
-            categoria: "",
-            precio: "",
-            stock: "",
-            imagenes: ["", "", "", ""],
-            descripcion: ""
-        });
-        setProductoEditandoId(null);
-
-
-        alert(productoEditandoId === null
-            ? "Producto agregado correctamente."
-            : "Producto modificado correctamente.");
-
     }
 
     function editarProducto(producto) {
@@ -91,8 +79,11 @@ export default function AdministrarProductos({
             : producto.imagen
                 ? [producto.imagen]
                 : [];
+
         const imagenes = Array.from({ length: 4 }, (_, indice) =>
-            imagenesGuardadas[indice] || ""
+            imagenesGuardadas[indice]
+                ? new URL(imagenesGuardadas[indice], window.location.origin).href
+                : ""
         );
 
         setForm({
@@ -100,6 +91,7 @@ export default function AdministrarProductos({
             categoria: producto.categoria || "",
             precio: String(producto.precio ?? ""),
             stock: String(producto.stock ?? ""),
+            estado: producto.estado || "activo",
             imagenes,
             descripcion: producto.descripcion || ""
         });
@@ -111,14 +103,7 @@ export default function AdministrarProductos({
     }
 
     function cancelarEdicion() {
-        setForm({
-            nombre: "",
-            categoria: "",
-            precio: "",
-            stock: "",
-            imagenes: ["", "", "", ""],
-            descripcion: ""
-        });
+        setForm(formularioInicial);
         setProductoEditandoId(null);
     }
 
@@ -132,118 +117,81 @@ export default function AdministrarProductos({
     }
 
     return (
-
-        <section
-            className="admin"
-            id="administrar"
-        >
-
+        <section className="admin" id="administrar">
             <h2>
                 {productoEditandoId === null ? "Agregar producto" : "Modificar producto"}
             </h2>
 
-
             <p>
-                Completá los datos del producto y
-                automáticamente aparecerá en la tienda.
+                Completá los datos del producto y automáticamente aparecerá en la tienda.
             </p>
 
-
-            <form
-                className="formulario"
-                onSubmit={enviarFormulario}
-            >
-
+            <form className="formulario" onSubmit={enviarFormulario}>
                 <div className="campo">
-
-                    <label htmlFor="nombre">
-                        Nombre del producto
-                    </label>
-
+                    <label htmlFor="nombre">Nombre del producto</label>
                     <input
                         id="nombre"
                         type="text"
                         placeholder="Ej: Remera Creeper"
                         value={form.nombre}
                         onChange={cambiarCampo}
+                        maxLength={100}
                         required
                     />
-
                 </div>
 
-
                 <div className="campo">
-
-                    <label htmlFor="categoria">
-                        Categoría
-                    </label>
-
+                    <label htmlFor="categoria">Categoría</label>
                     <select
                         id="categoria"
                         value={form.categoria}
                         onChange={cambiarCampo}
                         required
                     >
-
-                        <option value="">
-                            Seleccionar categoría
-                        </option>
-
-                        {categoriasAdmin.map(
-                            (categoria) => (
-
-                                <option
-                                    key={categoria}
-                                    value={categoria}
-                                >
-                                    {categoria}
-                                </option>
-
-                            )
-                        )}
-
+                        <option value="">Seleccionar categoría</option>
+                        {categoriasAdmin.map((categoria) => (
+                            <option key={categoria} value={categoria}>
+                                {categoria}
+                            </option>
+                        ))}
                     </select>
-
                 </div>
 
-
                 <div className="campo">
-
-                    <label htmlFor="precio">
-                        Precio
-                    </label>
-
+                    <label htmlFor="precio">Precio</label>
                     <input
                         id="precio"
                         type="number"
                         placeholder="Ej: 20000"
-                        min="0"
+                        min="0.01"
+                        step="0.01"
                         value={form.precio}
                         onChange={cambiarCampo}
                         required
                     />
-
                 </div>
 
-
                 <div className="campo">
-
-                    <label htmlFor="stock">
-                        Stock
-                    </label>
-
+                    <label htmlFor="stock">Stock</label>
                     <input
                         id="stock"
                         type="number"
                         placeholder="Ej: 10"
                         min="0"
+                        step="1"
                         value={form.stock}
                         onChange={cambiarCampo}
                         required
                     />
-
                 </div>
 
+                <div className="campo">
+                    <label htmlFor="estado">Estado del producto</label>
+                    <select id="estado" value={form.estado} onChange={cambiarCampo} required>
+                        <option value="activo">Activo</option>
+                        <option value="inactivo">Inactivo</option>
+                    </select>
+                </div>
 
                 <div className="campo campo-completo">
                     <span className="campo-label">Imágenes del producto</span>
@@ -254,13 +202,14 @@ export default function AdministrarProductos({
                                     {indice === 0 ? "Imagen principal" : `Imagen adicional ${indice}`}
                                 </span>
                                 <input
-                                    type="text"
-                                    placeholder="/img/remera-frente.jpg"
+                                    type="url"
+                                    placeholder="https://ejemplo.com/imagen.jpg"
                                     value={imagen}
                                     onChange={(evento) => cambiarImagen(indice, evento.target.value)}
+                                    pattern="https?://.+"
                                     aria-label={indice === 0
-                                        ? "Ruta de la imagen principal"
-                                        : `Ruta de la imagen adicional ${indice}`}
+                                        ? "URL de la imagen principal"
+                                        : `URL de la imagen adicional ${indice}`}
                                 />
                                 <span className="admin-imagen-vista">
                                     {imagen.trim()
@@ -272,80 +221,57 @@ export default function AdministrarProductos({
                     </div>
                 </div>
 
-
                 <div className="campo campo-completo">
-
-                    <label htmlFor="descripcion">
-                        Descripción
-                    </label>
-
+                    <label htmlFor="descripcion">Descripción</label>
                     <textarea
                         id="descripcion"
                         placeholder="Descripción del producto..."
                         value={form.descripcion}
                         onChange={cambiarCampo}
+                        maxLength={2000}
                     />
-
                 </div>
 
-
-                <button
-                    type="submit"
-                    className="agregar-producto-btn"
-                >
-                    {productoEditandoId === null ? "+ AGREGAR PRODUCTO" : "GUARDAR CAMBIOS"}
+                <button type="submit" className="agregar-producto-btn" disabled={guardando}>
+                    {guardando
+                        ? "GUARDANDO..."
+                        : productoEditandoId === null
+                            ? "+ AGREGAR PRODUCTO"
+                            : "GUARDAR CAMBIOS"}
                 </button>
+
                 {productoEditandoId !== null && (
                     <button
                         type="button"
                         className="cancelar-edicion-producto-btn"
                         onClick={cancelarEdicion}
+                        disabled={guardando}
                     >
                         CANCELAR
                     </button>
                 )}
-
             </form>
 
-
             <div className="lista-admin">
-
-                <h3>
-                    Productos cargados
-                </h3>
-
+                <h3>Productos cargados</h3>
 
                 {productos.length === 0 ? (
-
-                    <p>
-                        No hay productos.
-                    </p>
-
+                    <p>No hay productos.</p>
                 ) : (
-
                     productos.map((producto) => (
-
-                        <div
-                            className="admin-producto"
-                            key={producto.id}
-                        >
-
+                        <div className="admin-producto" key={producto.id}>
                             <div className="admin-producto-info">
-
-                                <strong>
-                                    {producto.nombre}
-                                </strong>
-
+                                <strong>{producto.nombre}</strong>
                                 <small>
                                     {producto.categoria}
                                     {" - "}
                                     ${Number(producto.precio).toLocaleString("es-AR")}
                                     {" - "}
                                     Stock: {producto.stock}
+                                    {" - Estado: "}
+                                    {producto.estado || "activo"}
                                 </small>
-
                             </div>
-
 
                             <div className="admin-producto-acciones">
                                 <button
@@ -363,16 +289,10 @@ export default function AdministrarProductos({
                                     ELIMINAR
                                 </button>
                             </div>
-
                         </div>
-
                     ))
-
                 )}
-
             </div>
-
         </section>
-
     );
 }

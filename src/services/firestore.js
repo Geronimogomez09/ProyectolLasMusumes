@@ -470,3 +470,203 @@ export async function guardarVersion(datos, id = null) {
 export async function borrarVersion(id) {
   return eliminarDocumento(COLECCIONES.versiones, id);
 }
+
+// ======================================================
+// TIENDA: PRODUCTOS
+// ======================================================
+
+function prepararProductoTienda(datos, id) {
+  const producto = {
+    id: String(id),
+    nombre: typeof datos.nombre === "string" ? datos.nombre.trim() : "",
+    descripcion: typeof datos.descripcion === "string" ? datos.descripcion.trim() : "",
+    precio: Number(datos.precio),
+    stock: Number(datos.stock),
+    categoria: typeof datos.categoria === "string" ? datos.categoria.trim() : "",
+    estado: datos.estado || "activo",
+    imagen: typeof datos.imagen === "string" ? datos.imagen.trim() : "",
+    imagenes: Array.isArray(datos.imagenes)
+      ? datos.imagenes.filter((imagen) => typeof imagen === "string")
+      : [],
+  };
+
+  if (!producto.nombre || producto.nombre.length > 100) {
+    throw new Error("El nombre del producto es obligatorio y debe tener hasta 100 caracteres.");
+  }
+  if (producto.descripcion.length > 2000) {
+    throw new Error("La descripción no puede superar los 2000 caracteres.");
+  }
+  if (!Number.isFinite(producto.precio) || producto.precio <= 0) {
+    throw new Error("El precio debe ser un número mayor a cero.");
+  }
+  if (!Number.isInteger(producto.stock) || producto.stock < 0) {
+    throw new Error("El stock debe ser un número entero igual o mayor a cero.");
+  }
+  if (!producto.categoria || producto.categoria.length > 100) {
+    throw new Error("La categoría es obligatoria y debe tener hasta 100 caracteres.");
+  }
+  if (!["activo", "inactivo"].includes(producto.estado)) {
+    throw new Error("El estado debe ser activo o inactivo.");
+  }
+
+  return producto;
+}
+
+// Crea un producto usando el ID generado por Firestore.
+export async function crearProducto(datos) {
+  const referencia = doc(collection(db, COLECCIONES.productos));
+  const producto = prepararProductoTienda(datos, referencia.id);
+  await setDoc(referencia, producto);
+  return referencia.id;
+}
+
+// Actualiza un producto sin permitir cambiar su ID.
+export async function actualizarProducto(id, cambios) {
+  const referencia = doc(db, COLECCIONES.productos, String(id));
+  const resultado = await getDoc(referencia);
+
+  if (!resultado.exists()) {
+    throw new Error("El producto no existe.");
+  }
+
+  const producto = prepararProductoTienda(
+    { ...resultado.data(), ...cambios },
+    resultado.id
+  );
+
+  await updateDoc(referencia, producto);
+}
+
+export async function eliminarProducto(id) {
+  const referencia = doc(db, COLECCIONES.productos, String(id));
+  const resultado = await getDoc(referencia);
+
+  if (!resultado.exists()) {
+    throw new Error("El producto no existe.");
+  }
+
+  await deleteDoc(referencia);
+}
+
+export function escucharProductos(callback, alError = console.error) {
+  return escucharDocumentos(COLECCIONES.productos, callback, {}, alError);
+}
+
+// ======================================================
+// TIENDA: HERO / BANNERS
+// ======================================================
+
+export async function crearHero(datos) {
+  return crearDocumento(COLECCIONES.banners, datos);
+}
+
+export async function actualizarHero(id, cambios) {
+  return actualizarDocumento(COLECCIONES.banners, id, cambios);
+}
+
+export async function eliminarHero(id) {
+  return eliminarDocumento(COLECCIONES.banners, id);
+}
+
+export function escucharHeroes(callback, alError = console.error) {
+  return escucharDocumentos(
+    COLECCIONES.banners,
+    callback,
+    { campoOrden: "fechaCreacion", direccion: "asc" },
+    alError
+  );
+}
+
+// Migra los datos locales o iniciales una sola vez, únicamente si las
+// colecciones están vacías. No sobrescribe información existente.
+export async function inicializarTiendaSiVacia(productosIniciales = [], heroesIniciales = []) {
+  const [productosSnapshot, heroesSnapshot] = await Promise.all([
+    getDocs(collection(db, COLECCIONES.productos)),
+    getDocs(collection(db, COLECCIONES.banners)),
+  ]);
+
+  const lote = writeBatch(db);
+  let operaciones = 0;
+
+  if (productosSnapshot.empty && productosIniciales.length > 0) {
+    productosIniciales.forEach((item) => {
+      const id = String(item.id ?? doc(collection(db, COLECCIONES.productos)).id);
+      const referencia = doc(db, COLECCIONES.productos, id);
+      const producto = prepararProductoTienda(item, id);
+      lote.set(referencia, producto);
+      operaciones += 1;
+    });
+  }
+
+  if (heroesSnapshot.empty && heroesIniciales.length > 0) {
+    heroesIniciales.forEach((item) => {
+      const referencia = doc(collection(db, COLECCIONES.banners));
+      lote.set(referencia, {
+        subtitulo: item.subtitulo || "",
+        titulo: item.titulo || "",
+        descripcion: item.descripcion || "",
+        boton: item.boton || "Ver productos",
+        imagen: item.imagen || "",
+        productoId: item.productoId ? String(item.productoId) : "",
+        fechaCreacion: serverTimestamp(),
+        fechaActualizacion: serverTimestamp(),
+      });
+      operaciones += 1;
+    });
+  }
+
+  if (operaciones > 0) {
+    await lote.commit();
+  }
+}
+
+export async function restaurarTiendaPredeterminada(productosPredeterminados = [], bannersPredeterminados = []) {
+  const [productosSnapshot, bannersSnapshot] = await Promise.all([
+    getDocs(collection(db, COLECCIONES.productos)),
+    getDocs(collection(db, COLECCIONES.banners)),
+  ]);
+  const idsProductosExistentes = new Set(productosSnapshot.docs.map((documento) => documento.id));
+  const bannersExistentes = new Set(
+    bannersSnapshot.docs.map((documento) => {
+      const banner = documento.data();
+      return `${banner.titulo || ""}\u0000${banner.imagen || ""}`;
+    })
+  );
+  const lote = writeBatch(db);
+  let productosRestaurados = 0;
+  let bannersRestaurados = 0;
+
+  productosPredeterminados.forEach((item) => {
+    const id = String(item.id ?? "");
+    if (!id || idsProductosExistentes.has(id)) return;
+
+    const referencia = doc(db, COLECCIONES.productos, id);
+    lote.set(referencia, prepararProductoTienda(item, id));
+    productosRestaurados += 1;
+  });
+
+  bannersPredeterminados.forEach((item) => {
+    const identidad = `${item.titulo || ""}\u0000${item.imagen || ""}`;
+    if (bannersExistentes.has(identidad)) return;
+
+    const referencia = doc(collection(db, COLECCIONES.banners));
+    lote.set(referencia, {
+      subtitulo: item.subtitulo || "",
+      titulo: item.titulo || "",
+      descripcion: item.descripcion || "",
+      boton: item.boton || "Ver productos",
+      imagen: item.imagen || "",
+      productoId: item.productoId ? String(item.productoId) : "",
+      fechaCreacion: serverTimestamp(),
+      fechaActualizacion: serverTimestamp(),
+    });
+    bannersExistentes.add(identidad);
+    bannersRestaurados += 1;
+  });
+
+  if (productosRestaurados + bannersRestaurados > 0) {
+    await lote.commit();
+  }
+
+  return { productosRestaurados, bannersRestaurados };
+}
