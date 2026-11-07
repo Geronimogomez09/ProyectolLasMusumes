@@ -2,6 +2,8 @@
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
+import ScrollToTop from "./components/ScrollToTop";
+
 import Inicio from "./pages/index";
 import Tienda from "./pages/tienda";
 import Login from "./pages/login";
@@ -63,6 +65,7 @@ function GlobalMusicPlayer() {
 function AppRoutes() {
     return (
         <>
+        <ScrollToTop />
             <Routes>
                 <Route path="/" element={<RutaProtegida><Inicio /></RutaProtegida>} />
                 <Route path="/tienda" element={<RutaProtegida><Tienda /></RutaProtegida>} />
@@ -79,7 +82,6 @@ function AppRoutes() {
                 <Route path="/musica/maestro" element={<RutaProtegida permiso="musica"><MaestroMelodias /></RutaProtegida>}/>
                 <Route path="/nosotros" element={<RutaProtegida><Nosotros /></RutaProtegida>} />
             </Routes>
-
             <GlobalMusicPlayer />
         </>
     );
