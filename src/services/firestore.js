@@ -4,6 +4,7 @@ import {
   arrayUnion,
   collection,
   deleteDoc,
+  deleteField,
   doc,
   getDoc,
   getDocs,
@@ -18,6 +19,11 @@ import {
 } from "firebase/firestore";
 
 import { db } from "./firebase";
+import {
+  normalizarCategoriaProducto,
+  normalizarTallesRopa,
+  totalStockPorTalle
+} from "../data/productos";
 
 // ======================================================
 // COLECCIONES PRINCIPALES DE WIKICRAFT
@@ -27,6 +33,7 @@ export const COLECCIONES = {
   usuarios: "usuarios",
   versiones: "versiones",
   productos: "productos",
+  productosPredeterminados: "productosPredeterminados",
   banners: "banners",
   pedidos: "pedidos",
   publicaciones: "publicaciones",
@@ -476,13 +483,20 @@ export async function borrarVersion(id) {
 // ======================================================
 
 function prepararProductoTienda(datos, id) {
+  const categoria = normalizarCategoriaProducto(
+    typeof datos.categoria === "string" ? datos.categoria.trim() : ""
+  );
+  const talles = categoria === "Ropa"
+    ? normalizarTallesRopa(datos.talles, datos.stock)
+    : null;
   const producto = {
     id: String(id),
     nombre: typeof datos.nombre === "string" ? datos.nombre.trim() : "",
     descripcion: typeof datos.descripcion === "string" ? datos.descripcion.trim() : "",
     precio: Number(datos.precio),
-    stock: Number(datos.stock),
-    categoria: typeof datos.categoria === "string" ? datos.categoria.trim() : "",
+    stock: talles ? totalStockPorTalle(talles) : Number(datos.stock),
+    categoria,
+    ...(talles ? { talles } : {}),
     estado: datos.estado || "activo",
     imagen: typeof datos.imagen === "string" ? datos.imagen.trim() : "",
     imagenes: Array.isArray(datos.imagenes)
@@ -501,6 +515,12 @@ function prepararProductoTienda(datos, id) {
   }
   if (!Number.isInteger(producto.stock) || producto.stock < 0) {
     throw new Error("El stock debe ser un número entero igual o mayor a cero.");
+  }
+  if (
+    talles &&
+    Object.values(talles).some((cantidad) => !Number.isInteger(cantidad) || cantidad < 0)
+  ) {
+    throw new Error("El stock de cada talle debe ser un número entero igual o mayor a cero.");
   }
   if (!producto.categoria || producto.categoria.length > 100) {
     throw new Error("La categoría es obligatoria y debe tener hasta 100 caracteres.");
@@ -534,7 +554,10 @@ export async function actualizarProducto(id, cambios) {
     resultado.id
   );
 
-  await updateDoc(referencia, producto);
+  await updateDoc(referencia, {
+    ...producto,
+    ...(producto.categoria === "Ropa" ? {} : { talles: deleteField() })
+  });
 }
 
 export async function eliminarProducto(id) {
@@ -618,55 +641,126 @@ export async function inicializarTiendaSiVacia(productosIniciales = [], heroesIn
   if (operaciones > 0) {
     await lote.commit();
   }
+
+  // Migra ropa antigua sin alterar su stock total: las unidades existentes quedan en talle M.
+  const productosActuales = await getDocs(collection(db, COLECCIONES.productos));
+  const ropaSinTalles = productosActuales.docs.filter((documento) => {
+    const producto = documento.data();
+    return normalizarCategoriaProducto(producto.categoria) === "Ropa"
+      && (!producto.talles || typeof producto.talles !== "object" || Array.isArray(producto.talles));
+  });
+
+  for (let inicio = 0; inicio < ropaSinTalles.length; inicio += 500) {
+    const loteMigracion = writeBatch(db);
+    ropaSinTalles.slice(inicio, inicio + 500).forEach((documento) => {
+      const stock = Number(documento.data().stock) || 0;
+      loteMigracion.update(documento.ref, {
+        talles: normalizarTallesRopa(null, stock)
+      });
+    });
+    await loteMigracion.commit();
+  }
 }
 
-export async function restaurarTiendaPredeterminada(productosPredeterminados = [], bannersPredeterminados = []) {
-  const [productosSnapshot, bannersSnapshot] = await Promise.all([
-    getDocs(collection(db, COLECCIONES.productos)),
-    getDocs(collection(db, COLECCIONES.banners)),
-  ]);
-  const idsProductosExistentes = new Set(productosSnapshot.docs.map((documento) => documento.id));
-  const bannersExistentes = new Set(
-    bannersSnapshot.docs.map((documento) => {
-      const banner = documento.data();
-      return `${banner.titulo || ""}\u0000${banner.imagen || ""}`;
-    })
+const ID_MANIFIESTO_PRODUCTOS_PREDETERMINADOS = "catalogo-predeterminado";
+
+export async function guardarProductosPredeterminadosActuales() {
+  const referenciaPredeterminados = collection(db, COLECCIONES.productosPredeterminados);
+  const predeterminadosSnapshot = await getDocs(referenciaPredeterminados);
+  const productosSnapshot = await getDocs(collection(db, COLECCIONES.productos));
+  if (productosSnapshot.docs.some(
+    (documento) => documento.id === ID_MANIFIESTO_PRODUCTOS_PREDETERMINADOS
+  )) {
+    throw new Error("Hay un producto con un identificador reservado que impide guardar el catálogo.");
+  }
+
+  const productosActuales = new Map(
+    productosSnapshot.docs.map((documento) => [
+      documento.id,
+      prepararProductoTienda(documento.data(), documento.id),
+    ])
   );
-  const lote = writeBatch(db);
-  let productosRestaurados = 0;
-  let bannersRestaurados = 0;
+  await setDoc(
+    doc(db, COLECCIONES.productosPredeterminados, ID_MANIFIESTO_PRODUCTOS_PREDETERMINADOS),
+    { completo: false, cantidad: productosActuales.size }
+  );
 
-  productosPredeterminados.forEach((item) => {
-    const id = String(item.id ?? "");
-    if (!id || idsProductosExistentes.has(id)) return;
+  const idsObsoletos = predeterminadosSnapshot.docs
+    .filter((documento) =>
+      documento.id !== ID_MANIFIESTO_PRODUCTOS_PREDETERMINADOS
+      && !productosActuales.has(documento.id)
+    )
+    .map((documento) => documento.ref);
 
-    const referencia = doc(db, COLECCIONES.productos, id);
-    lote.set(referencia, prepararProductoTienda(item, id));
-    productosRestaurados += 1;
-  });
-
-  bannersPredeterminados.forEach((item) => {
-    const identidad = `${item.titulo || ""}\u0000${item.imagen || ""}`;
-    if (bannersExistentes.has(identidad)) return;
-
-    const referencia = doc(collection(db, COLECCIONES.banners));
-    lote.set(referencia, {
-      subtitulo: item.subtitulo || "",
-      titulo: item.titulo || "",
-      descripcion: item.descripcion || "",
-      boton: item.boton || "Ver productos",
-      imagen: item.imagen || "",
-      productoId: item.productoId ? String(item.productoId) : "",
-      fechaCreacion: serverTimestamp(),
-      fechaActualizacion: serverTimestamp(),
-    });
-    bannersExistentes.add(identidad);
-    bannersRestaurados += 1;
-  });
-
-  if (productosRestaurados + bannersRestaurados > 0) {
+  for (let inicio = 0; inicio < idsObsoletos.length; inicio += 500) {
+    const lote = writeBatch(db);
+    idsObsoletos.slice(inicio, inicio + 500).forEach((referencia) => lote.delete(referencia));
     await lote.commit();
   }
 
-  return { productosRestaurados, bannersRestaurados };
+  const productos = [...productosActuales.entries()];
+  for (let inicio = 0; inicio < productos.length; inicio += 500) {
+    const lote = writeBatch(db);
+    productos.slice(inicio, inicio + 500).forEach(([id, producto]) => {
+      lote.set(doc(db, COLECCIONES.productosPredeterminados, id), producto);
+    });
+    await lote.commit();
+  }
+
+  await setDoc(
+    doc(db, COLECCIONES.productosPredeterminados, ID_MANIFIESTO_PRODUCTOS_PREDETERMINADOS),
+    { completo: true, cantidad: productos.length, fechaCaptura: serverTimestamp() }
+  );
+
+  return productos.length;
+}
+
+export async function restaurarProductosPredeterminados() {
+  const predeterminadosSnapshot = await getDocs(
+    collection(db, COLECCIONES.productosPredeterminados)
+  );
+  const manifiesto = predeterminadosSnapshot.docs.find(
+    (documento) => documento.id === ID_MANIFIESTO_PRODUCTOS_PREDETERMINADOS
+  )?.data();
+
+  if (manifiesto?.completo !== true) {
+    throw new Error("Primero guardá los productos actuales como copia predeterminada.");
+  }
+  const productosPredeterminados = predeterminadosSnapshot.docs.filter(
+    (documento) => documento.id !== ID_MANIFIESTO_PRODUCTOS_PREDETERMINADOS
+  );
+  if (productosPredeterminados.length !== manifiesto.cantidad) {
+    throw new Error("La copia guardada está incompleta. No se modificó el catálogo.");
+  }
+
+  const productosActualesSnapshot = await getDocs(
+    collection(db, COLECCIONES.productos)
+  );
+  const idsPredeterminados = new Set(
+    productosPredeterminados.map((documento) => documento.id)
+  );
+  const operaciones = [
+    ...productosActualesSnapshot.docs
+      .filter((documento) => !idsPredeterminados.has(documento.id))
+      .map((documento) => ({ tipo: "eliminar", referencia: documento.ref })),
+    ...productosPredeterminados.map((documento) => ({
+      tipo: "guardar",
+      referencia: doc(db, COLECCIONES.productos, documento.id),
+      producto: prepararProductoTienda(documento.data(), documento.id),
+    })),
+  ];
+
+  for (let inicio = 0; inicio < operaciones.length; inicio += 500) {
+    const lote = writeBatch(db);
+    operaciones.slice(inicio, inicio + 500).forEach((operacion) => {
+      if (operacion.tipo === "eliminar") {
+        lote.delete(operacion.referencia);
+      } else {
+        lote.set(operacion.referencia, operacion.producto);
+      }
+    });
+    await lote.commit();
+  }
+
+  return productosPredeterminados.length;
 }

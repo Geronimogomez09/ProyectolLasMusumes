@@ -1,5 +1,6 @@
 import MinecraftIcon from "./MinecraftIcon";
 
+// Agrupa el buscador con sus coincidencias y el acceso al panel del carrito.
 export default function ControlesTienda({
     busqueda,
     setBusqueda,
@@ -11,6 +12,7 @@ export default function ControlesTienda({
     return (
         <div className="controles-tienda">
 
+            {/* Los resultados aparecen mientras haya texto de búsqueda. */}
             <div className="busqueda-tienda">
                 <input
                     type="search"
@@ -27,6 +29,7 @@ export default function ControlesTienda({
                         id="resultados-busqueda-tienda"
                         aria-live="polite"
                     >
+                        {/* Cada resultado abre el detalle; si no hay coincidencias se informa. */}
                         {productosEncontrados.length > 0 ? (
                             productosEncontrados.map((producto) => (
                                 <button
@@ -66,6 +69,7 @@ export default function ControlesTienda({
                 )}
             </div>
 
+            {/* El contador refleja la cantidad de unidades, no la de productos distintos. */}
             <button
                 className="carrito-btn"
                 type="button"

@@ -13,7 +13,10 @@ import { useAuth } from "../context/AuthContext";
 import { tienePermiso } from "../utils/permisos";
 import DetalleProducto from "../components/tiendaComponentes/DetalleProducto";
 
-import { productosIniciales } from "../data/productos";
+import {
+    productosIniciales,
+    normalizarCategoriaProducto
+} from "../data/productos";
 import {
     crearProducto,
     actualizarProducto,
@@ -24,11 +27,13 @@ import {
     eliminarHero,
     escucharHeroes,
     inicializarTiendaSiVacia,
-    restaurarTiendaPredeterminada
+    guardarProductosPredeterminadosActuales,
+    restaurarProductosPredeterminados
 } from "../services/firestore"
 
 import "../styles/tienda.css";
 
+// Contenido inicial del carrusel; Firestore puede reemplazar estos valores en ejecución.
 const slidesBanner = [
     {
         subtitulo: "NUEVA COLECCIÓN",
@@ -53,11 +58,13 @@ const slidesBanner = [
     }
 ];
 
+// Normaliza una ruta local o una URL para mostrarla en el formulario de administración.
 function imagenComoUrl(imagen) {
     return imagen ? new URL(imagen, window.location.origin).href : "";
 }
 
 function BannerTienda({ irProductos, abrirProducto, slidesBanner, productos }) {
+    // Las copias del primer y último banner permiten simular un carrusel infinito.
     const [slideActual, setSlideActual] = useState(1);
     const [transicionActiva, setTransicionActiva] = useState(true);
     const slidesCarrusel = [
@@ -66,6 +73,8 @@ function BannerTienda({ irProductos, abrirProducto, slidesBanner, productos }) {
         slidesBanner[0]
     ];
 
+    // Avanza automáticamente y limpia el temporizador al desmontar el carrusel.
+    // Si cambia la sesión y se pierde el permiso, se cierra el panel de administración.
     useEffect(() => {
         const interval = setInterval(() => {
             setSlideActual((prev) => prev + 1);
@@ -74,6 +83,8 @@ function BannerTienda({ irProductos, abrirProducto, slidesBanner, productos }) {
         return () => clearInterval(interval);
     }, []);
 
+    // Reactiva la animación después de reubicar el índice entre copias y banners reales.
+    // Escucha actualizaciones de Firestore e inicializa datos si la tienda está vacía.
     useEffect(() => {
         if (transicionActiva) {
             return undefined;
@@ -86,6 +97,8 @@ function BannerTienda({ irProductos, abrirProducto, slidesBanner, productos }) {
         return () => cancelAnimationFrame(frame);
     }, [transicionActiva]);
 
+    // Recoloca el índice al llegar a uno de los extremos clonados del carrusel.
+    // Sincroniza el producto de detalle con el hash para soportar enlaces e historial del navegador.
     useEffect(() => {
         if (slideActual !== 0 && slideActual !== slidesBanner.length + 1) {
             return undefined;
@@ -100,12 +113,14 @@ function BannerTienda({ irProductos, abrirProducto, slidesBanner, productos }) {
     }, [slideActual, slidesBanner.length]);
 
     function moverSlide(direccion) {
+        // Limita el movimiento al intervalo que incluye las copias de ambos extremos.
         setSlideActual((actual) =>
             Math.min(slidesBanner.length + 1, Math.max(0, actual + direccion))
         );
     }
 
     function finalizarTransicion(event) {
+        // Solo procesa el fin de transición de la pista, no el de elementos internos.
         if (event.target !== event.currentTarget) {
             return;
         }
@@ -199,6 +214,7 @@ function AdministrarBanners({
     eliminarBanner,
     productos
 }) {
+    // Estructura inicial compartida por el formulario de creación y edición.
     const formularioInicial = {
         subtitulo: "",
         titulo: "",
@@ -213,6 +229,7 @@ function AdministrarBanners({
     const [busquedaProducto, setBusquedaProducto] = useState("");
     const [guardando, setGuardando] = useState(false);
 
+    // Productos que coinciden con el texto ingresado para elegir destino del banner.
     const productosCoincidentes = productos.filter((producto) =>
         (producto.nombre || "")
             .toLocaleLowerCase("es")
@@ -223,6 +240,7 @@ function AdministrarBanners({
         (producto) => String(producto.id) === String(form.productoId)
     );
 
+    // Actualiza el dato cuyo atributo name coincide con la clave del formulario.
     function cambiarCampo(event) {
         const { name, value } = event.target;
         setForm((actual) => ({ ...actual, [name]: value }));
@@ -233,6 +251,7 @@ function AdministrarBanners({
         setGuardando(true);
 
         try {
+            // Persiste el producto asociado con un identificador de tipo texto.
             const datos = {
                 ...form,
                 productoId: form.productoId ? String(form.productoId) : ""
@@ -258,6 +277,7 @@ function AdministrarBanners({
     }
 
     function editarBanner(banner) {
+        // Recupera el nombre del producto elegido para completar el buscador al editar.
         const destino = productos.find(
             (producto) => String(producto.id) === String(banner.productoId)
         );
@@ -272,6 +292,7 @@ function AdministrarBanners({
     }
 
     async function borrarBanner(banner) {
+        // La tienda debe conservar al menos un banner visible en la portada.
         if (banners.length <= 1) {
             window.alert("Debe quedar al menos un banner en la tienda.");
             return;
@@ -301,11 +322,13 @@ function AdministrarBanners({
         setBusquedaProducto("");
     }
 
+    // La lista y el formulario se mantienen juntos para facilitar la edición de banners.
     return (
         <section className="admin-banners">
             <h2>Administrar banners</h2>
             <p>Agregá o modificá las imágenes y los textos del carrusel.</p>
 
+            {/* Resumen de los banners guardados y botones para editar o quitar cada uno. */}
             <div className="admin-banners-lista">
                 {banners.map((banner) => (
                     <article className="admin-banner-tarjeta" key={banner.id}>
@@ -337,6 +360,7 @@ function AdministrarBanners({
                 ))}
             </div>
 
+            {/* Formulario controlado para crear un banner o guardar cambios del seleccionado. */}
             <form className="admin-banner-formulario" onSubmit={guardarBanner}>
                 <h3>{bannerEditando === null ? "Agregar banner" : "Modificar banner"}</h3>
                 <label>
@@ -387,6 +411,7 @@ function AdministrarBanners({
                             Seleccionado: {productoSeleccionado.nombre}
                         </p>
                     )}
+                    {/* Opciones de producto para vincular el botón del banner con un destino. */}
                     {busquedaProducto.trim() && !productoSeleccionado && (
                         <div
                             className="admin-banner-producto-resultados"
@@ -430,6 +455,7 @@ function AdministrarBanners({
                         </button>
                     )}
                 </div>
+                {/* La vista previa permite revisar la URL antes de guardar el banner. */}
                 {form.imagen && (
                     <img className="admin-banner-vista-previa" src={form.imagen} alt="Vista previa del banner" />
                 )}
@@ -448,6 +474,7 @@ function AdministrarBanners({
     );
 }
 
+// Lee los productos locales para usarlos como valores iniciales al migrar la tienda.
 function cargarProductos() {
 
     const guardados =
@@ -469,6 +496,7 @@ function cargarProductos() {
             (producto) => String(producto.id) === "1"
         );
 
+        // Completa la imagen histórica de la remera cuando un guardado antiguo no la tenía.
         return productosGuardados.map((producto) => {
             if (
                 remeraInicial
@@ -492,6 +520,7 @@ function cargarProductos() {
     return productosIniciales;
 }
 
+// Carga los banners locales y completa los que falten durante la migración inicial.
 function cargarBanners() {
     const guardados = localStorage.getItem("bannersTienda");
     const migracionRealizada = localStorage.getItem("bannersTiendaDefaultsRestaurados");
@@ -531,6 +560,7 @@ function cargarBanners() {
 
 export default function Tienda() {
 
+    // El permiso define el acceso al panel y a las operaciones administrativas.
     const { perfil } = useAuth();
     const puedeAdministrar = tienePermiso(perfil, "tienda");
 
@@ -547,6 +577,7 @@ export default function Tienda() {
 
     const modoAdmin = administradorAbierto && puedeAdministrar;
 
+    // Estado compartido entre catálogo, detalle, búsqueda, filtros y carrito.
     const [carrito, setCarrito] =
         useState([]);
 
@@ -651,6 +682,7 @@ export default function Tienda() {
     ==========================================
     */
 
+    // Busca el registro correspondiente al identificador de producto de la URL.
     const productoDetalle =
         productos.find(
             (producto) =>
@@ -664,6 +696,7 @@ export default function Tienda() {
     ==========================================
     */
 
+    // Lista para la grilla: excluye productos inactivos y aplica la categoría seleccionada.
     const productosFiltrados =
         useMemo(() => {
 
@@ -680,7 +713,7 @@ export default function Tienda() {
                 resultado =
                     resultado.filter(
                         (producto) =>
-                            producto.categoria ===
+                            normalizarCategoriaProducto(producto.categoria) ===
                             categoriaActiva
                     );
 
@@ -694,6 +727,7 @@ export default function Tienda() {
             categoriaActiva
         ]);
 
+    // Resultados rápidos del buscador, independientes del filtro de categoría activo.
     const productosEncontrados =
         useMemo(() => {
             const texto = busqueda.trim().toLocaleLowerCase("es");
@@ -717,6 +751,7 @@ export default function Tienda() {
     ==========================================
     */
 
+    // Cambia el hash y lleva la página arriba al abrir un producto.
     function abrirProducto(id) {
         const idProducto = String(id);
 
@@ -728,7 +763,18 @@ export default function Tienda() {
             top: 0,
             behavior: "smooth"
         });
+    }
 
+    function abrirPelucheCreeper() {
+        const peluche = productos.find((producto) =>
+            /peluche.*creeper|creeper.*peluche/i.test(producto.nombre || "")
+        );
+
+        if (peluche) {
+            abrirProducto(peluche.id);
+        } else {
+            irProductos();
+        }
     }
 
 
@@ -738,6 +784,7 @@ export default function Tienda() {
     ==========================================
     */
 
+    // Limpia la URL del detalle y desplaza de vuelta al inicio del catálogo.
     function volverProductos() {
 
         window.location.hash = "";
@@ -763,6 +810,7 @@ export default function Tienda() {
     ==========================================
     */
 
+    // Agrega una unidad desde una tarjeta y confirma la acción a la persona usuaria.
     function agregarCarrito(producto) {
 
         setCarrito(
@@ -786,9 +834,11 @@ export default function Tienda() {
     ==========================================
     */
 
+    // Agrega la cantidad elegida en el detalle y abre el carrito para revisarla.
     function agregarDesdeDetalle(
         producto,
-        cantidad
+        cantidad,
+        talle
     ) {
 
         setCarrito(
@@ -800,8 +850,11 @@ export default function Tienda() {
                     {
                         length: cantidad
                     },
-                    () => producto
-                )
+                        () => ({
+                            ...producto,
+                            ...(talle ? { talle } : {})
+                        })
+                    )
 
             ]
         );
@@ -823,6 +876,7 @@ export default function Tienda() {
     ==========================================
     */
 
+    // El índice permite quitar una unidad específica aunque haya productos repetidos.
     function quitarCarrito(index) {
 
         setCarrito(
@@ -840,6 +894,7 @@ export default function Tienda() {
     // PRODUCTOS: OPERACIONES EN FIRESTORE
     // ==========================================
 
+    // Operaciones de productos en Firestore; cada escritura vuelve a verificar permisos.
     async function agregarProducto(nuevoProducto) {
         if (!puedeAdministrar) return;
         return crearProducto(nuevoProducto);
@@ -868,6 +923,7 @@ export default function Tienda() {
     // HERO: OPERACIONES EN FIRESTORE
     // ==========================================
 
+    // Operaciones equivalentes para los banners del carrusel.
     async function agregarBanner(datos) {
         if (!puedeAdministrar) return;
         return crearHero(datos);
@@ -883,25 +939,39 @@ export default function Tienda() {
         return eliminarHero(id);
     }
 
-    async function restaurarTienda() {
+    async function guardarProductosActuales() {
         if (!puedeAdministrar || restaurandoTienda) return;
         const confirmar = window.confirm(
-            "Se volverán a agregar los productos y banners predeterminados que falten. Los datos existentes no se modificarán ni eliminarán. ¿Continuar?"
+            "Se reemplazará la copia predeterminada guardada por los productos que están actualmente en la tienda. ¿Continuar?"
         );
         if (!confirmar) return;
 
         setRestaurandoTienda(true);
         try {
-            const resultado = await restaurarTiendaPredeterminada(
-                productosIniciales,
-                slidesBanner
-            );
-            window.alert(
-                `Restauración completada: ${resultado.productosRestaurados} productos y ${resultado.bannersRestaurados} banners agregados.`
-            );
+            await guardarProductosPredeterminadosActuales();
+            window.alert("Se guardaron los productos actuales como copia predeterminada.");
         } catch (error) {
-            console.error("Error al restaurar la tienda:", error);
-            window.alert(error.message || "No se pudo restaurar la tienda.");
+            console.error("Error al guardar la copia de productos:", error);
+            window.alert(error.message || "No se pudo guardar la copia de productos.");
+        } finally {
+            setRestaurandoTienda(false);
+        }
+    }
+
+    async function restaurarProductosGuardados() {
+        if (!puedeAdministrar || restaurandoTienda) return;
+        const confirmar = window.confirm(
+            "El catálogo actual será reemplazado por los productos de la copia guardada. Los cambios posteriores a esa copia se perderán. ¿Continuar?"
+        );
+        if (!confirmar) return;
+
+        setRestaurandoTienda(true);
+        try {
+            await restaurarProductosPredeterminados();
+            window.alert("Se restauró el catálogo desde la copia guardada.");
+        } catch (error) {
+            console.error("Error al restaurar la copia de productos:", error);
+            window.alert(error.message || "No se pudo restaurar la copia de productos.");
         } finally {
             setRestaurandoTienda(false);
         }
@@ -914,6 +984,7 @@ export default function Tienda() {
     ==========================================
     */
 
+    // Desplazamiento reutilizado por las acciones del banner y la promoción.
     function irProductos() {
 
         document
@@ -931,6 +1002,7 @@ export default function Tienda() {
     ==========================================
     */
 
+    // Alterna entre el catálogo y el detalle según el producto que resolvió el hash.
     const mostrandoDetalle =
         Boolean(productoDetalle);
 
@@ -942,6 +1014,7 @@ export default function Tienda() {
             <Header />
 
 
+            {/* La búsqueda y el acceso al carrito solo aparecen en la vista del catálogo. */}
             {!mostrandoDetalle ? (
 
                 <main className="tienda-main">
@@ -951,6 +1024,7 @@ export default function Tienda() {
                         CONTROLES FIJOS
                     ========================== */}
 
+                    {/* Buscador rápido, resultados coincidentes y acceso al carrito. */}
                     <ControlesTienda
                         busqueda={busqueda}
                         setBusqueda={setBusqueda}
@@ -968,6 +1042,7 @@ export default function Tienda() {
                     {/* =========================
                         BANNER
                     ========================== */}
+                    {/* Prioriza los banners de Firestore y usa los iniciales mientras cargan. */}
                     <BannerTienda
                         key={banners.length}
                         irProductos={irProductos}
@@ -993,6 +1068,7 @@ export default function Tienda() {
                         CATEGORIAS
                     ========================== */}
 
+                        {/* El valor interno filtra; el texto mostrado puede ser distinto. */}
                         <CategoriasTienda
                             categoriaActiva={
                                 categoriaActiva
@@ -1007,6 +1083,7 @@ export default function Tienda() {
                         PRODUCTOS
                     ========================== */}
 
+                        {/* Grilla de productos filtrados o aviso cuando no hay coincidencias. */}
                         <section className="productos">
 
                         {productosFiltrados.length === 0 ? (
@@ -1050,15 +1127,21 @@ export default function Tienda() {
                             className="tienda-promo"
                             aria-label="Promoción del peluche Creeper"
                         >
+                            <button
+                                className="tienda-promo__imagen-link"
+                                type="button"
+                                aria-label="Ver el producto Peluche Creeper"
+                                onClick={abrirPelucheCreeper}
+                            />
                             <div className="tienda-promo__contenido">
                                 <h2>Peluche Creeper</h2>
                                 <p>Un compañero para cada ocasión</p>
                                 <button
                                     className="tienda-promo__boton"
                                     type="button"
-                                    onClick={irProductos}
+                                    onClick={abrirPelucheCreeper}
                                 >
-                                    Ver productos
+                                    Ver peluche
                                 </button>
                             </div>
                         </section>
@@ -1068,18 +1151,29 @@ export default function Tienda() {
                         ADMINISTRADOR
                     ========================== */}
 
+                        {/* Herramientas disponibles solo cuando la cuenta tiene permiso. */}
                         {modoAdmin && (
                             <div className="tienda-administrador">
-                                <button
-                                    className="restaurar-tienda-btn"
-                                    type="button"
-                                    onClick={restaurarTienda}
-                                    disabled={restaurandoTienda}
-                                >
-                                    {restaurandoTienda
-                                        ? "RESTAURANDO..."
-                                        : "RESTAURAR PRODUCTOS Y BANNERS"}
-                                </button>
+                                <div className="acciones-productos-predeterminados">
+                                    <button
+                                        className="restaurar-tienda-btn"
+                                        type="button"
+                                        onClick={guardarProductosActuales}
+                                        disabled={restaurandoTienda}
+                                    >
+                                        {restaurandoTienda
+                                            ? "PROCESANDO..."
+                                            : "GUARDAR PRODUCTOS ACTUALES"}
+                                    </button>
+                                    <button
+                                        className="restaurar-tienda-btn restaurar-tienda-btn-secundario"
+                                        type="button"
+                                        onClick={restaurarProductosGuardados}
+                                        disabled={restaurandoTienda}
+                                    >
+                                        RESTAURAR COPIA GUARDADA
+                                    </button>
+                                </div>
                                 <AdministrarProductos
                                     productos={productos}
                                     agregarProducto={agregarProducto}
@@ -1104,9 +1198,11 @@ export default function Tienda() {
 
                 <main className="tienda-main tienda-main-detalle">
 
+                    {/* El detalle comparte catálogo y acciones con la vista principal. */}
                     <DetalleProducto
                         producto={productoDetalle}
                         productos={productos}
+                        carrito={carrito}
                         volverProductos={
                             volverProductos
                         }
@@ -1137,13 +1233,14 @@ export default function Tienda() {
                 CARRITO
             ========================== */}
 
+         {/* Panel del carrito y su flujo de pago, montados fuera del catálogo. */}
          <Carrito
-    abierto={carritoAbierto}
-    cerrarCarrito={() => setCarritoAbierto(false)}
-    carrito={carrito}
-    quitarCarrito={quitarCarrito}
-    vaciarCarrito={() => setCarrito([])}
-/>
+             abierto={carritoAbierto}
+             cerrarCarrito={() => setCarritoAbierto(false)}
+             carrito={carrito}
+             quitarCarrito={quitarCarrito}
+             vaciarCarrito={() => setCarrito([])}
+         />
 
         </div>
 

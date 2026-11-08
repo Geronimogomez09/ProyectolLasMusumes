@@ -1,20 +1,25 @@
 import { useState } from "react";
+import {
+    categorias,
+    crearStockPorTalle,
+    normalizarCategoriaProducto,
+    normalizarTallesRopa,
+    TALLES_ROPA,
+    totalStockPorTalle
+} from "../../data/productos";
 
-const categoriasAdmin = [
-    "Ropa",
-    "Tazas",
-    "Sábanas",
-    "Figuras",
-    "Accesorios",
-    "Decoración",
-    "Otros"
-];
+// Categorías disponibles en el selector del panel administrativo.
+const categoriasAdmin = categorias
+    .filter(([valor]) => valor !== "Todas")
+    .map(([valor]) => valor);
 
+// Estado vacío que se usa al crear un producto o limpiar el formulario.
 const formularioInicial = {
     nombre: "",
     categoria: "",
     precio: "",
     stock: "",
+    talles: crearStockPorTalle(),
     estado: "activo",
     imagenes: ["", "", "", ""],
     descripcion: ""
@@ -26,28 +31,45 @@ export default function AdministrarProductos({
     modificarProducto,
     eliminarProducto
 }) {
+    // Guarda los campos, el producto en edición y el estado de la operación asíncrona.
     const [form, setForm] = useState(formularioInicial);
     const [productoEditandoId, setProductoEditandoId] = useState(null);
     const [guardando, setGuardando] = useState(false);
 
+    // Los identificadores de los controles coinciden con las propiedades del producto.
     function cambiarCampo(event) {
         const { id, value } = event.target;
-        setForm((actual) => ({ ...actual, [id]: value }));
+        setForm((actual) => ({
+            ...actual,
+            [id]: value,
+            ...(id === "categoria" && value === "Ropa" && actual.categoria !== "Ropa"
+                ? {
+                    talles: totalStockPorTalle(actual.talles) > 0
+                        ? actual.talles
+                        : normalizarTallesRopa(null, actual.stock)
+                }
+                : {})
+        }));
     }
 
     async function enviarFormulario(event) {
         event.preventDefault();
         setGuardando(true);
 
+        // Descarta espacios y campos vacíos antes de enviar las imágenes a Firestore.
         const imagenes = form.imagenes
             .map((imagen) => imagen.trim())
             .filter(Boolean);
 
+        // Normaliza los campos numéricos y usa la primera imagen como portada.
         const datosProducto = {
             nombre: form.nombre.trim(),
-            categoria: form.categoria,
+            categoria: normalizarCategoriaProducto(form.categoria),
             precio: Number(form.precio),
-            stock: Number(form.stock),
+            stock: form.categoria === "Ropa"
+                ? totalStockPorTalle(form.talles)
+                : Number(form.stock),
+            ...(form.categoria === "Ropa" ? { talles: form.talles } : {}),
             estado: form.estado,
             imagen: imagenes[0] || "",
             imagenes,
@@ -63,7 +85,7 @@ export default function AdministrarProductos({
                 window.alert("Producto modificado correctamente.");
             }
 
-            setForm(formularioInicial);
+            setForm({ ...formularioInicial, talles: crearStockPorTalle() });
             setProductoEditandoId(null);
         } catch (error) {
             console.error("Error al guardar producto:", error);
@@ -73,6 +95,7 @@ export default function AdministrarProductos({
         }
     }
 
+    // Carga un producto existente y adapta sus imágenes al formato de cuatro campos.
     function editarProducto(producto) {
         const imagenesGuardadas = Array.isArray(producto.imagenes) && producto.imagenes.length > 0
             ? producto.imagenes
@@ -88,9 +111,10 @@ export default function AdministrarProductos({
 
         setForm({
             nombre: producto.nombre || "",
-            categoria: producto.categoria || "",
+            categoria: normalizarCategoriaProducto(producto.categoria || ""),
             precio: String(producto.precio ?? ""),
             stock: String(producto.stock ?? ""),
+            talles: normalizarTallesRopa(producto.talles, producto.stock),
             estado: producto.estado || "activo",
             imagenes,
             descripcion: producto.descripcion || ""
@@ -102,11 +126,28 @@ export default function AdministrarProductos({
         });
     }
 
+    // Abandona la edición sin guardar y vuelve al formulario vacío.
     function cancelarEdicion() {
-        setForm(formularioInicial);
+        setForm({ ...formularioInicial, talles: crearStockPorTalle() });
         setProductoEditandoId(null);
     }
 
+    function cambiarTalle(talle, valor) {
+        setForm((actual) => {
+            const talles = {
+                ...actual.talles,
+                [talle]: valor === "" ? "" : Number(valor)
+            };
+
+            return {
+                ...actual,
+                talles,
+                stock: String(totalStockPorTalle(talles))
+            };
+        });
+    }
+
+    // Actualiza solo la URL de imagen seleccionada dentro de la lista del formulario.
     function cambiarImagen(indice, value) {
         setForm((actual) => ({
             ...actual,
@@ -117,6 +158,7 @@ export default function AdministrarProductos({
     }
 
     return (
+        // Formulario de alta/edición, previsualizaciones y listado de productos administrables.
         <section className="admin" id="administrar">
             <h2>
                 {productoEditandoId === null ? "Agregar producto" : "Modificar producto"}
@@ -126,6 +168,7 @@ export default function AdministrarProductos({
                 Completá los datos del producto y automáticamente aparecerá en la tienda.
             </p>
 
+            {/* Los valores están controlados por React para reflejar cada cambio al instante. */}
             <form className="formulario" onSubmit={enviarFormulario}>
                 <div className="campo">
                     <label htmlFor="nombre">Nombre del producto</label>
@@ -172,17 +215,44 @@ export default function AdministrarProductos({
                 </div>
 
                 <div className="campo">
-                    <label htmlFor="stock">Stock</label>
-                    <input
-                        id="stock"
-                        type="number"
-                        placeholder="Ej: 10"
-                        min="0"
-                        step="1"
-                        value={form.stock}
-                        onChange={cambiarCampo}
-                        required
-                    />
+                    {form.categoria === "Ropa" ? (
+                        <>
+                            <span className="campo-label">Stock por talle</span>
+                            <div className="admin-talles-stock">
+                                {TALLES_ROPA.map((talle) => (
+                                    <label className="admin-talle-campo" key={talle}>
+                                        <span>Talle {talle}</span>
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            step="1"
+                                            value={form.talles[talle]}
+                                            onChange={(evento) => cambiarTalle(talle, evento.target.value)}
+                                            aria-label={`Unidades disponibles del talle ${talle}`}
+                                            required
+                                        />
+                                    </label>
+                                ))}
+                            </div>
+                            <small>
+                                Stock total: {totalStockPorTalle(form.talles)}
+                            </small>
+                        </>
+                    ) : (
+                        <>
+                            <label htmlFor="stock">Stock</label>
+                            <input
+                                id="stock"
+                                type="number"
+                                placeholder="Ej: 10"
+                                min="0"
+                                step="1"
+                                value={form.stock}
+                                onChange={cambiarCampo}
+                                required
+                            />
+                        </>
+                    )}
                 </div>
 
                 <div className="campo">
@@ -195,6 +265,8 @@ export default function AdministrarProductos({
 
                 <div className="campo campo-completo">
                     <span className="campo-label">Imágenes del producto</span>
+                    {/* Ofrece una imagen principal y tres adicionales con vista previa inmediata. */}
+                    {/* Previsualiza cada URL antes de guardar el producto. */}
                     <div className="admin-imagenes-grid">
                         {form.imagenes.map((imagen, indice) => (
                             <label className="admin-imagen-campo" key={indice}>
@@ -252,6 +324,8 @@ export default function AdministrarProductos({
                 )}
             </form>
 
+            {/* Listado compacto que permite modificar o eliminar cada registro. */}
+            {/* Lista de registros actuales para editar o eliminar desde el panel. */}
             <div className="lista-admin">
                 <h3>Productos cargados</h3>
 
@@ -263,11 +337,20 @@ export default function AdministrarProductos({
                             <div className="admin-producto-info">
                                 <strong>{producto.nombre}</strong>
                                 <small>
-                                    {producto.categoria}
+                                    {normalizarCategoriaProducto(producto.categoria)}
                                     {" - "}
                                     ${Number(producto.precio).toLocaleString("es-AR")}
                                     {" - "}
                                     Stock: {producto.stock}
+                                    {normalizarCategoriaProducto(producto.categoria) === "Ropa" &&
+                                        producto.talles && (
+                                            <>
+                                                {" - "}
+                                                {TALLES_ROPA.map((talle) =>
+                                                    `${talle}: ${producto.talles[talle] ?? 0}`
+                                                ).join(" · ")}
+                                            </>
+                                        )}
                                     {" - Estado: "}
                                     {producto.estado || "activo"}
                                 </small>
