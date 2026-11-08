@@ -1,14 +1,22 @@
 import { useEffect, useRef, useState } from "react";
 import MinecraftIcon from "./MinecraftIcon";
+import {
+    crearStockPorTalle,
+    normalizarCategoriaProducto,
+    normalizarTallesRopa,
+    TALLES_ROPA
+} from "../../data/productos";
 
 export default function DetalleProducto({
     producto,
     productos,
+    carrito,
     volverProductos,
     agregarDesdeDetalle,
     abrirProducto
 }) {
 
+    // Guarda cantidad e imagen con el ID del producto para no reutilizar estado entre detalles.
     const [cantidadSeleccionada, setCantidadSeleccionada] = useState({
         productoId: producto?.id,
         valor: 1
@@ -16,11 +24,36 @@ export default function DetalleProducto({
     const [imagenActiva, setImagenActiva] = useState(null);
     const [imagenAmpliada, setImagenAmpliada] = useState(false);
     const [zoomImagen, setZoomImagen] = useState(false);
+    const [talleSeleccionado, setTalleSeleccionado] = useState({
+        productoId: producto?.id,
+        valor: ""
+    });
     const relacionadosRef = useRef(null);
+    const esRopa = normalizarCategoriaProducto(producto?.categoria) === "Ropa";
+    const tallesDisponibles = esRopa
+        ? normalizarTallesRopa(producto?.talles, producto?.stock)
+        : crearStockPorTalle();
+    const talleActual = talleSeleccionado.productoId === producto?.id
+        ? talleSeleccionado.valor
+        : "";
+    function disponiblesDelTalle(talle) {
+        const stockDelTalle = Number(tallesDisponibles[talle] || 0);
+        const unidadesEnCarrito = carrito.filter((item) =>
+            String(item.id) === String(producto?.id) && item.talle === talle
+        ).length;
+
+        return Math.max(0, stockDelTalle - unidadesEnCarrito);
+    }
+
+    const stockDisponible = esRopa
+        ? disponiblesDelTalle(talleActual)
+        : producto?.stock || 0;
+    // Si cambia el producto, la cantidad vuelve visualmente a una unidad.
     const cantidad = cantidadSeleccionada.productoId === producto?.id
-        ? cantidadSeleccionada.valor
+        ? Math.min(cantidadSeleccionada.valor, Math.max(stockDisponible, 1))
         : 1;
 
+    // Une las imágenes adicionales con la principal y elimina vacíos y duplicados.
     const imagenesProducto = producto
         ? [...new Set([
             ...(Array.isArray(producto.imagenes) ? producto.imagenes : []),
@@ -32,6 +65,7 @@ export default function DetalleProducto({
         ? imagenActiva.src
         : imagenesProducto[0];
 
+    // Permite cerrar la ampliación con Escape y retira el listener al cerrar/desmontar.
     useEffect(() => {
         if (!imagenAmpliada) {
             return undefined;
@@ -47,11 +81,13 @@ export default function DetalleProducto({
         return () => window.removeEventListener("keydown", cerrarConEscape);
     }, [imagenAmpliada]);
 
+    // Restablece a la vez el estado del visor y el nivel de zoom.
     function cerrarImagen() {
         setImagenAmpliada(false);
         setZoomImagen(false);
     }
 
+    // Desplaza automáticamente el carrusel de relacionados y vuelve al inicio al llegar al final.
     useEffect(() => {
         if (productos.length < 3) {
             return undefined;
@@ -84,12 +120,14 @@ export default function DetalleProducto({
     }
 
 
+    // Limita la lista a cuatro artículos y duplica las tarjetas para un desplazamiento continuo.
     const relacionados = productos
         .filter((p) => p.id !== producto.id)
         .slice(0, 4);
     const relacionadosCarrusel = [...relacionados, ...relacionados];
 
     function moverRelacionados(direccion) {
+        // Avanza exactamente el ancho de una tarjeta más el espacio entre tarjetas.
         const carrusel = relacionadosRef.current;
         const tarjeta = carrusel?.querySelector(".detalle-relacionado");
 
@@ -105,7 +143,7 @@ export default function DetalleProducto({
 
 
     function disminuir() {
-
+        // La cantidad nunca puede bajar de una unidad.
         setCantidadSeleccionada((actual) => ({
             productoId: producto.id,
             valor: Math.max(
@@ -118,8 +156,8 @@ export default function DetalleProducto({
 
 
     function aumentar() {
-
-        if (cantidad < producto.stock) {
+        // No permite elegir más unidades de las que hay disponibles en stock.
+        if (cantidad < stockDisponible) {
 
             setCantidadSeleccionada((actual) => ({
                 productoId: producto.id,
@@ -135,6 +173,7 @@ export default function DetalleProducto({
 
         <section className="detalle-pagina">
 
+            {/* Detalle completo: galería, compra, información adicional y sugerencias. */}
             <button
                 className="detalle-volver"
                 onClick={volverProductos}
@@ -146,6 +185,7 @@ export default function DetalleProducto({
             <div className="detalle-contenido">
 
 
+                {/* Imagen principal y miniaturas si el producto tiene más de una foto. */}
                 <div className="detalle-galeria">
 
                     <div className="detalle-imagen-principal">
@@ -205,10 +245,11 @@ export default function DetalleProducto({
                 </div>
 
 
+                {/* Precio, disponibilidad y acciones de compra para el producto seleccionado. */}
                 <div className="detalle-info">
 
                     <div className="detalle-categoria">
-                        {producto.categoria}
+                        {normalizarCategoriaProducto(producto.categoria)}
                     </div>
 
 
@@ -236,16 +277,52 @@ export default function DetalleProducto({
 
 
                     <div className="detalle-stock">
-
-                        {producto.stock > 0
-                            ? `● En stock — ${producto.stock} unidades disponibles`
-                            : "● Sin stock"}
-
+                        {esRopa
+                            ? `● ${producto.stock > 0 ? `${producto.stock} unidades en total` : "Sin stock"}`
+                            : producto.stock > 0
+                                ? `● En stock — ${producto.stock} unidades disponibles`
+                                : "● Sin stock"}
                     </div>
 
+                    {esRopa && (
+                        <div className="detalle-talle">
+                            <label htmlFor="producto-talle">Talle</label>
+                            <select
+                                id="producto-talle"
+                                value={talleActual}
+                                onChange={(evento) => {
+                                    setTalleSeleccionado({
+                                        productoId: producto.id,
+                                        valor: evento.target.value
+                                    });
+                                    setCantidadSeleccionada({
+                                        productoId: producto.id,
+                                        valor: 1
+                                    });
+                                }}
+                            >
+                                <option value="">Elegí un talle</option>
+                                {TALLES_ROPA.map((talle) => (
+                                    <option
+                                        key={talle}
+                                        value={talle}
+                                        disabled={disponiblesDelTalle(talle) <= 0}
+                                    >
+                                        {talle} — {disponiblesDelTalle(talle)} disponibles
+                                    </option>
+                                ))}
+                            </select>
+                            {talleActual && (
+                                <small>
+                                    {stockDisponible > 0
+                                        ? `${stockDisponible} disponibles de este talle`
+                                        : "No quedan unidades disponibles de este talle"}
+                                </small>
+                            )}
+                        </div>
+                    )}
 
-                    {producto.stock > 0 && (
-
+                    {stockDisponible > 0 && (!esRopa || talleActual) && (
                         <>
 
                             <div className="detalle-cantidad-titulo">
@@ -282,16 +359,23 @@ export default function DetalleProducto({
 
                     <button
                         className="detalle-agregar"
-                        disabled={producto.stock <= 0}
-                        onClick={() =>
+                        disabled={stockDisponible <= 0 || (esRopa && !talleActual)}
+                        onClick={() => {
                             agregarDesdeDetalle(
                                 producto,
-                                cantidad
-                            )
-                        }
+                                cantidad,
+                                talleActual || null
+                            );
+                            setCantidadSeleccionada({
+                                productoId: producto.id,
+                                valor: 1
+                            });
+                        }}
                     >
 
-                        {producto.stock > 0 ? (
+                        {esRopa && !talleActual ? (
+                            "ELEGÍ UN TALLE"
+                        ) : stockDisponible > 0 ? (
                             <>
                                 <MinecraftIcon
                                     name="carrito"
@@ -365,6 +449,7 @@ export default function DetalleProducto({
             </div>
 
 
+            {/* Visor superpuesto; tocar la imagen alterna entre tamaño normal y zoom. */}
             {imagenAmpliada && imagenPrincipal && (
                 <div
                     className="detalle-lightbox"
@@ -397,6 +482,7 @@ export default function DetalleProducto({
             )}
 
 
+            {/* Resumen de atributos normalizados del producto. */}
             <div className="detalle-extra">
 
                 <h2>
@@ -412,7 +498,7 @@ export default function DetalleProducto({
                         </strong>
 
                         <span>
-                            {producto.categoria}
+                            {normalizarCategoriaProducto(producto.categoria)}
                         </span>
                     </div>
 
@@ -459,6 +545,7 @@ export default function DetalleProducto({
             </div>
 
 
+            {/* Carrusel de otros productos con controles laterales. */}
             <div className="detalle-relacionados">
 
                 <h2>

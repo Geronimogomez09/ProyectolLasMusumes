@@ -1,3 +1,4 @@
+// Rutas de los recursos pixelados reutilizados por los componentes de la tienda.
 const ICONOS_MINECRAFT = {
     carrito: "/iconos/carrito.png",
     producto: "/iconos/diamond.png",
@@ -11,7 +12,9 @@ const ICONOS_MINECRAFT = {
     bloqueo: "/iconos/stone.png"
 };
 
+// Renderiza una tilde de texto o un recurso gráfico según el nombre solicitado.
 export default function MinecraftIcon({ name, alt = "", className = "", size }) {
+    // Los pasos del pago usan una tilde para indicar que una etapa ya se completó.
     if (name === "check") {
         return (
             <span
@@ -27,10 +30,12 @@ export default function MinecraftIcon({ name, alt = "", className = "", size }) 
 
     const src = ICONOS_MINECRAFT[name];
 
+    // No muestra una etiqueta vacía cuando se solicita un nombre sin recurso asociado.
     if (!src) {
         return null;
     }
 
+    // El tamaño es opcional; si no se indica, los estilos de la clase controlan el ícono.
     return (
         <img
             src={src}

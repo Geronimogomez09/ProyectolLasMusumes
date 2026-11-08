@@ -10,8 +10,10 @@ export default function Carrito({
     quitarCarrito,
     vaciarCarrito
 }) {
+    // El paso de pago se monta solo al abrir el flujo y conserva este carrito como resumen.
     const [pagoAbierto, setPagoAbierto] = useState(false);
 
+    // Calcula el subtotal sumando cada unidad guardada en el carrito.
     const total = carrito.reduce(
         (suma, producto) => suma + Number(producto.precio),
         0
@@ -19,6 +21,7 @@ export default function Carrito({
 
     return (
         <>
+            {/* Panel lateral: lista, eliminación de unidades y acceso al pago. */}
             <aside className={`carrito ${abierto ? "abierto" : ""}`}>
                 <div className="carrito-header">
                     <h2>
@@ -38,6 +41,7 @@ export default function Carrito({
                 </div>
 
                 <div>
+                    {/* Muestra el estado vacío o una fila por cada unidad agregada. */}
                     {carrito.length === 0 ? (
                         <p>El carrito está vacío.</p>
                     ) : (
@@ -48,6 +52,12 @@ export default function Carrito({
                             >
                                 <div>
                                     <strong>{producto.nombre}</strong>
+                                    {producto.talle && (
+                                        <>
+                                            <br />
+                                            <small>Talle: {producto.talle}</small>
+                                        </>
+                                    )}
                                     <br />
                                     ${Number(producto.precio).toLocaleString("es-AR")}
                                 </div>
@@ -76,6 +86,7 @@ export default function Carrito({
                 </button>
             </aside>
 
+            {/* El componente de pago solo se crea mientras el flujo está abierto. */}
             {pagoAbierto && (
                 <Pago
                     carrito={carrito}

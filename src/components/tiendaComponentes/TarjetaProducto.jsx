@@ -1,5 +1,7 @@
 import MinecraftIcon from "./MinecraftIcon";
+import { normalizarCategoriaProducto } from "../../data/productos";
 
+// Presenta un producto y recibe del catálogo las acciones para abrirlo o agregarlo.
 export default function TarjetaProducto({
     producto,
     abrirProducto,
@@ -13,6 +15,8 @@ export default function TarjetaProducto({
             onClick={() => abrirProducto(producto.id)}
         >
 
+            {/* El contenedor abre el detalle; el botón de agregar detiene ese clic en su manejador. */}
+            {/* Usa la imagen cargada o un ícono genérico si todavía no hay una. */}
             <div className="producto-imagen">
 
                 {producto.imagen ? (
@@ -37,10 +41,11 @@ export default function TarjetaProducto({
             </div>
 
 
+            {/* Datos resumidos para decidir si abrir el detalle o agregar al carrito. */}
             <div className="producto-info">
 
                 <div className="producto-categoria">
-                    {producto.categoria}
+                    {normalizarCategoriaProducto(producto.categoria)}
                 </div>
 
 
@@ -64,16 +69,23 @@ export default function TarjetaProducto({
                 </div>
 
 
+                {/* Evita agregar productos que no tienen unidades disponibles. */}
                 {producto.stock > 0 ? (
 
                     <button
                         className="agregar-btn"
                         onClick={(e) => {
                             e.stopPropagation();
-                            agregarCarrito(producto);
+                            if (normalizarCategoriaProducto(producto.categoria) === "Ropa") {
+                                abrirProducto(producto.id);
+                            } else {
+                                agregarCarrito(producto);
+                            }
                         }}
                     >
-                        AGREGAR AL CARRITO
+                        {normalizarCategoriaProducto(producto.categoria) === "Ropa"
+                            ? "ELEGIR TALLE"
+                            : "AGREGAR AL CARRITO"}
                     </button>
 
                 ) : (

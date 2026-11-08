@@ -1,0 +1,319 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function logueado() {
+      return request.auth != null;
+    }
+
+    function perfilExiste() {
+      return logueado()
+        && exists(/databases/$(database)/documents/usuarios/$(request.auth.uid));
+    }
+
+    function perfilActual() {
+      return get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data;
+    }
+
+    function cuentaActiva() {
+      return perfilExiste()
+        && (!('estado' in perfilActual()) || perfilActual().estado != 'suspendido');
+    }
+
+    function superAdmin() {
+      return perfilExiste()
+        && (
+          perfilActual().rol == 'superadmin'
+          || (
+            perfilActual().rol == 'admin'
+            && !('permisos' in perfilActual())
+          )
+        );
+    }
+
+    function adminDe(departamento) {
+      return cuentaActiva()
+        && (
+          superAdmin()
+          || (
+            perfilActual().rol == 'admin'
+            && 'permisos' in perfilActual()
+            && (
+              'todos' in perfilActual().permisos
+              || departamento in perfilActual().permisos
+            )
+          )
+        );
+    }
+
+    function puedeAdministrarUsuarios() {
+      return cuentaActiva() && superAdmin();
+    }
+
+    match /usuarios/{uid} {
+      allow read: if logueado()
+        && (request.auth.uid == uid || puedeAdministrarUsuarios());
+
+      allow create: if logueado()
+        && request.auth.uid == uid
+        && request.resource.data.rol == 'usuario'
+        && request.resource.data.estado == 'activo'
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.keys().hasOnly([
+          'uid',
+          'email',
+          'nombreUsuario',
+          'fotoPerfil',
+          'biografia',
+          'rol',
+          'estado',
+          'fechaRegistro'
+        ]);
+
+      allow update: if puedeAdministrarUsuarios()
+        || (
+          cuentaActiva()
+          && request.auth.uid == uid
+          && request.resource.data.rol == resource.data.rol
+          && request.resource.data.diff(resource.data)
+            .affectedKeys()
+            .hasOnly(['nombreUsuario', 'fotoPerfil', 'biografia'])
+        );
+
+      allow delete: if puedeAdministrarUsuarios();
+    }
+
+    match /usuarios/{uid}/{subcoleccion}/{documentoId} {
+      allow read, create, update, delete: if cuentaActiva()
+        && request.auth.uid == uid
+        && subcoleccion in ['favoritos', 'seguidos', 'playlists'];
+    }
+
+    match /publicaciones/{id} {
+      allow read: if cuentaActiva();
+
+      allow create: if cuentaActiva()
+        && request.resource.data.autorId == request.auth.uid
+        && request.resource.data.autorNombre == perfilActual().nombreUsuario
+        && request.resource.data.contenido is string
+        && request.resource.data.contenido.size() > 0
+        && request.resource.data.contenido.size() <= 5000
+        && request.resource.data.categoria is string
+        && request.resource.data.keys().hasOnly([
+          'autorId',
+          'autorNombre',
+          'autorFoto',
+          'categoria',
+          'contenido',
+          'imagen',
+          'comentarios',
+          'likes',
+          'editado',
+          'fechaCreacion',
+          'fechaActualizacion'
+        ]);
+
+      allow update: if cuentaActiva()
+        && (
+          (
+            resource.data.autorId == request.auth.uid
+            && request.resource.data.autorId == resource.data.autorId
+            && request.resource.data.diff(resource.data)
+              .affectedKeys()
+              .hasOnly([
+                'contenido',
+                'categoria',
+                'imagen',
+                'editado',
+                'fechaActualizacion'
+              ])
+            && request.resource.data.contenido is string
+            && request.resource.data.contenido.size() > 0
+            && request.resource.data.contenido.size() <= 5000
+          )
+          || (
+            adminDe('comunidad')
+            && request.resource.data.diff(resource.data)
+              .affectedKeys()
+              .hasOnly([
+                'contenido',
+                'categoria',
+                'imagen',
+                'editado',
+                'comentarios',
+                'fechaActualizacion'
+              ])
+          )
+        );
+
+      allow delete: if cuentaActiva()
+        && (
+          adminDe('comunidad')
+          || resource.data.autorId == request.auth.uid
+        );
+    }
+
+    match /denuncias/{id} {
+      allow create: if cuentaActiva()
+        && request.resource.data.denuncianteId == request.auth.uid
+        && request.resource.data.motivo is string
+        && request.resource.data.publicacionId is string;
+
+      allow read, update, delete: if adminDe('comunidad');
+    }
+
+    match /versiones/{id} {
+      allow read: if cuentaActiva();
+      allow create, update, delete: if adminDe('versiones');
+    }
+
+    match /rankingMusical/{songId} {
+      allow read: if cuentaActiva();
+
+      allow create: if cuentaActiva()
+        && request.resource.data.keys().hasOnly([
+          'songId',
+          'reproducciones',
+          'updatedAt'
+        ])
+        && request.resource.data.songId is int
+        && request.resource.data.songId > 0
+        && request.resource.data.reproducciones == 1
+        && request.resource.data.updatedAt == request.time;
+
+      allow update: if cuentaActiva()
+        && request.resource.data.diff(resource.data)
+          .affectedKeys()
+          .hasOnly(['reproducciones', 'updatedAt'])
+        && request.resource.data.songId == resource.data.songId
+        && request.resource.data.reproducciones == resource.data.reproducciones + 1
+        && request.resource.data.updatedAt == request.time;
+
+      allow delete: if false;
+    }
+
+    function productoValido(id) {
+      return request.resource.data.keys().hasAll([
+          'id',
+          'nombre',
+          'descripcion',
+          'precio',
+          'stock',
+          'categoria',
+          'estado',
+          'imagen',
+          'imagenes'
+        ])
+        && request.resource.data.keys().hasOnly([
+          'id',
+          'nombre',
+          'descripcion',
+          'precio',
+          'stock',
+          'categoria',
+          'estado',
+          'imagen',
+          'imagenes',
+          'talles'
+        ])
+        && request.resource.data.id is string
+        && request.resource.data.id == id
+        && request.resource.data.nombre is string
+        && request.resource.data.nombre.size() > 0
+        && request.resource.data.nombre.size() <= 100
+        && request.resource.data.descripcion is string
+        && request.resource.data.descripcion.size() <= 2000
+        && request.resource.data.precio is number
+        && request.resource.data.precio > 0
+        && request.resource.data.stock is int
+        && request.resource.data.stock >= 0
+        && request.resource.data.categoria is string
+        && request.resource.data.categoria.size() > 0
+        && request.resource.data.categoria.size() <= 100
+        && request.resource.data.estado in ['activo', 'inactivo']
+        && request.resource.data.imagen is string
+        && request.resource.data.imagenes is list
+        && request.resource.data.imagenes.size() <= 4
+        && (
+          (
+            request.resource.data.categoria == 'Ropa'
+            && 'talles' in request.resource.data
+            && request.resource.data.talles is map
+            && request.resource.data.talles.keys().hasAll(['S', 'M', 'L', 'XL', 'XXL'])
+            && request.resource.data.talles.keys().hasOnly(['S', 'M', 'L', 'XL', 'XXL'])
+            && request.resource.data.talles.S is int
+            && request.resource.data.talles.S >= 0
+            && request.resource.data.talles.M is int
+            && request.resource.data.talles.M >= 0
+            && request.resource.data.talles.L is int
+            && request.resource.data.talles.L >= 0
+            && request.resource.data.talles.XL is int
+            && request.resource.data.talles.XL >= 0
+            && request.resource.data.talles.XXL is int
+            && request.resource.data.talles.XXL >= 0
+            && request.resource.data.stock
+              == request.resource.data.talles.S
+                + request.resource.data.talles.M
+                + request.resource.data.talles.L
+                + request.resource.data.talles.XL
+                + request.resource.data.talles.XXL
+          )
+          || (
+            request.resource.data.categoria != 'Ropa'
+            && !('talles' in request.resource.data)
+          )
+        );
+    }
+
+    match /productos/{id} {
+      allow read: if cuentaActiva();
+
+      allow create: if adminDe('tienda')
+        && productoValido(id);
+
+      allow update: if adminDe('tienda')
+        && productoValido(id)
+        && request.resource.data.id == resource.data.id;
+
+      allow delete: if adminDe('tienda');
+    }
+
+    match /productosPredeterminados/{id} {
+      allow read, create, update, delete: if adminDe('tienda');
+    }
+
+    match /banners/{id} {
+      allow read: if cuentaActiva();
+      allow create, update, delete: if adminDe('inicio') || adminDe('tienda');
+    }
+
+    match /banners/{id} {
+      allow read: if cuentaActiva();
+      allow create, update, delete: if adminDe('inicio');
+    }
+
+    match /canciones/{id} {
+      allow read: if cuentaActiva();
+      allow create, update, delete: if adminDe('musica');
+    }
+
+    match /albumes/{id} {
+      allow read: if cuentaActiva();
+      allow create, update, delete: if adminDe('musica');
+    }
+
+    match /compositores/{id} {
+      allow read: if cuentaActiva();
+      allow create, update, delete: if adminDe('musica');
+    }
+
+    match /playlists/{id} {
+      allow read: if cuentaActiva();
+      allow create, update, delete: if adminDe('musica');
+    }
+
+    match /historia/{id} {
+      allow read: if cuentaActiva();
+      allow create, update, delete: if adminDe('historia');
+    }
+  }
+}

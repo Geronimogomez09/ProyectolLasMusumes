@@ -11,7 +11,6 @@ import privacidadIcono from "../assets/iconos/ender_chest.png";
 import responsabilidadIcono from "../assets/iconos/brush.png";
 import "../styles/nosotros.css";
 
-// Información que se reutiliza para construir las tarjetas del equipo.
 const integrantes = [
     {
         numero: "01",
@@ -47,8 +46,6 @@ const integrantes = [
     },
 ];
 
-// Cada pauta mantiene su texto, lista ampliada e icono en un mismo objeto.
-// El detalle se muestra dentro de un elemento <details> accesible del navegador.
 const pautas = [
     {
         titulo: "Buena convivencia",
@@ -97,20 +94,15 @@ const pautas = [
 ];
 
 function Nosotros() {
-    // Estado del envío: texto para el formulario, bloqueo mientras espera y confirmación final.
     const [estadoFormulario, setEstadoFormulario] = useState("");
     const [enviandoFormulario, setEnviandoFormulario] = useState(false);
     const [mensajeEnviado, setMensajeEnviado] = useState(false);
-    // Integrante seleccionado para abrir su imagen en una vista ampliada.
     const [integranteSeleccionado, setIntegranteSeleccionado] = useState(null);
-
-    // Referencias para devolver el foco al control que abrió cada diálogo.
     const imagenActivadora = useRef(null);
     const botonCerrarImagen = useRef(null);
     const botonConfirmarEnvio = useRef(null);
     const botonEnviarFormulario = useRef(null);
 
-    // Al abrir la imagen, bloquea el desplazamiento de fondo y habilita Escape para cerrarla.
     useEffect(() => {
         if (!integranteSeleccionado) return undefined;
 
@@ -127,14 +119,12 @@ function Nosotros() {
         document.addEventListener("keydown", cerrarConEscape);
 
         return () => {
-            // Restaura el estado anterior de la página y el foco de teclado.
             document.body.style.overflow = overflowAnterior;
             document.removeEventListener("keydown", cerrarConEscape);
             imagenActivadora.current?.focus();
         };
     }, [integranteSeleccionado]);
 
-    // La confirmación de envío se comporta como un diálogo a pantalla completa.
     useEffect(() => {
         if (!mensajeEnviado) return undefined;
 
@@ -152,27 +142,22 @@ function Nosotros() {
         document.addEventListener("keydown", cerrarConEscape);
 
         return () => {
-            // Al cerrar la confirmación, restaura el scroll y el foco del formulario.
             document.body.style.overflow = overflowAnterior;
             document.removeEventListener("keydown", cerrarConEscape);
             botonFormulario?.focus();
         };
     }, [mensajeEnviado]);
 
-    // Envía el formulario al servicio de correo y refleja el resultado en la interfaz.
     async function enviarFormulario(evento) {
         evento.preventDefault();
         setEnviandoFormulario(true);
         setEstadoFormulario("Enviando tu mensaje...");
 
-        // Captura los campos una sola vez antes de iniciar la solicitud asíncrona.
         const elementoFormulario = evento.currentTarget;
         const formulario = new FormData(elementoFormulario);
         const email = formulario.get("email");
 
         try {
-            // FormSubmit entrega el mensaje al correo configurado. El remitente y el asunto
-            // identifican al sitio; el cuerpo presenta los datos del usuario en texto sencillo.
             const respuesta = await fetch("https://formsubmit.co/ajax/sadajuanignacio123@gmail.com", {
                 method: "POST",
                 headers: {
@@ -198,23 +183,19 @@ function Nosotros() {
             });
             const resultado = await respuesta.json();
 
-            // Solo se confirma el envío si tanto HTTP como el servicio indican éxito.
             if (!respuesta.ok || !["true", true].includes(resultado.success)) {
                 throw new Error(resultado.message || "El servicio rechazó el envío.");
             }
 
-            // Limpia los campos y muestra la confirmación de pantalla completa.
             elementoFormulario.reset();
             setEstadoFormulario("¡Mensaje enviado! Gracias por escribirnos.");
             setMensajeEnviado(true);
         } catch (error) {
-            // Mantiene el formulario visible para que la persona pueda volver a intentarlo.
             console.error("No se pudo enviar el formulario de contacto:", error);
             setEstadoFormulario(
                 "No pudimos enviar tu mensaje. Revisá tu conexión e intentá nuevamente."
             );
         } finally {
-            // Vuelve a habilitar el botón tanto si el envío terminó bien como si falló.
             setEnviandoFormulario(false);
         }
     }
@@ -224,7 +205,6 @@ function Nosotros() {
             <Header />
 
             <main>
-                {/* Presentación principal con accesos directos al contacto y al equipo. */}
                 <section className="nosotros-hero" aria-labelledby="nosotros-titulo">
                     <div className="container nosotros-hero-contenido">
                         <p className="nosotros-etiqueta">Wiki-Craft · Un proyecto en comunidad</p>
@@ -244,7 +224,6 @@ function Nosotros() {
                     </div>
                 </section>
 
-                {/* Formulario de contacto; los campos requeridos también usan validación HTML. */}
                 <section className="nosotros-seccion nosotros-contacto" id="contacto" aria-labelledby="contacto-titulo">
                     <div className="container">
                         <div className="nosotros-encabezado">
@@ -310,7 +289,7 @@ function Nosotros() {
                                         {enviandoFormulario ? "Enviando..." : "Enviar mensaje"} <span aria-hidden="true">→</span>
                                     </button>
                                     <p className="contacto-nota" aria-live="polite">
-                                        {estadoFormulario || "Tu mensaje será enviado a sadajuanignacio123@gmail.com."}
+                                        {estadoFormulario || "Tu mensaje será enviado a las oficinas de WIKI-CRAFT."}
                                     </p>
                                 </div>
                             </div>
@@ -318,7 +297,6 @@ function Nosotros() {
                     </div>
                 </section>
 
-                {/* Pautas comunitarias desplegables, generadas desde la lista definida arriba. */}
                 <section className="nosotros-seccion nosotros-pautas" id="pautas" aria-labelledby="pautas-titulo">
                     <div className="container">
                         <div className="nosotros-encabezado">
@@ -331,7 +309,6 @@ function Nosotros() {
                         </div>
 
                         <div className="row g-3 g-lg-4">
-                            {/* Cada <details> permite consultar la pauta sin lógica adicional de apertura. */}
                             {pautas.map((pauta, indice) => (
                                 <div className="col-12" key={pauta.titulo}>
                                     <details className="pauta-tarjeta">
@@ -362,7 +339,6 @@ function Nosotros() {
                     </div>
                 </section>
 
-                {/* Perfiles del equipo con apertura de imagen ampliada al activar el retrato. */}
                 <section className="nosotros-seccion nosotros-equipo" id="equipo" aria-labelledby="equipo-titulo">
                     <div className="container">
                         <div className="nosotros-encabezado">
@@ -375,7 +351,6 @@ function Nosotros() {
                         </div>
 
                         <div className="row g-4">
-                            {/* La clave estable evita que React recicle tarjetas del integrante incorrecto. */}
                             {integrantes.map((integrante) => (
                                 <div className="col-12 col-sm-6 col-xl-3" key={integrante.numero}>
                                     <article className="integrante-tarjeta">
@@ -408,7 +383,6 @@ function Nosotros() {
 
             <Footer />
 
-            {/* La confirmación solo se monta después de que el servicio acepta el mensaje. */}
             {mensajeEnviado && (
                 <div
                     className="contacto-exito-overlay"
@@ -432,7 +406,6 @@ function Nosotros() {
                 </div>
             )}
 
-            {/* Vista ampliada de la foto; se cierra con el botón, Escape o clic en el fondo. */}
             {integranteSeleccionado && (
                 <div
                     className="integrante-lightbox"
