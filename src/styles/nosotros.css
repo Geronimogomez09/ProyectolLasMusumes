@@ -1,3 +1,4 @@
+/* Fuentes pixeladas del proyecto: títulos y pequeños detalles visuales. */
 @font-face {
     font-family: "NosotrosMinecraft";
     src: url("/fonts/Minecraft.ttf") format("truetype");
@@ -15,11 +16,12 @@
 }
 
 .nosotros-page {
+    /* Variables locales para que los estilos de esta página no afecten otras vistas. */
     --nosotros-texto-suave: #5f625b;
     --nosotros-borde: rgba(17, 17, 17, 0.1);
     min-height: 100vh;
     color: var(--texto, #111);
-    background: var(--fondo, #e9e9e9);
+    background: #fff;
     font-family: "Segoe UI", Roboto, Arial, sans-serif;
 }
 
@@ -29,6 +31,7 @@
     box-sizing: border-box;
 }
 
+/* Normalizaciones limitadas al contenido de Nosotros. */
 .nosotros-page main {
     padding: 0;
 }
@@ -42,6 +45,7 @@
     max-width: 100%;
 }
 
+/* Entrada escalonada de las secciones para acompañar el desplazamiento inicial. */
 .nosotros-page main > section {
     animation: nosotros-entrada 700ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
 }
@@ -70,16 +74,19 @@
     }
 }
 
+/* Indicador de foco consistente para navegación con teclado. */
 .nosotros-page :is(a, button, input, textarea):focus-visible {
     outline: 3px solid var(--verde, #1db53c);
     outline-offset: 3px;
 }
 
 .nosotros-hero {
+    /* Deja libre el alto del encabezado fijo para que la imagen comience debajo. */
     display: flex;
     align-items: center;
     min-height: 420px;
-    padding: calc(var(--header-alto, 76px) + 36px) 0 36px;
+    margin-top: var(--header-alto, 76px);
+    padding: 36px 0;
     border-bottom: 2px solid var(--verde-claro, #dcefdc);
     background:
         linear-gradient(90deg, rgba(0, 0, 0, 0.62) 0%, rgba(0, 0, 0, 0.38) 30%, transparent 68%),
@@ -90,6 +97,7 @@
     max-width: 1140px;
 }
 
+/* Etiquetas pequeñas que presentan cada bloque de contenido. */
 .nosotros-etiqueta {
     margin: 0 0 14px;
     color: var(--verde-hover, #00a521);
@@ -114,6 +122,7 @@
     text-wrap: balance;
 }
 
+/* El texto del hero usa contraste y sombra para mantenerse legible sobre la foto. */
 .nosotros-hero h1 {
     max-width: 720px;
     color: #fff;
@@ -180,6 +189,7 @@
     gap: 12px;
 }
 
+/* Separación común entre secciones y margen de destino para los enlaces internos. */
 .nosotros-seccion {
     padding: clamp(62px, 8vw, 100px) 0;
     scroll-margin-top: calc(var(--header-alto, 76px) + 16px);
@@ -191,6 +201,7 @@
     text-align: center;
 }
 
+/* Presentación compartida de encabezados en contacto, pautas y equipo. */
 .nosotros-encabezado h2 {
     font-size: clamp(1.55rem, 3.2vw, 2.4rem);
 }
@@ -203,6 +214,7 @@
 }
 
 .nosotros-contacto {
+    /* Fondo con textura suave para distinguir la zona del formulario. */
     background-color: var(--blanco, #fffdf9);
     background-image: url("/fondos/fondo-productos.png");
     background-repeat: repeat;
@@ -211,6 +223,7 @@
 }
 
 .contacto-formulario {
+    /* Tarjeta centrada que contiene todos los campos del formulario. */
     max-width: 860px;
     margin: 0 auto;
     padding: clamp(22px, 5vw, 42px);
@@ -228,6 +241,7 @@
     font-weight: 750;
 }
 
+/* Campos fluidos en móvil y escritorio, con estado de foco visible. */
 .contacto-formulario input,
 .contacto-formulario textarea {
     display: block;
@@ -259,6 +273,7 @@
     resize: vertical;
 }
 
+/* Mantiene el botón y el mensaje de estado alineados y adaptables al ancho disponible. */
 .contacto-acciones {
     display: flex;
     align-items: center;
@@ -275,9 +290,11 @@
 }
 
 .nosotros-pautas {
+    /* Contraste de fondo para separar las normas del formulario y del equipo. */
     background: var(--fondo, #e9e9e9);
 }
 
+/* Tarjetas desplegables de pautas; el estado abierto resalta el borde. */
 .pauta-tarjeta {
     height: 100%;
     padding: 0;
@@ -304,6 +321,7 @@
     list-style: none;
 }
 
+/* Oculta el marcador nativo para usar el indicador visual propio de la tarjeta. */
 .pauta-resumen::-webkit-details-marker {
     display: none;
 }
@@ -322,6 +340,7 @@
     image-rendering: pixelated;
 }
 
+/* El signo gira al abrir la tarjeta y funciona como indicador de estado. */
 .pauta-titulo {
     flex: 1;
     color: var(--texto, #111);
@@ -360,6 +379,7 @@
     font-size: 0.72rem;
 }
 
+/* Texto ampliado visible dentro de cada pauta desplegada. */
 .integrante-tarjeta h3 {
     margin: 0;
     color: var(--texto, #111);
@@ -393,6 +413,7 @@
     color: var(--verde-hover, #00a521);
 }
 
+/* Descripción y cierre de las pautas con jerarquía tipográfica secundaria. */
 .integrante-tarjeta p:last-child {
     margin: 9px 0 0;
     color: var(--nosotros-texto-suave);
@@ -409,6 +430,78 @@
     text-align: center;
 }
 
+.contacto-exito-overlay {
+    /* Cubre la ventana solo después de confirmar el envío y centra el mensaje. */
+    position: fixed;
+    inset: 0;
+    z-index: 1300;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    background: rgba(255, 255, 255, 0.97);
+    animation: contacto-confirmacion-aparecer 300ms ease-out both;
+}
+
+.contacto-exito-contenido {
+    width: min(100%, 520px);
+    text-align: center;
+}
+
+/* Sello de éxito y animación suave para hacer evidente que el correo se envió. */
+.contacto-exito-tilde {
+    display: grid;
+    width: 96px;
+    height: 96px;
+    margin: 0 auto 24px;
+    place-items: center;
+    border-radius: 50%;
+    color: #fff;
+    background: var(--verde, #1db53c);
+    box-shadow: 0 12px 30px rgba(29, 181, 60, 0.25);
+    font-size: 3.5rem;
+    font-weight: 800;
+    animation: contacto-tilde-entrada 360ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.contacto-exito-contenido h2 {
+    margin: 0;
+    color: var(--texto, #111);
+    font-family: "NosotrosMinecraftTitle", "NosotrosMinecraft", sans-serif;
+    font-size: clamp(1.5rem, 5vw, 2.2rem);
+    line-height: 1.3;
+}
+
+/* Aparición breve de la confirmación y entrada leve de la tilde. */
+.contacto-exito-contenido p {
+    margin: 16px 0 26px;
+    color: var(--nosotros-texto-suave);
+    font-size: 1rem;
+    line-height: 1.7;
+}
+
+@keyframes contacto-tilde-entrada {
+    from {
+        opacity: 0;
+        transform: scale(0.92) translateY(6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+@keyframes contacto-confirmacion-aparecer {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+/* Fondo con textura y tarjetas para presentar a cada persona del equipo. */
 .nosotros-equipo {
     background-color: var(--blanco, #fffdf9);
     background-image: url("/fondos/fondo-productos.png");
@@ -418,6 +511,7 @@
 }
 
 .integrante-tarjeta {
+    /* La tarjeta completa ocupa la altura de su columna y eleva al pasar el cursor. */
     height: 100%;
     overflow: hidden;
     border: 1px solid var(--nosotros-borde);
@@ -433,6 +527,7 @@
 }
 
 .integrante-imagen {
+    /* Marco fijo para que los retratos mantengan una altura uniforme. */
     position: relative;
     display: grid;
     height: 205px;
@@ -452,6 +547,7 @@
     cursor: zoom-in;
 }
 
+/* Las imágenes se contienen sin recortarse; la primera tiene un encuadre particular. */
 .integrante-imagen-boton:focus-visible {
     outline: 3px solid var(--verde, #1db53c);
     outline-offset: -3px;
@@ -471,6 +567,7 @@
 }
 
 .integrante-lightbox {
+    /* Capa modal que presenta el retrato a tamaño grande sobre el resto de la página. */
     position: fixed;
     inset: 0;
     z-index: 1200;
@@ -519,6 +616,7 @@
     background: rgba(255, 255, 255, 0.24);
 }
 
+/* Número identificador superpuesto en la esquina de cada retrato. */
 .integrante-imagen > span {
     position: absolute;
     right: 14px;
@@ -539,6 +637,7 @@
     padding: 22px;
 }
 
+/* Datos textuales del integrante, separados por peso y color. */
 .integrante-rol {
     margin: 0 0 8px;
     color: var(--verde-hover, #00a521);
@@ -553,6 +652,7 @@
 }
 
 @media (max-width: 575.98px) {
+    /* Aumenta el hero y apila controles donde el ancho de pantalla es reducido. */
     .nosotros-hero {
         min-height: 440px;
     }
@@ -567,12 +667,18 @@
     }
 }
 
+/* Respeta la preferencia del usuario por menos movimiento. */
 @media (prefers-reduced-motion: reduce) {
     .nosotros-page main > section {
         animation: none;
     }
 
     .integrante-lightbox {
+        animation: none;
+    }
+
+    .contacto-exito-overlay,
+    .contacto-exito-tilde {
         animation: none;
     }
 
