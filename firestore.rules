@@ -1,22 +1,35 @@
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    // ==========================================================
+    // FUNCIONES GENERALES
+    // ==========================================================
+
     function logueado() {
       return request.auth != null;
     }
 
     function perfilExiste() {
       return logueado()
-        && exists(/databases/$(database)/documents/usuarios/$(request.auth.uid));
+        && exists(
+          /databases/$(database)/documents/usuarios/$(request.auth.uid)
+        );
     }
 
     function perfilActual() {
-      return get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data;
+      return get(
+        /databases/$(database)/documents/usuarios/$(request.auth.uid)
+      ).data;
     }
 
     function cuentaActiva() {
       return perfilExiste()
-        && (!('estado' in perfilActual()) || perfilActual().estado != 'suspendido');
+        && (
+          !('estado' in perfilActual())
+          || perfilActual().estado != 'suspendido'
+        );
     }
 
     function superAdmin() {
@@ -49,9 +62,18 @@ service cloud.firestore {
       return cuentaActiva() && superAdmin();
     }
 
+
+    // ==========================================================
+    // USUARIOS Y PERFILES
+    // ==========================================================
+
     match /usuarios/{uid} {
+
       allow read: if logueado()
-        && (request.auth.uid == uid || puedeAdministrarUsuarios());
+        && (
+          request.auth.uid == uid
+          || puedeAdministrarUsuarios()
+        );
 
       allow create: if logueado()
         && request.auth.uid == uid
@@ -76,19 +98,58 @@ service cloud.firestore {
           && request.resource.data.rol == resource.data.rol
           && request.resource.data.diff(resource.data)
             .affectedKeys()
-            .hasOnly(['nombreUsuario', 'fotoPerfil', 'biografia'])
+            .hasOnly([
+              'nombreUsuario',
+              'fotoPerfil',
+              'biografia'
+            ])
         );
 
       allow delete: if puedeAdministrarUsuarios();
     }
 
+
+    // ==========================================================
+    // PREFERENCIAS PERSONALES
+    // Favoritos, compositores seguidos y playlists personales.
+    // ==========================================================
+
     match /usuarios/{uid}/{subcoleccion}/{documentoId} {
+
       allow read, create, update, delete: if cuentaActiva()
         && request.auth.uid == uid
-        && subcoleccion in ['favoritos', 'seguidos', 'playlists'];
+        && subcoleccion in [
+          'favoritos',
+          'seguidos',
+          'playlists'
+        ];
     }
 
+
+    // ==========================================================
+    // CANCIONES BLOQUEADAS
+    // Cada usuario administra exclusivamente sus propios bloqueos.
+    // No requiere permisos de administrador.
+    // ==========================================================
+
+    match /usuarios/{uid}/cancionesBloqueadas/{documentoId} {
+
+      allow read, create, update, delete: if logueado()
+        && request.auth.uid == uid
+        && (
+          !perfilExiste()
+          || !('estado' in perfilActual())
+          || perfilActual().estado != 'suspendido'
+        );
+    }
+
+
+    // ==========================================================
+    // PUBLICACIONES
+    // ==========================================================
+
     match /publicaciones/{id} {
+
       allow read: if cuentaActiva();
 
       allow create: if cuentaActiva()
@@ -152,7 +213,13 @@ service cloud.firestore {
         );
     }
 
+
+    // ==========================================================
+    // DENUNCIAS
+    // ==========================================================
+
     match /denuncias/{id} {
+
       allow create: if cuentaActiva()
         && request.resource.data.denuncianteId == request.auth.uid
         && request.resource.data.motivo is string
@@ -161,12 +228,25 @@ service cloud.firestore {
       allow read, update, delete: if adminDe('comunidad');
     }
 
+
+    // ==========================================================
+    // VERSIONES
+    // ==========================================================
+
     match /versiones/{id} {
+
       allow read: if cuentaActiva();
+
       allow create, update, delete: if adminDe('versiones');
     }
 
+
+    // ==========================================================
+    // RANKING MUSICAL
+    // ==========================================================
+
     match /rankingMusical/{songId} {
+
       allow read: if cuentaActiva();
 
       allow create: if cuentaActiva()
@@ -183,15 +263,25 @@ service cloud.firestore {
       allow update: if cuentaActiva()
         && request.resource.data.diff(resource.data)
           .affectedKeys()
-          .hasOnly(['reproducciones', 'updatedAt'])
+          .hasOnly([
+            'reproducciones',
+            'updatedAt'
+          ])
         && request.resource.data.songId == resource.data.songId
-        && request.resource.data.reproducciones == resource.data.reproducciones + 1
+        && request.resource.data.reproducciones
+          == resource.data.reproducciones + 1
         && request.resource.data.updatedAt == request.time;
 
       allow delete: if false;
     }
 
+
+    // ==========================================================
+    // VALIDACIÓN DE PRODUCTOS
+    // ==========================================================
+
     function productoValido(id) {
+
       return request.resource.data.keys().hasAll([
           'id',
           'nombre',
@@ -203,6 +293,7 @@ service cloud.firestore {
           'imagen',
           'imagenes'
         ])
+
         && request.resource.data.keys().hasOnly([
           'id',
           'nombre',
@@ -215,41 +306,74 @@ service cloud.firestore {
           'imagenes',
           'talles'
         ])
+
         && request.resource.data.id is string
         && request.resource.data.id == id
+
         && request.resource.data.nombre is string
         && request.resource.data.nombre.size() > 0
         && request.resource.data.nombre.size() <= 100
+
         && request.resource.data.descripcion is string
         && request.resource.data.descripcion.size() <= 2000
+
         && request.resource.data.precio is number
         && request.resource.data.precio > 0
+
         && request.resource.data.stock is int
         && request.resource.data.stock >= 0
+
         && request.resource.data.categoria is string
         && request.resource.data.categoria.size() > 0
         && request.resource.data.categoria.size() <= 100
-        && request.resource.data.estado in ['activo', 'inactivo']
+
+        && request.resource.data.estado in [
+          'activo',
+          'inactivo'
+        ]
+
         && request.resource.data.imagen is string
+
         && request.resource.data.imagenes is list
         && request.resource.data.imagenes.size() <= 4
+
         && (
           (
             request.resource.data.categoria == 'Ropa'
             && 'talles' in request.resource.data
             && request.resource.data.talles is map
-            && request.resource.data.talles.keys().hasAll(['S', 'M', 'L', 'XL', 'XXL'])
-            && request.resource.data.talles.keys().hasOnly(['S', 'M', 'L', 'XL', 'XXL'])
+
+            && request.resource.data.talles.keys().hasAll([
+              'S',
+              'M',
+              'L',
+              'XL',
+              'XXL'
+            ])
+
+            && request.resource.data.talles.keys().hasOnly([
+              'S',
+              'M',
+              'L',
+              'XL',
+              'XXL'
+            ])
+
             && request.resource.data.talles.S is int
             && request.resource.data.talles.S >= 0
+
             && request.resource.data.talles.M is int
             && request.resource.data.talles.M >= 0
+
             && request.resource.data.talles.L is int
             && request.resource.data.talles.L >= 0
+
             && request.resource.data.talles.XL is int
             && request.resource.data.talles.XL >= 0
+
             && request.resource.data.talles.XXL is int
             && request.resource.data.talles.XXL >= 0
+
             && request.resource.data.stock
               == request.resource.data.talles.S
                 + request.resource.data.talles.M
@@ -257,6 +381,7 @@ service cloud.firestore {
                 + request.resource.data.talles.XL
                 + request.resource.data.talles.XXL
           )
+
           || (
             request.resource.data.categoria != 'Ropa'
             && !('talles' in request.resource.data)
@@ -264,7 +389,13 @@ service cloud.firestore {
         );
     }
 
+
+    // ==========================================================
+    // PRODUCTOS
+    // ==========================================================
+
     match /productos/{id} {
+
       allow read: if cuentaActiva();
 
       allow create: if adminDe('tienda')
@@ -277,43 +408,73 @@ service cloud.firestore {
       allow delete: if adminDe('tienda');
     }
 
+
+    // ==========================================================
+    // PRODUCTOS PREDETERMINADOS
+    // ==========================================================
+
     match /productosPredeterminados/{id} {
+
       allow read, create, update, delete: if adminDe('tienda');
     }
 
-    match /banners/{id} {
-      allow read: if cuentaActiva();
-      allow create, update, delete: if adminDe('inicio') || adminDe('tienda');
-    }
+
+    // ==========================================================
+    // BANNERS
+    // ==========================================================
 
     match /banners/{id} {
+
       allow read: if cuentaActiva();
-      allow create, update, delete: if adminDe('inicio');
+
+      allow create, update, delete: if adminDe('inicio')
+        || adminDe('tienda');
     }
+
+
+    // ==========================================================
+    // MÚSICA
+    // ==========================================================
 
     match /canciones/{id} {
+
       allow read: if cuentaActiva();
+
       allow create, update, delete: if adminDe('musica');
     }
 
     match /albumes/{id} {
+
       allow read: if cuentaActiva();
+
       allow create, update, delete: if adminDe('musica');
     }
 
     match /compositores/{id} {
+
       allow read: if cuentaActiva();
+
       allow create, update, delete: if adminDe('musica');
     }
 
     match /playlists/{id} {
+
       allow read: if cuentaActiva();
+
       allow create, update, delete: if adminDe('musica');
     }
 
+
+    // ==========================================================
+    // HISTORIA
+    // ==========================================================
+
     match /historia/{id} {
+
       allow read: if cuentaActiva();
+
       allow create, update, delete: if adminDe('historia');
     }
+
   }
 }

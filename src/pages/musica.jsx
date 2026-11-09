@@ -1,11 +1,10 @@
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import Header from "../components/header";
-import BotonAdmin from "../components/botonAdmin";
+import BotonMaestroMelodias from "../components/BotonMaestroMelodias";
 import Footer from "../components/Footer";
-import { useAuth } from "../context/AuthContext";
-import { tienePermiso } from "../utils/permisos";
 
 import { useMusic } from "../context/MusicContext";
 
@@ -19,8 +18,6 @@ import "../styles/musica.css";
 
 export default function Musica() {
   const navigate = useNavigate();
-  const { perfil } = useAuth();
-  const puedeAdministrar = tienePermiso(perfil, "musica");
 
   const [selectedSong, setSelectedSong] = useState(null);
   const [showAllSongs, setShowAllSongs] = useState(false);
@@ -41,6 +38,10 @@ export default function Musica() {
     songDurations,
   } = useMusic();
 
+  // ==========================================================
+  // CANCIONES DISPONIBLES
+  // ==========================================================
+
   const availableSongs = songs.filter(
     (song) => !isBlocked(song)
   );
@@ -49,7 +50,10 @@ export default function Musica() {
     ? availableSongs
     : availableSongs.slice(0, 10);
 
-  // Ranking: cinco canciones con más reproducciones.
+  // ==========================================================
+  // CANCIONES DESTACADAS
+  // ==========================================================
+
   const featuredSongs = [...availableSongs]
     .sort(
       (a, b) =>
@@ -61,6 +65,10 @@ export default function Musica() {
       ...song,
       reproducciones: rankingCounts[song.id] ?? 0,
     }));
+
+  // ==========================================================
+  // FUNCIONES AUXILIARES
+  // ==========================================================
 
   const getComposer = (song) =>
     composers.find(
@@ -80,6 +88,10 @@ export default function Musica() {
         Number(song.albumId) === Number(album.id)
     );
 
+  // ==========================================================
+  // REPRODUCCIÓN DE LISTAS
+  // ==========================================================
+
   const playPlaylist = (playlist) => {
     const playlistSongs = playlist.system
       ? favoriteSongs.filter(
@@ -97,6 +109,10 @@ export default function Musica() {
       playCollection(playlistSongs);
     }
   };
+
+  // ==========================================================
+  // CONTENIDO PUBLICADO
+  // ==========================================================
 
   const publicPlaylists = playlists.filter(
     (playlist) =>
@@ -116,11 +132,17 @@ export default function Musica() {
       composer.status === "published"
   );
 
+  // ==========================================================
+  // RENDERIZADO
+  // ==========================================================
+
   return (
     <>
       <Header />
 
       <main className="music-page">
+
+        {/* ENCABEZADO */}
         <section
           className="music-header"
           style={{
@@ -296,7 +318,9 @@ export default function Musica() {
                   Álbumes
                 </h2>
 
-                <p>Explorá los álbumes completos</p>
+                <p>
+                  Explorá los álbumes completos
+                </p>
               </div>
             </div>
 
@@ -368,8 +392,10 @@ export default function Musica() {
               ))}
             </div>
           </section>
+
         </div>
 
+        {/* PANEL DE DETALLES DE CANCIÓN */}
         <SongPanel
           song={selectedSong}
           composer={
@@ -400,14 +426,14 @@ export default function Musica() {
             navigate(`/musica/compositor/${composer.id}`);
           }}
         />
+
       </main>
 
-      {puedeAdministrar && (
-        <BotonAdmin
-          permiso="musica"
-          alAlternar={() => navigate("/musica/maestro")}
-        />
-      )}
+      {/* BOTÓN FLOTANTE - MAESTRO DE MELODÍAS */}
+      <BotonMaestroMelodias
+        activo={false}
+        alAlternar={() => navigate("/musica/maestro")}
+      />
 
       <Footer />
     </>

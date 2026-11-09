@@ -1,0 +1,262 @@
+
+/* ==========================================================
+   BOTÓN MAESTRO DE MELODÍAS
+   Estética WikiCraft: bosque, musgo y menta.
+   El tocadiscos gira únicamente al interactuar.
+   ========================================================== */
+
+.boton-maestro-panel {
+    --maestro-menta: #a8e6c1;
+    --maestro-menta-clara: #d0f5dc;
+    --maestro-verde: #315d46;
+    --maestro-verde-oscuro: #1b3328;
+    --maestro-fondo: #17251e;
+    --maestro-texto: #e5f3e9;
+
+    position: fixed;
+    right: clamp(18px, 2.5vw, 34px);
+    bottom: clamp(18px, 2.5vw, 34px);
+    z-index: 950;
+
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 12px;
+}
+
+/* ----------------------------------------------------------
+   BOTÓN PRINCIPAL
+   ---------------------------------------------------------- */
+
+.boton-maestro-toggle {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+
+    min-height: 68px;
+    padding: 9px 20px 9px 10px;
+
+    border: 1px solid rgba(139, 204, 160, 0.35);
+    border-radius: 15px;
+
+    background: linear-gradient(
+        145deg,
+        #294936,
+        #172b20
+    );
+
+    color: var(--maestro-texto);
+
+    box-shadow:
+        0 8px 25px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(220, 255, 230, 0.09),
+        0 0 14px rgba(95, 170, 120, 0.08);
+
+    cursor: pointer;
+
+    transition:
+        transform 300ms ease,
+        border-color 300ms ease,
+        box-shadow 300ms ease,
+        background 300ms ease;
+}
+
+/* Efecto al pasar el cursor */
+
+.boton-maestro-toggle:hover {
+    transform: translateY(-3px);
+
+    border-color: var(--maestro-menta);
+
+    background: linear-gradient(
+        145deg,
+        #355e43,
+        #1d3929
+    );
+
+    box-shadow:
+        0 12px 30px rgba(0, 0, 0, 0.4),
+        0 0 18px rgba(168, 230, 193, 0.16);
+}
+
+/* Efecto al presionar */
+
+.boton-maestro-toggle:active {
+    transform: translateY(-1px) scale(0.98);
+}
+
+/* ----------------------------------------------------------
+   IMAGEN DEL TOCADISCOS
+   Permanece quieta cuando no se interactúa.
+   ---------------------------------------------------------- */
+
+.boton-maestro-imagen {
+    width: 49px;
+    height: 49px;
+
+    object-fit: contain;
+
+    filter: drop-shadow(
+        0 3px 5px rgba(0, 0, 0, 0.4)
+    );
+
+    transform: perspective(500px) rotateY(0deg);
+
+    transition: filter 300ms ease;
+}
+
+/* ----------------------------------------------------------
+   ANIMACIÓN DEL ÍTEM
+   Gira sobre su eje vertical solamente al interactuar.
+   ---------------------------------------------------------- */
+
+.boton-maestro-toggle:hover .boton-maestro-imagen,
+.boton-maestro-toggle:active .boton-maestro-imagen {
+    animation: maestro-giro-item 800ms ease-in-out;
+
+    filter:
+        drop-shadow(0 0 7px rgba(168, 230, 193, 0.55));
+}
+
+@keyframes maestro-giro-item {
+    0% {
+        transform: perspective(500px) rotateY(0deg);
+    }
+
+    100% {
+        transform: perspective(500px) rotateY(360deg);
+    }
+}
+
+/* ----------------------------------------------------------
+   TEXTO
+   ---------------------------------------------------------- */
+
+.boton-maestro-texto {
+    font-size: 0.88rem;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+
+    color: var(--maestro-texto);
+
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+}
+
+/* ----------------------------------------------------------
+   ESTADO ACTIVO
+   ---------------------------------------------------------- */
+
+.boton-maestro-panel.modo-activo
+.boton-maestro-toggle {
+    border-color: var(--maestro-menta);
+
+    background: linear-gradient(
+        145deg,
+        #3b684b,
+        #203b2b
+    );
+
+    box-shadow:
+        0 8px 28px rgba(0, 0, 0, 0.4),
+        0 0 17px rgba(168, 230, 193, 0.2),
+        inset 0 1px 0 rgba(220, 255, 230, 0.12);
+}
+
+.boton-maestro-panel.modo-activo
+.boton-maestro-toggle:hover {
+    background: linear-gradient(
+        145deg,
+        #467958,
+        #294a35
+    );
+}
+
+/* ----------------------------------------------------------
+   AVISO
+   ---------------------------------------------------------- */
+
+.boton-maestro-aviso {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    margin: 0;
+    padding: 10px 15px;
+
+    border: 1px solid rgba(139, 204, 160, 0.35);
+    border-radius: 12px;
+
+    background: rgba(23, 37, 30, 0.96);
+    color: var(--maestro-texto);
+
+    font-size: 0.8rem;
+    font-weight: 600;
+
+    box-shadow: 0 5px 18px rgba(0, 0, 0, 0.35);
+
+    animation: maestro-aparece 350ms ease both;
+}
+
+.boton-maestro-aviso i {
+    color: var(--maestro-menta);
+}
+
+@keyframes maestro-aparece {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ----------------------------------------------------------
+   ACCESIBILIDAD
+   ---------------------------------------------------------- */
+
+.boton-maestro-toggle:focus-visible {
+    outline: 3px solid var(--maestro-menta-clara);
+    outline-offset: 4px;
+}
+
+/* ----------------------------------------------------------
+   DISPOSITIVOS PEQUEÑOS
+   ---------------------------------------------------------- */
+
+@media (max-width: 480px) {
+    .boton-maestro-panel {
+        right: 14px;
+        bottom: 14px;
+    }
+
+    .boton-maestro-toggle {
+        min-height: 58px;
+        padding: 7px 13px 7px 8px;
+        gap: 9px;
+    }
+
+    .boton-maestro-imagen {
+        width: 42px;
+        height: 42px;
+    }
+
+    .boton-maestro-texto {
+        font-size: 0.76rem;
+    }
+}
+
+/* ----------------------------------------------------------
+   MOVIMIENTO REDUCIDO
+   ---------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+    .boton-maestro-imagen,
+    .boton-maestro-toggle {
+        animation: none !important;
+        transition: none !important;
+    }
+}

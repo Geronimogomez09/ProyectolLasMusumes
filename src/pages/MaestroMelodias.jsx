@@ -19,15 +19,23 @@ import {
   writeBatch,
 } from 'firebase/firestore';
 
-import BotonAdmin from '../components/botonAdmin';
+// COMPONENTES
+import BotonMaestroMelodias from '../components/BotonMaestroMelodias';
 import Header from '../components/header';
 import Footer from '../components/Footer';
+import ImportarCatalogoButton from '../components/music/ImportarCatalogoButton';
+
+// FIREBASE
 import { db } from '../services/firebase';
 
+// ESTILOS
 import '../styles/maestro-melodias.css';
 import '../styles/maestro-melodias-accordion.css';
 
-import ImportarCatalogoButton from '../components/music/ImportarCatalogoButton';
+
+// ==========================================================
+// CONFIGURACIÓN DE COLECCIONES
+// ==========================================================
 
 const COLECCIONES = {
   canciones: 'canciones',
@@ -35,6 +43,11 @@ const COLECCIONES = {
   playlists: 'playlists',
   compositores: 'compositores',
 };
+
+
+// ==========================================================
+// ICONOS DE MAESTRO DE MELODÍAS
+// ==========================================================
 
 const ICONOS_MAESTRO = {
   canciones: '/music/iconos/disco_musical.png',
@@ -49,6 +62,11 @@ const ICONOS_MAESTRO = {
   importar: '/music/iconos/enderpearl.png',
 };
 
+
+// ==========================================================
+// CONFIGURACIÓN VISUAL Y DESCRIPTIVA
+// ==========================================================
+
 const CONFIG = {
   canciones: {
     label: 'Canciones',
@@ -56,24 +74,28 @@ const CONFIG = {
     icon: '♫',
     description: 'Administrá el repertorio, los archivos de audio y su publicación.',
   },
+
   albumes: {
     label: 'Álbumes',
     singular: 'álbum',
     icon: '▣',
     description: 'Organizá las canciones, portadas y datos de cada álbum.',
   },
+
   playlists: {
     label: 'Playlists',
     singular: 'playlist',
     icon: '☷',
     description: 'Creá listas y elegí qué canciones forman parte de ellas.',
   },
+
   compositores: {
     label: 'Compositores',
     singular: 'compositor',
     icon: '♙',
     description: 'Mantené actualizada la información de los creadores.',
   },
+
   papelera: {
     label: 'Papelera',
     singular: 'elemento',
@@ -82,6 +104,11 @@ const CONFIG = {
   },
 };
 
+
+// ==========================================================
+// FORMULARIOS VACÍOS
+// ==========================================================
+
 const EMPTY = {
   canciones: {
     title: '',
@@ -89,6 +116,7 @@ const EMPTY = {
     albumId: '',
     audio: '',
   },
+
   albumes: {
     title: '',
     year: '',
@@ -97,6 +125,7 @@ const EMPTY = {
     composerId: '',
     songs: [],
   },
+
   playlists: {
     title: '',
     description: '',
@@ -104,6 +133,7 @@ const EMPTY = {
     songs: [],
     system: false,
   },
+
   compositores: {
     name: '',
     realName: '',
@@ -111,6 +141,11 @@ const EMPTY = {
     image: '',
   },
 };
+
+
+// ==========================================================
+// NORMALIZACIÓN DE DOCUMENTOS DE FIRESTORE
+// ==========================================================
 
 function normalizarDocumento(documento) {
   const datos = documento.data();
@@ -127,10 +162,20 @@ function normalizarDocumento(documento) {
   };
 }
 
+
+// ==========================================================
+// COMPONENTE PRINCIPAL
+// ==========================================================
+
 function MaestroMelodias() {
   const navigate = useNavigate();
 
   const formRef = useRef(null);
+
+
+  // ========================================================
+  // ESTADOS
+  // ========================================================
 
   const [data, setData] = useState({
     canciones: [],
@@ -153,6 +198,11 @@ function MaestroMelodias() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
 
+
+  // ========================================================
+  // DESPLAZAMIENTO AUTOMÁTICO AL FORMULARIO
+  // ========================================================
+
   useEffect(() => {
     if (showForm && formRef.current) {
       formRef.current.scrollIntoView({
@@ -162,9 +212,10 @@ function MaestroMelodias() {
     }
   }, [showForm]);
 
-  // ==========================================
+
+  // ========================================================
   // FIRESTORE EN TIEMPO REAL
-  // ==========================================
+  // ========================================================
 
   useEffect(() => {
     const unsubscribers = [];
@@ -173,6 +224,7 @@ function MaestroMelodias() {
     Object.entries(COLECCIONES).forEach(([key, collectionName]) => {
       const unsubscribe = onSnapshot(
         collection(db, collectionName),
+
         (snapshot) => {
           setData((previous) => ({
             ...previous,
@@ -185,6 +237,7 @@ function MaestroMelodias() {
             setLoading(false);
           }
         },
+
         (err) => {
           console.error(`Error al cargar ${collectionName}:`, err);
 
@@ -204,9 +257,10 @@ function MaestroMelodias() {
     };
   }, []);
 
-  // ==========================================
+
+  // ========================================================
   // DATOS Y CONTADORES
-  // ==========================================
+  // ========================================================
 
   const active = (key) =>
     data[key].filter((item) => item.activo);
@@ -239,6 +293,11 @@ function MaestroMelodias() {
     compositores: active('compositores').length,
     papelera: deleted.length,
   };
+
+
+  // ========================================================
+  // ELEMENTOS DE LA SECCIÓN ACTUAL
+  // ========================================================
 
   const currentItems = useMemo(() => {
     if (!openSection) return [];
@@ -287,6 +346,11 @@ function MaestroMelodias() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [openSection, search, statusFilter, data]);
 
+
+  // ========================================================
+  // FUNCIONES AUXILIARES
+  // ========================================================
+
   const getComposerName = (id) =>
     data.compositores.find(
       (item) => item.id === Number(id)
@@ -315,9 +379,10 @@ function MaestroMelodias() {
     return '';
   };
 
-  // ==========================================
+
+  // ========================================================
   // APERTURA Y CIERRE DE FORMULARIOS
-  // ==========================================
+  // ========================================================
 
   const openNew = (type) => {
     if (!EMPTY[type]) {
@@ -415,9 +480,10 @@ function MaestroMelodias() {
     });
   };
 
-  // ==========================================
+
+  // ========================================================
   // IDENTIFICADORES Y GUARDADO
-  // ==========================================
+  // ========================================================
 
   const nextId = async (collectionName) => {
     const snapshot = await getDocs(
@@ -485,6 +551,10 @@ function MaestroMelodias() {
         fechaActualizacion: timestamp,
       };
 
+      // ----------------------------------------------------
+      // GUARDAR CANCIÓN
+      // ----------------------------------------------------
+
       if (type === 'canciones') {
         const composerExists = availableComposers.some(
           (item) => item.id === Number(form.composerId)
@@ -508,6 +578,10 @@ function MaestroMelodias() {
           albumId: Number(form.albumId),
         };
       }
+
+      // ----------------------------------------------------
+      // GUARDAR ÁLBUM
+      // ----------------------------------------------------
 
       if (type === 'albumes') {
         const composerId = Number(form.composerId);
@@ -534,6 +608,10 @@ function MaestroMelodias() {
         };
       }
 
+      // ----------------------------------------------------
+      // GUARDAR PLAYLIST
+      // ----------------------------------------------------
+
       if (type === 'playlists') {
         payload = {
           ...payload,
@@ -545,6 +623,10 @@ function MaestroMelodias() {
         };
       }
 
+      // ----------------------------------------------------
+      // GUARDAR COMPOSITOR
+      // ----------------------------------------------------
+
       if (type === 'compositores') {
         payload = {
           ...payload,
@@ -555,12 +637,18 @@ function MaestroMelodias() {
         };
       }
 
+
+      // ====================================================
+      // ACTUALIZAR ELEMENTO EXISTENTE
+      // ====================================================
+
       if (editing) {
         await updateDoc(
           doc(db, collectionName, String(editing.id)),
           payload
         );
 
+        // Sincronizar las canciones pertenecientes al álbum.
         if (type === 'albumes') {
           const selectedIds = new Set(
             (form.songs ?? []).map(Number)
@@ -618,7 +706,14 @@ function MaestroMelodias() {
         setMessage(
           `El ${CONFIG[type].singular} se actualizó correctamente.`
         );
-      } else {
+      }
+
+
+      // ====================================================
+      // CREAR ELEMENTO NUEVO
+      // ====================================================
+
+      else {
         const id = await nextId(collectionName);
 
         const newPayload = {
@@ -643,6 +738,7 @@ function MaestroMelodias() {
           newPayload
         );
 
+        // Vincular canción nueva con su álbum.
         if (type === 'canciones') {
           const albumId = Number(form.albumId);
 
@@ -670,6 +766,7 @@ function MaestroMelodias() {
           );
         }
 
+        // Vincular canciones seleccionadas con el álbum nuevo.
         if (
           type === 'albumes' &&
           (form.songs ?? []).length
@@ -695,6 +792,7 @@ function MaestroMelodias() {
       }
 
       closeForm();
+
     } catch (err) {
       console.error(`Error al guardar ${type}:`, err);
 
@@ -702,14 +800,16 @@ function MaestroMelodias() {
         err.message ||
           'No se pudo guardar el contenido. Revisá los permisos de Firestore.'
       );
+
     } finally {
       setSaving(false);
     }
   };
 
-  // ==========================================
+
+  // ========================================================
   // PUBLICACIÓN Y PAPELERA
-  // ==========================================
+  // ========================================================
 
   const togglePublished = async (type, item) => {
     const status =
@@ -732,6 +832,7 @@ function MaestroMelodias() {
           ? 'Contenido publicado correctamente.'
           : 'Contenido pasado a borradores.'
       );
+
     } catch (err) {
       console.error('Error al cambiar publicación:', err);
       setMessage('No se pudo cambiar el estado de publicación.');
@@ -759,6 +860,7 @@ function MaestroMelodias() {
       );
 
       setMessage(`"${label}" se movió a la papelera.`);
+
     } catch (err) {
       console.error('Error al eliminar:', err);
       setMessage('No se pudo mover el contenido a la papelera.');
@@ -778,18 +880,21 @@ function MaestroMelodias() {
       setMessage(
         `"${item.title || item.name || 'El elemento'}" se restauró correctamente.`
       );
+
     } catch (err) {
       console.error('Error al restaurar:', err);
       setMessage('No se pudo restaurar el contenido.');
     }
   };
 
-  // ==========================================
+
+  // ========================================================
   // SELECTOR DE CANCIONES
-  // ==========================================
+  // ========================================================
 
   const renderSongPicker = () => (
     <div className="maestro-song-picker">
+
       <div className="maestro-picker-heading">
         <strong>Seleccionar canciones</strong>
 
@@ -827,9 +932,10 @@ function MaestroMelodias() {
     </div>
   );
 
-  // ==========================================
+
+  // ========================================================
   // FORMULARIO DINÁMICO
-  // ==========================================
+  // ========================================================
 
   const renderForm = () => {
     if (!showForm) return null;
@@ -844,6 +950,7 @@ function MaestroMelodias() {
         ref={formRef}
         style={{ scrollMarginTop: '110px' }}
       >
+
         <div className="maestro-section-heading">
           <div>
             <span className="maestro-eyebrow">
@@ -869,6 +976,8 @@ function MaestroMelodias() {
 
         <form onSubmit={saveItem}>
           <div className="maestro-form-grid">
+
+            {/* FORMULARIO DE CANCIONES */}
 
             {type === 'canciones' && (
               <>
@@ -949,6 +1058,9 @@ function MaestroMelodias() {
                 </label>
               </>
             )}
+
+
+            {/* FORMULARIO DE ÁLBUMES */}
 
             {type === 'albumes' && (
               <>
@@ -1035,6 +1147,9 @@ function MaestroMelodias() {
               </>
             )}
 
+
+            {/* FORMULARIO DE PLAYLISTS */}
+
             {type === 'playlists' && (
               <>
                 <label>
@@ -1077,6 +1192,9 @@ function MaestroMelodias() {
                 </div>
               </>
             )}
+
+
+            {/* FORMULARIO DE COMPOSITORES */}
 
             {type === 'compositores' && (
               <>
@@ -1127,9 +1245,14 @@ function MaestroMelodias() {
                 </label>
               </>
             )}
+
           </div>
 
+
+          {/* ACCIONES DEL FORMULARIO */}
+
           <div className="maestro-form-actions">
+
             <button
               type="button"
               className="maestro-secondary-button"
@@ -1150,15 +1273,17 @@ function MaestroMelodias() {
                   ? 'Guardar cambios'
                   : 'Crear borrador'}
             </button>
+
           </div>
         </form>
       </section>
     );
   };
 
-  // ==========================================
+
+  // ========================================================
   // FILAS DE LAS TABLAS
-  // ==========================================
+  // ========================================================
 
   const renderRow = (type, item) => {
     const title = item.title || item.name || 'Sin nombre';
@@ -1178,8 +1303,10 @@ function MaestroMelodias() {
 
     return (
       <tr key={`${type}-${item.id}`}>
+
         <td>
           <div className="maestro-song-cell">
+
             <div className="maestro-song-cover">
               {getCover(type, item) ? (
                 <img
@@ -1200,8 +1327,12 @@ function MaestroMelodias() {
               <strong>{title}</strong>
               <small>{subtitle}</small>
             </div>
+
           </div>
         </td>
+
+
+        {/* COLUMNAS DE CANCIONES */}
 
         {type === 'canciones' && (
           <>
@@ -1209,6 +1340,9 @@ function MaestroMelodias() {
             <td>{getAlbumName(item.albumId)}</td>
           </>
         )}
+
+
+        {/* COLUMNA DE ÁLBUMES */}
 
         {type === 'albumes' && (
           <td>
@@ -1223,11 +1357,17 @@ function MaestroMelodias() {
           </td>
         )}
 
+
+        {/* COLUMNA DE PLAYLISTS */}
+
         {type === 'playlists' && (
           <td>
             {item.system ? 'Automática' : 'Personalizada'}
           </td>
         )}
+
+
+        {/* COLUMNA DE COMPOSITORES */}
 
         {type === 'compositores' && (
           <td>
@@ -1240,6 +1380,9 @@ function MaestroMelodias() {
             canciones
           </td>
         )}
+
+
+        {/* ESTADO */}
 
         <td>
           <span
@@ -1264,8 +1407,12 @@ function MaestroMelodias() {
           </span>
         </td>
 
+
+        {/* ACCIONES */}
+
         <td>
           <div className="maestro-actions">
+
             <button
               type="button"
               className="maestro-action-button maestro-edit-button"
@@ -1277,6 +1424,7 @@ function MaestroMelodias() {
                 alt=""
                 className="maestro-button-icon"
               />
+
               Editar
             </button>
 
@@ -1304,11 +1452,18 @@ function MaestroMelodias() {
             >
               Eliminar
             </button>
+
           </div>
         </td>
+
       </tr>
     );
   };
+
+
+  // ========================================================
+  // ENCABEZADOS DE TABLAS
+  // ========================================================
 
   const tableHeaders = () => {
     if (openSection === 'canciones') {
@@ -1355,11 +1510,18 @@ function MaestroMelodias() {
     );
   };
 
+
+  // ========================================================
+  // CONTENIDO DE LA PAPELERA
+  // ========================================================
+
   const renderTrash = () =>
     currentItems.map((item) => (
       <tr key={`${item._type}-${item.id}`}>
+
         <td>
           <div className="maestro-song-cell">
+
             <div className="maestro-song-cover">
               <img
                 src={ICONOS_MAESTRO[item._type]}
@@ -1377,6 +1539,7 @@ function MaestroMelodias() {
                 {CONFIG[item._type].label}
               </small>
             </div>
+
           </div>
         </td>
 
@@ -1403,12 +1566,14 @@ function MaestroMelodias() {
             Restaurar
           </button>
         </td>
+
       </tr>
     ));
 
-  // ==========================================
-  // INTERFAZ
-  // ==========================================
+
+  // ========================================================
+  // INTERFAZ PRINCIPAL
+  // ========================================================
 
   return (
     <>
@@ -1416,8 +1581,13 @@ function MaestroMelodias() {
 
       <main className="maestro-page">
 
-        {/* ENCABEZADO */}
+
+        {/* ==================================================
+            ENCABEZADO
+            ================================================== */}
+
         <section className="maestro-hero">
+
           <div className="maestro-hero-icon">
             <img
               src={ICONOS_MAESTRO.tocadiscos}
@@ -1439,6 +1609,7 @@ function MaestroMelodias() {
           </div>
 
           <div className="maestro-hero-buttons">
+
             <button
               type="button"
               className="maestro-primary-button"
@@ -1460,13 +1631,23 @@ function MaestroMelodias() {
             </button>
 
             <ImportarCatalogoButton />
+
           </div>
+
         </section>
+
+
+        {/* FORMULARIO */}
 
         {renderForm()}
 
-        {/* ESTADÍSTICAS */}
+
+        {/* ==================================================
+            ESTADÍSTICAS
+            ================================================== */}
+
         <section className="maestro-stats">
+
           <article className="maestro-stat-card">
             <span className="maestro-stat-icon">
               <img src={ICONOS_MAESTRO.canciones} alt="" />
@@ -1510,11 +1691,17 @@ function MaestroMelodias() {
               <strong>{counts.compositores}</strong>
             </div>
           </article>
+
         </section>
 
-        {/* MENSAJES */}
+
+        {/* ==================================================
+            MENSAJES
+            ================================================== */}
+
         {message && (
           <div className="maestro-message" role="status">
+
             {message}
 
             <button
@@ -1524,6 +1711,7 @@ function MaestroMelodias() {
             >
               ×
             </button>
+
           </div>
         )}
 
@@ -1533,8 +1721,13 @@ function MaestroMelodias() {
           </div>
         )}
 
-        {/* BIBLIOTECA */}
+
+        {/* ==================================================
+            BIBLIOTECA MUSICAL
+            ================================================== */}
+
         <section className="maestro-library">
+
           <div className="maestro-section-heading">
             <div>
               <span className="maestro-eyebrow">
@@ -1549,9 +1742,16 @@ function MaestroMelodias() {
             </div>
           </div>
 
+
+          {/* ACORDEÓN */}
+
           <div className="maestro-accordion">
 
-            {/* SECCIONES PRINCIPALES */}
+
+            {/* ==============================================
+                SECCIONES PRINCIPALES
+                ============================================== */}
+
             {Object.keys(COLECCIONES).map((key) => (
               <section
                 className={`maestro-accordion-item ${
@@ -1559,6 +1759,7 @@ function MaestroMelodias() {
                 }`}
                 key={key}
               >
+
                 <button
                   type="button"
                   className="maestro-accordion-trigger"
@@ -1574,6 +1775,7 @@ function MaestroMelodias() {
                   }}
                   aria-expanded={openSection === key}
                 >
+
                   <span className="maestro-accordion-icon">
                     <img
                       src={ICONOS_MAESTRO[key]}
@@ -1596,12 +1798,20 @@ function MaestroMelodias() {
                   <span className="maestro-accordion-chevron">
                     {openSection === key ? '−' : '+'}
                   </span>
+
                 </button>
+
+
+                {/* CONTENIDO DESPLEGABLE */}
 
                 {openSection === key && (
                   <div className="maestro-accordion-content">
 
+
+                    {/* BARRA DE HERRAMIENTAS */}
+
                     <div className="maestro-toolbar">
+
                       <div className="maestro-search">
                         <span>⌕</span>
 
@@ -1638,15 +1848,22 @@ function MaestroMelodias() {
                           Borradores
                         </option>
                       </select>
+
                     </div>
 
+
+                    {/* TABLA */}
+
                     <div className="maestro-table-wrapper">
+
                       <table className="maestro-table">
+
                         <thead>
                           {tableHeaders()}
                         </thead>
 
                         <tbody>
+
                           {loading ? (
                             <tr>
                               <td
@@ -1670,25 +1887,38 @@ function MaestroMelodias() {
                               </td>
                             </tr>
                           )}
+
                         </tbody>
+
                       </table>
+
                     </div>
+
+
+                    {/* RESULTADOS */}
 
                     <p className="maestro-results">
                       Mostrando {currentItems.length} de {counts[key]}{' '}
                       {CONFIG[key].label.toLowerCase()}
                     </p>
+
                   </div>
                 )}
+
               </section>
             ))}
 
-            {/* PAPELERA */}
+
+            {/* ==============================================
+                PAPELERA
+                ============================================== */}
+
             <section
               className={`maestro-accordion-item maestro-trash-section ${
                 openSection === 'papelera' ? 'is-open' : ''
               }`}
             >
+
               <button
                 type="button"
                 className="maestro-accordion-trigger"
@@ -1704,6 +1934,7 @@ function MaestroMelodias() {
                 }}
                 aria-expanded={openSection === 'papelera'}
               >
+
                 <span className="maestro-accordion-icon">
                   <img
                     src={ICONOS_MAESTRO.papelera}
@@ -1726,12 +1957,20 @@ function MaestroMelodias() {
                 <span className="maestro-accordion-chevron">
                   {openSection === 'papelera' ? '−' : '+'}
                 </span>
+
               </button>
+
+
+              {/* CONTENIDO DE PAPELERA */}
 
               {openSection === 'papelera' && (
                 <div className="maestro-accordion-content">
 
+
+                  {/* BÚSQUEDA */}
+
                   <div className="maestro-toolbar">
+
                     <div className="maestro-search">
                       <span>⌕</span>
 
@@ -1745,10 +1984,16 @@ function MaestroMelodias() {
                         aria-label="Buscar en papelera"
                       />
                     </div>
+
                   </div>
 
+
+                  {/* TABLA DE PAPELERA */}
+
                   <div className="maestro-table-wrapper">
+
                     <table className="maestro-table">
+
                       <thead>
                         <tr>
                           <th>Contenido</th>
@@ -1758,6 +2003,7 @@ function MaestroMelodias() {
                       </thead>
 
                       <tbody>
+
                         {loading ? (
                           <tr>
                             <td
@@ -1779,21 +2025,35 @@ function MaestroMelodias() {
                             </td>
                           </tr>
                         )}
+
                       </tbody>
+
                     </table>
+
                   </div>
+
+
+                  {/* RESULTADOS */}
 
                   <p className="maestro-results">
                     {currentItems.length} elementos en la papelera
                   </p>
+
                 </div>
               )}
+
             </section>
+
           </div>
         </section>
 
-        {/* AVISO */}
+
+        {/* ==================================================
+            AVISO FINAL
+            ================================================== */}
+
         <aside className="maestro-notice">
+
           <strong>Gestión del catálogo</strong>
 
           <p>
@@ -1802,13 +2062,35 @@ function MaestroMelodias() {
             conservan y pueden restaurarse sin perder sus datos ni su
             estado de publicación.
           </p>
+
         </aside>
+
       </main>
 
-      <BotonAdmin
-        activo
-        alAlternar={() => navigate('/musica')}
-      />
+
+      {/* ====================================================
+          BOTÓN FLOTANTE EXCLUSIVO DE MAESTRO DE MELODÍAS
+          ==================================================== */}
+
+      <div
+  style={{
+    position: 'fixed',
+    right: '30px',
+    bottom: '30px',
+    zIndex: 999999,
+    background: 'red',
+    color: 'white',
+    padding: '20px',
+    borderRadius: '10px',
+  }}
+>
+  PRUEBA DEL BOTÓN
+</div>
+
+<BotonMaestroMelodias
+  activo
+  alAlternar={() => navigate('/musica')}
+/>
 
       <Footer />
     </>

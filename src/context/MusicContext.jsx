@@ -1,10 +1,10 @@
+
 import React, {
   createContext,
   useCallback,
   useContext,
   useEffect,
   useMemo,
-  useRef,
   useState,
 } from "react";
 
@@ -34,15 +34,7 @@ import {
 
 const MusicContext = createContext(null);
 
-const readStorage = (key, fallback) => {
-  try {
-    const value = localStorage.getItem(key);
-    return value ? JSON.parse(value) : fallback;
-  } catch {
-    return fallback;
-  }
-};
-
+// Normalizar documentos recibidos desde Firestore.
 function normalizarDocumento(documento) {
   const datos = documento.data();
 
@@ -68,7 +60,6 @@ function contenidoPublico(documentos) {
 export function MusicProvider({ children }) {
   const { usuario } = useAuth();
   const uid = usuario?.uid;
-  const uidPrevio = useRef(null);
 
   const [songs, setSongs] = useState(initialSongs);
   const [composers, setComposers] = useState(initialComposers);
@@ -80,6 +71,10 @@ export function MusicProvider({ children }) {
 
   // Reproducciones acumuladas por canción.
   const [rankingCounts, setRankingCounts] = useState({});
+
+  // ==========================================================
+  // CATÁLOGO MUSICAL
+  // ==========================================================
 
   useEffect(() => {
     setCatalogLoading(true);
@@ -121,16 +116,21 @@ export function MusicProvider({ children }) {
     };
   }, []);
 
-  // Preferencias musicales vinculadas a Firebase.
+  // ==========================================================
+  // PREFERENCIAS PERSONALES
+  // ==========================================================
+
   const [favorites, setFavorites] = useState([]);
   const [followingComposers, setFollowingComposers] = useState([]);
   const [userPlaylists, setUserPlaylists] = useState([]);
 
-  const [blockedSongs, setBlockedSongs] = useState(
-    () => readStorage("wikicraft_music_blocked", [])
-  );
+  // Las canciones bloqueadas pertenecen a cada cuenta.
+  const [blockedSongs, setBlockedSongs] = useState([]);
 
-  // Escuchar favoritos, seguidos y playlists personales.
+  // ==========================================================
+  // SINCRONIZACIÓN DE FAVORITOS, SEGUIDOS Y PLAYLISTS
+  // ==========================================================
+
   useEffect(() => {
     if (!uid) {
       setFavorites([]);
@@ -194,7 +194,44 @@ export function MusicProvider({ children }) {
     };
   }, [uid]);
 
-  // Escuchar el ranking compartido.
+  // ==========================================================
+  // SINCRONIZACIÓN DE CANCIONES BLOQUEADAS
+  // ==========================================================
+
+  useEffect(() => {
+    setBlockedSongs([]);
+
+    if (!uid) return undefined;
+
+    const bloqueadasRef = collection(
+      db,
+      "usuarios",
+      uid,
+      "cancionesBloqueadas"
+    );
+
+    const unsubscribe = onSnapshot(
+      bloqueadasRef,
+      (snapshot) => {
+        setBlockedSongs(
+          snapshot.docs.map((item) => Number(item.id))
+        );
+      },
+      (error) => {
+        console.error(
+          "Error al cargar canciones bloqueadas:",
+          error
+        );
+      }
+    );
+
+    return () => unsubscribe();
+  }, [uid]);
+
+  // ==========================================================
+  // RANKING MUSICAL
+  // ==========================================================
+
   useEffect(() => {
     if (!uid) {
       setRankingCounts({});
@@ -223,6 +260,10 @@ export function MusicProvider({ children }) {
     return () => unsubscribe();
   }, [uid]);
 
+  // ==========================================================
+  // ESTADO DEL REPRODUCTOR
+  // ==========================================================
+
   const [currentSong, setCurrentSong] = useState(null);
   const [queue, setQueue] = useState([]);
 
@@ -231,7 +272,10 @@ export function MusicProvider({ children }) {
   const [repeatMode, setRepeatMode] = useState("off");
   const [songDurations, setSongDurations] = useState({});
 
-  // Obtener la portada del álbum.
+  // ==========================================================
+  // PORTADAS HEREDADAS DEL ÁLBUM
+  // ==========================================================
+
   const aplicarPortadaAlbum = useCallback(
     (song) => {
       if (!song) return song;
@@ -253,14 +297,10 @@ export function MusicProvider({ children }) {
     [songs, aplicarPortadaAlbum]
   );
 
-  useEffect(() => {
-    localStorage.setItem(
-      "wikicraft_music_blocked",
-      JSON.stringify(blockedSongs)
-    );
-  }, [blockedSongs]);
+  // ==========================================================
+  // DURACIÓN REAL DE LOS AUDIOS
+  // ==========================================================
 
-  // Leer las duraciones reales de los audios.
   useEffect(() => {
     let cancelled = false;
     let nextIndex = 0;
@@ -319,7 +359,10 @@ export function MusicProvider({ children }) {
     };
   }, [songs]);
 
-  // Registrar una reproducción en Firestore.
+  // ==========================================================
+  // REGISTRAR REPRODUCCIONES
+  // ==========================================================
+
   const registrarReproduccion = useCallback(
     (songOrId) => {
       const songId = Number(
@@ -348,6 +391,10 @@ export function MusicProvider({ children }) {
     [uid]
   );
 
+  // ==========================================================
+  // CONSULTAR ESTADOS
+  // ==========================================================
+
   const isBlocked = useCallback(
     (songOrId) => {
       const id =
@@ -372,7 +419,10 @@ export function MusicProvider({ children }) {
     [favorites]
   );
 
-  // Favoritos.
+  // ==========================================================
+  // FAVORITOS: FIRESTORE
+  // ==========================================================
+
   const toggleFavorite = useCallback(
     async (songOrId) => {
       const id = Number(
@@ -403,11 +453,18 @@ export function MusicProvider({ children }) {
           });
         }
       } catch (error) {
-        console.error("No se pudo actualizar el favorito:", error);
+        console.error(
+          "No se pudo actualizar el favorito:",
+          error
+        );
       }
     },
     [favorites, uid]
   );
+
+  // ==========================================================
+  // SEGUIR COMPOSITORES
+  // ==========================================================
 
   const isFollowingComposer = useCallback(
     (composerOrId) => {
@@ -422,7 +479,6 @@ export function MusicProvider({ children }) {
     [followingComposers]
   );
 
-  // Seguir compositores.
   const toggleFollowComposer = useCallback(
     async (composerOrId) => {
       const id = Number(
@@ -453,13 +509,19 @@ export function MusicProvider({ children }) {
           });
         }
       } catch (error) {
-        console.error("No se pudo actualizar el seguimiento:", error);
+        console.error(
+          "No se pudo actualizar el seguimiento:",
+          error
+        );
       }
     },
     [followingComposers, uid]
   );
 
-  // Crear playlist personal.
+  // ==========================================================
+  // PLAYLISTS PERSONALES
+  // ==========================================================
+
   const createUserPlaylist = useCallback(
     async (playlistData) => {
       if (!uid) return null;
@@ -490,7 +552,6 @@ export function MusicProvider({ children }) {
     [uid]
   );
 
-  // Editar playlist personal.
   const updateUserPlaylist = useCallback(
     async (playlistId, changes) => {
       if (!uid || !playlistId) return;
@@ -510,7 +571,6 @@ export function MusicProvider({ children }) {
     [uid]
   );
 
-  // Eliminar playlist personal.
   const deleteUserPlaylist = useCallback(
     async (playlistId) => {
       if (!uid || !playlistId) return;
@@ -526,7 +586,6 @@ export function MusicProvider({ children }) {
     [uid]
   );
 
-  // Agregar canción a playlist.
   const addSongToUserPlaylist = useCallback(
     async (playlistId, songOrId) => {
       const songId = Number(
@@ -552,7 +611,6 @@ export function MusicProvider({ children }) {
     [uid]
   );
 
-  // Quitar canción de playlist.
   const removeSongFromUserPlaylist = useCallback(
     async (playlistId, songOrId) => {
       const songId = Number(
@@ -578,28 +636,58 @@ export function MusicProvider({ children }) {
     [uid]
   );
 
-  // Bloquear o desbloquear canción.
-  const toggleBlocked = useCallback((songOrId) => {
-    const id = Number(
-      typeof songOrId === "object"
-        ? songOrId?.id
-        : songOrId
-    );
+  // ==========================================================
+  // BLOQUEOS: FIRESTORE POR USUARIO
+  // ==========================================================
 
-    if (!id) return;
+  const toggleBlocked = useCallback(
+    async (songOrId) => {
+      const id = Number(
+        typeof songOrId === "object"
+          ? songOrId?.id
+          : songOrId
+      );
 
-    setBlockedSongs((previous) =>
-      previous.includes(id)
-        ? previous.filter((item) => item !== id)
-        : [...previous, id]
-    );
+      if (!uid || !id) return;
 
-    setCurrentSong((current) =>
-      current?.id === id ? null : current
-    );
-  }, []);
+      const referencia = doc(
+        db,
+        "usuarios",
+        uid,
+        "cancionesBloqueadas",
+        String(id)
+      );
 
-  // Reproducir canción individual.
+      const yaEstaBloqueada = blockedSongs.includes(id);
+
+      try {
+        if (yaEstaBloqueada) {
+          await deleteDoc(referencia);
+        } else {
+          await setDoc(referencia, {
+            songId: id,
+            createdAt: serverTimestamp(),
+          });
+
+          // Si estaba sonando, detenerla al bloquearla.
+          setCurrentSong((current) =>
+            current?.id === id ? null : current
+          );
+        }
+      } catch (error) {
+        console.error(
+          "No se pudo actualizar el bloqueo:",
+          error
+        );
+      }
+    },
+    [uid, blockedSongs]
+  );
+
+  // ==========================================================
+  // REPRODUCIR UNA CANCIÓN
+  // ==========================================================
+
   const playSong = useCallback(
     (songOrId, collection = songsWithAlbumCover) => {
       const song = aplicarPortadaAlbum(
@@ -654,7 +742,10 @@ export function MusicProvider({ children }) {
     ]
   );
 
-  // Reproducir colección.
+  // ==========================================================
+  // REPRODUCIR UNA COLECCIÓN
+  // ==========================================================
+
   const playCollection = useCallback(
     (collection, options = {}) => {
       let orderedQueue = (collection || [])
@@ -689,7 +780,10 @@ export function MusicProvider({ children }) {
     [blockedSongs, aplicarPortadaAlbum, registrarReproduccion]
   );
 
-  // Siguiente canción.
+  // ==========================================================
+  // SIGUIENTE CANCIÓN
+  // ==========================================================
+
   const playNext = useCallback(
     (fromEnded = false) => {
       if (!queue.length || !currentSong) return;
@@ -761,7 +855,10 @@ export function MusicProvider({ children }) {
     ]
   );
 
-  // Canción anterior.
+  // ==========================================================
+  // CANCIÓN ANTERIOR
+  // ==========================================================
+
   const playPrevious = useCallback(() => {
     if (!queue.length || !currentSong) return;
 
@@ -781,7 +878,10 @@ export function MusicProvider({ children }) {
     }
   }, [queue, currentSong, blockedSongs, registrarReproduccion]);
 
-  // Canciones disponibles y favoritas.
+  // ==========================================================
+  // CANCIONES DISPONIBLES Y FAVORITAS
+  // ==========================================================
+
   const availableSongs = useMemo(
     () =>
       songsWithAlbumCover.filter(
@@ -815,6 +915,10 @@ export function MusicProvider({ children }) {
       ),
     [albums]
   );
+
+  // ==========================================================
+  // VALORES DISPONIBLES PARA LOS COMPONENTES
+  // ==========================================================
 
   const value = {
     songs: songsWithAlbumCover,
