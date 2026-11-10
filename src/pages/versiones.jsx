@@ -33,7 +33,7 @@ const versionesIniciales = [
     edicion: ['Java', 'Bedrock'],
     fecha: '2022-06-07',
     fechaLegible: '7 de junio de 2022',
-    imagen: '../public/fondos/fondo2.png',
+    imagen: '/fondos/fondo2.png',
     descripcion:
       'Expande el mundo subterráneo y los pantanos, con una de las criaturas más temidas del juego: el Warden.',
     nuevasFunciones: [
@@ -59,7 +59,7 @@ const versionesIniciales = [
     edicion: ['Java', 'Bedrock'],
     fecha: '2023-06-07',
     fechaLegible: '7 de junio de 2023',
-    imagen: '../public/fondos/fondo3.png',
+    imagen: '/fondos/fondo3.png',
     descripcion:
       'Una actualización dedicada a la exploración y la narrativa, con un nuevo sistema de arqueología.',
     nuevasFunciones: [
@@ -87,7 +87,7 @@ const versionesIniciales = [
     edicion: ['Java', 'Bedrock'],
     fecha: '2024-06-13',
     fechaLegible: '13 de junio de 2024',
-    imagen: '../public/fondos/fondo4.png',
+    imagen: '/fondos/fondo4.png',
     descripcion:
       'Centrada en el combate y una nueva estructura subterránea para explorar: las Cámaras de Prueba.',
     nuevasFunciones: [
@@ -114,7 +114,7 @@ const versionesIniciales = [
     edicion: ['Java', 'Bedrock'],
     fecha: '2026-03-24',
     fechaLegible: '24 de marzo de 2026',
-    imagen: '../public/fondos/fondo5.png',
+    imagen: '/fondos/fondo5.png',
     descripcion:
       'El primer drop de 2026: rediseño visual completo de las crías de los animales, más mejoras técnicas.',
     nuevasFunciones: [
@@ -139,7 +139,7 @@ const versionesIniciales = [
     edicion: ['Java', 'Bedrock'],
     fecha: '2026-06-16',
     fechaLegible: '16 de junio de 2026',
-    imagen: '../public/fondos/fondo6.png',
+    imagen: '/fondos/fondo6.png',
     descripcion:
       'Un nuevo bioma subterráneo tan colorido como peligroso, protagonizado por un mob con físicas propias: el Sulfur Cube.',
     nuevasFunciones: [

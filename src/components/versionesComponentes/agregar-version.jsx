@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import '../../styles/agregar-version.css';
+import { resolverImagenVersion } from '../../utils/imagenesVersion';
 
 // Índice: Crear versión y registro de cambios.
 // ----------------- Crear versión y registro de cambios -----------------
@@ -7,7 +8,7 @@ import '../../styles/agregar-version.css';
 
 const EDICIONES = ['Java', 'Bedrock'];
 
-const IMAGEN_POR_DEFECTO = '../public/fondos/fondo2.png';
+const IMAGEN_POR_DEFECTO = '/fondos/fondo2.png';
 
 const FORM_VACIO = {
   numero: '',
@@ -112,7 +113,10 @@ function AgregarVersion({ onAgregar, versionAEditar, onActualizar, onCancelarEdi
       return;
     }
 
-    const imagenGuardada = vistaPrevia.trim() || IMAGEN_POR_DEFECTO;
+    const imagenIngresada = vistaPrevia.trim();
+    const imagenGuardada = imagenIngresada
+      ? resolverImagenVersion(imagenIngresada)
+      : versionAEditar?.imagen || IMAGEN_POR_DEFECTO;
 
     const datosVersion = {
       numero: form.numero.trim(),
@@ -208,16 +212,16 @@ function AgregarVersion({ onAgregar, versionAEditar, onActualizar, onCancelarEdi
       </label>
 
       <label className="agregar-version-campo">
-        Imagen (URL opcional)
+        Imagen (URL o ruta interna opcional)
         <input
-          type="url"
-          placeholder="https://ejemplo.com/imagen.png"
+          type="text"
+          placeholder="/fondos/imagen.png, src/assets/imagen.png o https://..."
           value={vistaPrevia}
           onChange={handleImagenUrl}
         />
       </label>
       {vistaPrevia && (
-        <img src={vistaPrevia} alt="Vista previa" className="agregar-version-preview" />
+        <img src={resolverImagenVersion(vistaPrevia)} alt="Vista previa" className="agregar-version-preview" />
       )}
 
       <p className="agregar-version-ayuda">
