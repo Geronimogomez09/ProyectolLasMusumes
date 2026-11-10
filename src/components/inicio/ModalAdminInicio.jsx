@@ -1,9 +1,7 @@
 import { useEffect, useState } from "react";
 import { Icono, ICONOS, Imagen, SUGERENCIAS_IMAGEN, buscarImagen } from "./imagenesInicio";
-import { TIPOS, limpiarDatos } from "./tiposInicio";
+import { TIPOS } from "./tiposInicio"; // Asumiendo archivo auxiliar de tipos existente
 
-// CONTROL TEXTO MODAL INICIO: campo de una línea del formulario del modal.
-// Recibe: id, valor, onCambiar (recibe el texto nuevo) y autoFocus.
 function ControlTexto({ id, valor, onCambiar, autoFocus }) {
     return (
         <input
@@ -17,8 +15,6 @@ function ControlTexto({ id, valor, onCambiar, autoFocus }) {
     );
 }
 
-// CONTROL ÁREA MODAL INICIO: campo de varias líneas (por ejemplo, la descripción).
-// Recibe: id, valor y onCambiar.
 function ControlArea({ id, valor, onCambiar }) {
     return (
         <textarea
@@ -31,36 +27,18 @@ function ControlArea({ id, valor, onCambiar }) {
     );
 }
 
-// CONTROL ICONO MODAL INICIO: selector con los iconos de src/assets/iconos.
-// El icono elegido queda marcado. Recibe: id, valor (nombre del icono) y onCambiar.
 function ControlIcono({ id, valor, onCambiar }) {
     if (ICONOS.length === 0) {
-        return (
-            <small className="inicio-campo-ayuda">
-                No hay iconos todavía. Agregá imágenes en src/assets/iconos/.
-            </small>
-        );
+        return <small className="inicio-campo-ayuda">No hay iconos en src/assets/iconos/.</small>;
     }
-
     return (
-        <div
-            id={id}
-            className="inicio-admin-iconos"
-            role="radiogroup"
-            aria-label="Icono"
-        >
+        <div id={id} className="inicio-admin-iconos" role="radiogroup">
             {ICONOS.map((icono) => {
-                const nombre = icono.replace(/\.[^.]+$/, "");
                 const activo = valor === icono;
-
                 return (
                     <button
                         key={icono}
                         type="button"
-                        role="radio"
-                        aria-checked={activo}
-                        aria-label={nombre}
-                        title={nombre}
                         className={`inicio-admin-icono ${activo ? "activo" : ""}`}
                         onClick={() => onCambiar(icono)}
                     >
@@ -72,20 +50,11 @@ function ControlIcono({ id, valor, onCambiar }) {
     );
 }
 
-// CONTROL IMAGEN MODAL INICIO: campo para escribir una imagen (nombre de archivo de
-// src/assets o una URL https://...) con vista previa. NO sube archivos: solo URL o nombre.
-// Recibe: id, valor y onCambiar.
 function ControlImagen({ id, valor, onCambiar }) {
     const noEncontrada = Boolean(valor) && !buscarImagen(valor);
-
     return (
         <div className="inicio-admin-imagen">
-            <Imagen
-                nombre={valor}
-                alt="Vista previa de la imagen"
-                loading="eager"
-            />
-
+            <Imagen nombre={valor} alt="Vista previa" loading="eager" />
             <div className="inicio-admin-imagen-controles">
                 <input
                     id={id}
@@ -93,29 +62,22 @@ function ControlImagen({ id, valor, onCambiar }) {
                     type="text"
                     list={`${id}-sugerencias`}
                     value={valor}
-                    placeholder="granja.jpg, https://… o /fotos/portada.png"
+                    placeholder="granja.jpg o URL"
                     onChange={(e) => onCambiar(e.target.value)}
-                    autoComplete="off"
                 />
-
                 <datalist id={`${id}-sugerencias`}>
                     {SUGERENCIAS_IMAGEN.map((ruta) => (
                         <option key={ruta} value={ruta} />
                     ))}
                 </datalist>
-
                 {noEncontrada && (
-                    <small className="inicio-campo-error">
-                        No se encontró esa imagen en src/assets/. Revisá el nombre o usá una URL.
-                    </small>
+                    <small className="inicio-campo-error">Imagen no encontrada en assets.</small>
                 )}
             </div>
         </div>
     );
 }
 
-// CONTROLES POR TIPO DE CAMPO: relaciona el tipo de campo de TIPOS (tiposInicio.js)
-// con el componente que lo dibuja.
 const CONTROLES = {
     texto: ControlTexto,
     area: ControlArea,
@@ -123,203 +85,74 @@ const CONTROLES = {
     imagen: ControlImagen,
 };
 
-// MODAL ADMIN INICIO: ventana del modo administrador del inicio. Tiene dos formas:
-//   modo "editar"   -> formulario para agregar o editar una sección o construcción
-//   modo "eliminar" -> confirmación para eliminar
-// Se cierra con Escape, con la X, con Cancelar o haciendo clic afuera.
-// Recibe: modal ({ modo, tipo, id, datos }), onGuardar(tipo, id, datos),
-// onEliminar(tipo, id) y onCerrar().
-export default function ModalAdminInicio({ modal, onGuardar, onEliminar, onCerrar }) {
+export default function ModalAdminInicio({ modal, onGuardar, onCerrar }) {
     const config = TIPOS[modal.tipo];
-
     const [datos, setDatos] = useState(modal.datos);
     const [error, setError] = useState("");
     const [guardando, setGuardando] = useState(false);
 
-    // CERRAR CON ESCAPE Y BLOQUEAR SCROLL: mientras el modal está abierto, la página
-    // de atrás no se desplaza.
     useEffect(() => {
-        const alPresionar = (evento) => {
-            if (evento.key === "Escape") onCerrar();
-        };
-
-        const overflowPrevio = document.body.style.overflow;
-
+        const alPresionar = (e) => { if (e.key === "Escape") onCerrar(); };
         document.addEventListener("keydown", alPresionar);
+        const overflow = document.body.style.overflow;
         document.body.style.overflow = "hidden";
-
         return () => {
             document.removeEventListener("keydown", alPresionar);
-            document.body.style.overflow = overflowPrevio;
+            document.body.style.overflow = overflow;
         };
     }, [onCerrar]);
 
-    // CAMBIAR CAMPO: guarda lo que escribe el admin en un campo del formulario.
     const cambiarCampo = (nombre, valor) => {
-        setDatos((anterior) => ({
-            ...anterior,
-            [nombre]: valor,
-        }));
-
+        setDatos((prev) => ({ ...prev, [nombre]: valor }));
         setError("");
     };
 
-    // ENVIAR FORMULARIO: revisa los campos obligatorios y guarda los datos limpios.
-    const enviar = async (evento) => {
-        evento.preventDefault();
-
+    const enviar = async (e) => {
+        e.preventDefault();
         const faltante = config.campos.find(
-            (campo) =>
-                campo.requerido &&
-                !String(datos[campo.nombre] ?? "").trim()
+            (c) => c.requerido && !String(datos[c.nombre] ?? "").trim()
         );
-
         if (faltante) {
             setError(`Completá el campo “${faltante.etiqueta}”.`);
             return;
         }
-
         setGuardando(true);
-        await onGuardar(modal.tipo, modal.id, limpiarDatos(modal.tipo, datos));
+        await onGuardar(modal.tipo, modal.id, datos);
         setGuardando(false);
     };
 
-    // CERRAR AL HACER CLIC AFUERA: cierra solo si el clic fue sobre el fondo oscuro.
-    const cerrarAlHacerClicFuera = (evento) => {
-        if (evento.target === evento.currentTarget) onCerrar();
-    };
-
-    // MODO ELIMINAR: pregunta si se quiere eliminar el elemento.
-    if (modal.modo === "eliminar") {
-        return (
-            <div
-                className="inicio-modal-fondo"
-                onMouseDown={cerrarAlHacerClicFuera}
-            >
-                <div
-                    className="inicio-modal inicio-modal-chico"
-                    role="alertdialog"
-                    aria-modal="true"
-                    aria-labelledby="inicio-modal-titulo"
-                >
-                    <div className="inicio-modal-cuerpo">
-                        <h2 id="inicio-modal-titulo" className="inicio-modal-titulo">
-                            Eliminar {config.singular}
-                        </h2>
-
-                        <p className="inicio-modal-texto">
-                            ¿Seguro que querés eliminar “{config.nombreDe(modal.datos)}”?
-                            Se borra de Firestore y deja de verse para todos los usuarios.
-                        </p>
-                    </div>
-
-                    <div className="inicio-modal-pie">
-                        <button
-                            type="button"
-                            className="inicio-btn-secundario"
-                            onClick={onCerrar}
-                        >
-                            Cancelar
-                        </button>
-
-                        <button
-                            type="button"
-                            className="inicio-btn-peligro"
-                            onClick={() => onEliminar(modal.tipo, modal.id)}
-                            autoFocus
-                        >
-                            <i className="bi bi-trash3-fill me-2"></i>
-                            Eliminar
-                        </button>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
-    const esNuevo = modal.id === null;
-
-    // MODO EDITAR: formulario con los campos del tipo (ver TIPOS en tiposInicio.js).
     return (
-        <div
-            className="inicio-modal-fondo"
-            onMouseDown={cerrarAlHacerClicFuera}
-        >
-            <form
-                className="inicio-modal"
-                role="dialog"
-                aria-modal="true"
-                aria-labelledby="inicio-modal-titulo"
-                onSubmit={enviar}
-                noValidate
-            >
+        <div className="inicio-modal-fondo" onMouseDown={(e) => e.target === e.currentTarget && onCerrar()}>
+            <form className="inicio-modal" onSubmit={enviar} noValidate>
                 <div className="inicio-modal-encabezado">
-                    <h2 id="inicio-modal-titulo" className="inicio-modal-titulo">
-                        {esNuevo ? "Agregar" : "Editar"} {config.singular}
+                    <h2 className="inicio-modal-titulo">
+                        {modal.id === null ? "Agregar" : "Editar"} {config.singular}
                     </h2>
-
-                    <button
-                        type="button"
-                        className="inicio-admin-btn"
-                        onClick={onCerrar}
-                        aria-label="Cerrar"
-                    >
+                    <button type="button" className="inicio-admin-btn" onClick={onCerrar}>
                         <i className="bi bi-x-lg"></i>
                     </button>
                 </div>
-
                 <div className="inicio-modal-cuerpo">
-                    {config.campos.map((campo, indice) => {
-                        const id = `campo-${campo.nombre}`;
+                    {config.campos.map((campo, idx) => {
                         const Control = CONTROLES[campo.tipo];
-
                         return (
                             <div className="inicio-campo" key={campo.nombre}>
-                                <label htmlFor={id}>
-                                    {campo.etiqueta}
-                                </label>
-
+                                <label htmlFor={`campo-${campo.nombre}`}>{campo.etiqueta}</label>
                                 <Control
-                                    id={id}
+                                    id={`campo-${campo.nombre}`}
                                     valor={datos[campo.nombre] ?? ""}
-                                    onCambiar={(nuevo) => cambiarCampo(campo.nombre, nuevo)}
-                                    autoFocus={indice === 0}
+                                    onCambiar={(val) => cambiarCampo(campo.nombre, val)}
+                                    autoFocus={idx === 0}
                                 />
-
-                                {campo.ayuda && (
-                                    <small className="inicio-campo-ayuda">
-                                        {campo.ayuda}
-                                    </small>
-                                )}
                             </div>
                         );
                     })}
-
-                    {error && (
-                        <p className="inicio-campo-error" role="alert">
-                            {error}
-                        </p>
-                    )}
+                    {error && <p className="inicio-campo-error">{error}</p>}
                 </div>
-
                 <div className="inicio-modal-pie">
-                    <button
-                        type="button"
-                        className="inicio-btn-secundario"
-                        onClick={onCerrar}
-                    >
-                        Cancelar
-                    </button>
-
-                    <button
-                        type="submit"
-                        className="inicio-btn-principal"
-                        disabled={guardando}
-                    >
-                        <i className="bi bi-check-lg me-2"></i>
-                        {guardando
-                            ? "Guardando..."
-                            : esNuevo ? "Agregar" : "Guardar cambios"}
+                    <button type="button" className="inicio-btn-secundario" onClick={onCerrar}>Cancelar</button>
+                    <button type="submit" className="inicio-btn-principal" disabled={guardando}>
+                        {guardando ? "Guardando..." : "Guardar cambios"}
                     </button>
                 </div>
             </form>
