@@ -1,4 +1,4 @@
-import { EnlaceInicio } from "./EdicionInicio";
+import { ControlesAdminInicio, EnlaceInicio } from "./EdicionInicio";
 import { Imagen } from "./imagenesInicio";
 
 // Índice: Tarjeta de novedad.
@@ -18,8 +18,11 @@ const TEXTO_ENLACE = {
 // Recibe: novedad ({ tipo, titulo, descripcion, fecha, autor, imagen, enlace }),
 // armada por cargarNovedadesInicio en services/inicio.js.
 export default function TarjetaNovedad({ novedad }) {
+    const categoria = novedad.categoria ?? novedad.tipo ?? "Novedad";
+
     return (
-        <article className="card inicio-card-novedad h-100">
+        <article className="card inicio-card-novedad h-100 position-relative">
+            <ControlesAdminInicio tipo="novedad" item={novedad} />
 
             {/* Imagen de la novedad: también es un enlace. */}
             <EnlaceInicio to={novedad.enlace} className="inicio-novedad-imagen">
@@ -30,7 +33,7 @@ export default function TarjetaNovedad({ novedad }) {
 
                 {/* Tipo de novedad: COMUNIDAD, VERSIONES, TIENDA o MÚSICA. */}
                 <span className="inicio-categoria">
-                    {novedad.tipo.toUpperCase()}
+                    {categoria.toUpperCase()}
                 </span>
 
                 <h3>

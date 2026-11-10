@@ -1,179 +1,165 @@
 import { useCallback, useEffect, useState } from "react";
-
 import Header from "../components/header.jsx";
 import Footer from "../components/Footer.jsx";
 import BotonAdmin from "../components/botonAdmin";
-
 import { useAuth } from "../context/AuthContext";
-import { tienePermiso } from "../utils/permisos";
-
+import { tienePermiso } from "../utils/permisos.js";
 import {
-    cargarContenidoInicialInicio,
-    cargarNovedadesInicio,
-    eliminarContenidoInicio,
-    escucharContenidoInicio,
-    guardarContenidoInicio,
-} from "../services/inicio";
+    inicializarInicioIdempotente,
+    suscribirseAInicio,
+    crearItemFirestore,
+    editarItemFirestore,
+    cambiarEstadoActivoFirestore,
+} from "../services/inicio.js";
 
-import { EdicionContext } from "../components/inicio/EdicionInicio";
-import { HERO_URL } from "../components/inicio/imagenesInicio";
-import { TIPOS } from "../components/inicio/tiposInicio";
-import HeroInicio from "../components/inicio/HeroInicio";
-import SeccionesInicio from "../components/inicio/SeccionesInicio";
-import NovedadesInicio from "../components/inicio/NovedadesInicio";
-import DestacadoInicio from "../components/inicio/DestacadoInicio";
-import ConstruccionesInicio from "../components/inicio/ConstruccionesInicio";
-import TiendaInicio from "../components/inicio/TiendaInicio";
-import ModalAdminInicio from "../components/inicio/ModalAdminInicio";
-
+import HeroInicio from "../components/inicio/HeroInicio.jsx";
+import SeccionesInicio from "../components/inicio/SeccionesInicio.jsx";
+import NovedadesInicio from "../components/inicio/NovedadesInicio.jsx";
+import ConstruccionesInicio from "../components/inicio/ConstruccionesInicio.jsx";
+import ModalAdminInicio from "../components/inicio/ModalAdminInicio.jsx";
+import { EdicionContext, EnlaceInicio } from "../components/inicio/EdicionInicio.jsx";
+import { HERO_URL, Imagen } from "../components/inicio/imagenesInicio.jsx";
+import { limpiarDatos, TIPOS } from "../components/inicio/tiposInicio.js";
 import "../styles/index.css";
 
-// PÁGINA INICIO (pages/index.jsx): arma la portada del sitio con los componentes de
-// components/inicio. Lee de Firestore las secciones y construcciones (colección "inicio"),
-// calcula las novedades automáticas y maneja el modo administrador (permiso "inicio").
 export default function Inicio() {
     const { perfil } = useAuth();
+    const esAdminAutorizado = tienePermiso(perfil, "inicio");
 
-    // PERMISO: solo quien puede administrar "inicio" ve el botón y puede editar.
-    const puedeAdministrar = tienePermiso(perfil, "inicio");
-
-    // MODO ADMINISTRADOR: activo solo si el usuario tiene el permiso y lo encendió.
     const [modoAdminAbierto, setModoAdmin] = useState(false);
-    const editando = puedeAdministrar && modoAdminAbierto;
+    const editando = esAdminAutorizado && modoAdminAbierto;
 
-    // CONTENIDO: secciones y construcciones que vienen de Firestore.
-    const [contenido, setContenido] = useState({ secciones: [], construcciones: [] });
-    const [cargandoContenido, setCargandoContenido] = useState(true);
-
-    // NOVEDADES: tarjetas automáticas (última publicación, versión, producto y canción).
-    const [novedades, setNovedades] = useState([]);
-    const [cargandoNovedades, setCargandoNovedades] = useState(true);
-
-    // MODAL: ventana de agregar, editar o eliminar (null = cerrada).
+    const [datos, setDatos] = useState({
+        secciones: [],
+        novedades: [],
+        construcciones: []
+    });
+    const [cargando, setCargando] = useState(true);
+    const [error, setError] = useState(null);
     const [modal, setModal] = useState(null);
 
-    // MENSAJE: aviso de error o de resultado de la carga inicial.
-    const [mensaje, setMensaje] = useState("");
-    const [cargandoInicial, setCargandoInicial] = useState(false);
-
-    const cerrarModal = useCallback(() => setModal(null), []);
-
-    // ESCUCHAR CONTENIDO: se suscribe a la colección "inicio" mientras la página está abierta.
     useEffect(() => {
-        const dejarDeEscuchar = escucharContenidoInicio(
-            (datos) => {
-                setContenido(datos);
-                setCargandoContenido(false);
-            },
-            (error) => {
-                console.error("No se pudo cargar el contenido del inicio:", error);
-                setMensaje("No se pudo cargar el contenido del inicio.");
-                setCargandoContenido(false);
+        let cancelarSuscripcion = () => {};
+        let sigueMontado = true;
+        const tiposCargados = new Set();
+        let huboError = false;
+
+        async function iniciar() {
+            try {
+                if (esAdminAutorizado) {
+                    await inicializarInicioIdempotente();
+                }
+                if (!sigueMontado) return;
+
+                cancelarSuscripcion = suscribirseAInicio(
+                    (tipo, nuevosDatos) => {
+                        if (!sigueMontado) return;
+                        setDatos((prev) => ({ ...prev, [tipo]: nuevosDatos }));
+                        tiposCargados.add(tipo);
+                        if (tiposCargados.size === 3 && !huboError) {
+                            setError(null);
+                            setCargando(false);
+                        }
+                    },
+                    (err) => {
+                        console.error("Error en Firestore:", err);
+                        if (sigueMontado) {
+                            huboError = true;
+                            setError("No se pudo cargar el contenido de inicio.");
+                            setCargando(false);
+                        }
+                    },
+                    esAdminAutorizado
+                );
+            } catch (err) {
+                console.error("Error al iniciar:", err);
+                if (sigueMontado) {
+                    huboError = true;
+                    setError("Error de conexión con la base de datos.");
+                    setCargando(false);
+                }
             }
-        );
+        }
 
-        return () => dejarDeEscuchar();
-    }, []);
-
-    // CARGAR NOVEDADES: busca una sola vez la última publicación, versión, producto y canción.
-    useEffect(() => {
-        let cancelado = false;
-
-        cargarNovedadesInicio().then((lista) => {
-            if (cancelado) return;
-            setNovedades(lista);
-            setCargandoNovedades(false);
-        });
-
+        iniciar();
         return () => {
-            cancelado = true;
+            sigueMontado = false;
+            cancelarSuscripcion();
         };
-    }, []);
+    }, [esAdminAutorizado]);
 
-    // PERDER PERMISO: si el usuario deja de administrar "inicio", se cierra la edición.
+    // Cerrar modo admin si pierde permisos
     useEffect(() => {
-        if (!puedeAdministrar) {
+        if (!esAdminAutorizado) {
             setModoAdmin(false);
             setModal(null);
         }
-    }, [puedeAdministrar]);
+    }, [esAdminAutorizado]);
 
-    // ABRIR NUEVO: abre el modal para crear una sección o construcción.
     const abrirNuevo = (tipo) => {
-        if (!puedeAdministrar) return;
-
-        setModal({ modo: "editar", tipo, id: null, datos: TIPOS[tipo].nuevo() });
+        if (!esAdminAutorizado) return;
+        setModal({
+            modo: "editar",
+            tipo,
+            id: null,
+            datos: TIPOS[tipo].nuevo(),
+        });
     };
 
-    // ABRIR EDITAR: abre el modal con los datos de un elemento existente.
     const abrirEditar = (tipo, item) => {
-        if (!puedeAdministrar) return;
-
-        setModal({ modo: "editar", tipo, id: String(item.id), datos: { ...item } });
+        if (!esAdminAutorizado) return;
+        setModal({
+            modo: "editar",
+            tipo,
+            id: item.id,
+            datos: { ...item },
+        });
     };
 
-    // ABRIR ELIMINAR: abre la confirmación para eliminar un elemento.
-    const abrirEliminar = (tipo, item) => {
-        if (!puedeAdministrar) return;
-
-        setModal({ modo: "eliminar", tipo, id: String(item.id), datos: item });
-    };
-
-    // GUARDAR: crea o actualiza en Firestore. La lista se actualiza sola al escuchar.
-    const guardar = async (tipo, id, datos) => {
-        if (!puedeAdministrar) return;
-
+    const cambiarEstado = async (tipo, id, estadoActual) => {
+        if (!esAdminAutorizado) return;
         try {
-            await guardarContenidoInicio(tipo, id, datos);
-            setModal(null);
-        } catch (error) {
-            console.error("No se pudo guardar en el inicio:", error);
-            setMensaje("No se pudo guardar. Revisá tu conexión y tus permisos.");
+            await cambiarEstadoActivoFirestore(tipo, id, estadoActual);
+        } catch (err) {
+            console.error("Error al cambiar estado activo:", err);
+            alert("No se pudo actualizar el estado del elemento.");
         }
     };
 
-    // ELIMINAR: borra el elemento de Firestore.
-    const eliminar = async (tipo, id) => {
-        if (!puedeAdministrar) return;
-
+    const guardar = async (tipo, id, valores) => {
+        if (!esAdminAutorizado) return;
         try {
-            await eliminarContenidoInicio(id);
+            const datosLimpios = limpiarDatos(tipo, valores);
+            if (id === null) {
+                await crearItemFirestore(tipo, datosLimpios);
+            } else {
+                await editarItemFirestore(tipo, id, datosLimpios);
+            }
             setModal(null);
-        } catch (error) {
-            console.error("No se pudo eliminar del inicio:", error);
-            setMensaje("No se pudo eliminar. Revisá tu conexión y tus permisos.");
-            setModal(null);
+        } catch (err) {
+            console.error("Error al guardar en Firestore:", err);
+            const codigo = err?.code ? ` (${err.code})` : "";
+            const detalle = err?.message || "Firebase no devolvió detalles.";
+            const sugerencia = err?.code === "permission-denied"
+                ? "\n\nRevisá que las reglas actualizadas estén desplegadas y que tu perfil tenga el permiso de Inicio."
+                : "";
+            alert(`No se pudieron guardar los cambios${codigo}.\n${detalle}${sugerencia}`);
         }
     };
 
-    // CARGAR CONTENIDO INICIAL: copia las secciones y construcciones originales a Firestore
-    // (sin pisar lo que ya exista). Se usa la primera vez o para recuperar las originales.
-    const cargarContenidoInicial = async () => {
-        if (!puedeAdministrar || cargandoInicial) return;
+    const cerrarModal = useCallback(() => setModal(null), []);
 
-        const confirmar = window.confirm(
-            "Se van a agregar las secciones y construcciones originales que falten. Lo que ya existe no se modifica. ¿Continuar?"
-        );
-
-        if (!confirmar) return;
-
-        setCargandoInicial(true);
-        setMensaje("");
-
-        try {
-            const { importados, omitidos } = await cargarContenidoInicialInicio();
-            setMensaje(`Carga terminada: ${importados} agregados, ${omitidos} ya existían.`);
-        } catch (error) {
-            console.error("No se pudo cargar el contenido inicial:", error);
-            setMensaje("No se pudo cargar el contenido inicial. Revisá tus permisos.");
-        } finally {
-            setCargandoInicial(false);
-        }
-    };
+    const { secciones, novedades, construcciones } = datos;
 
     return (
         <EdicionContext.Provider
-            value={{ editando, abrirNuevo, abrirEditar, abrirEliminar }}
+            value={{
+                editando,
+                puedeEditar: esAdminAutorizado,
+                abrirNuevo,
+                abrirEditar,
+                onCambiarEstado: cambiarEstado,
+            }}
         >
             <Header />
 
@@ -181,66 +167,61 @@ export default function Inicio() {
                 <HeroInicio imagenFondo={HERO_URL} />
 
                 <div className="container inicio-contenido">
+                    {error && <div className="alert alert-danger" role="alert">{error}</div>}
 
-                    {/* Avisos de error o de resultado. */}
-                    {mensaje && (
-                        <p className="inicio-campo-error" role="alert">
-                            {mensaje}
-                        </p>
-                    )}
+                    <SeccionesInicio secciones={secciones} />
 
-                    {/* Aviso para el admin cuando todavía no hay nada guardado. */}
-                    {editando && !cargandoContenido && contenido.secciones.length === 0 && (
-                        <p className="inicio-vacio">
-                            Todavía no hay secciones guardadas. Usá «Cargar contenido inicial» o agregá una.
-                        </p>
-                    )}
-
-                    <SeccionesInicio secciones={contenido.secciones} />
-
-                    <NovedadesInicio novedades={novedades} cargando={cargandoNovedades} />
+                    <NovedadesInicio novedades={novedades} cargando={cargando} />
 
                     <section className="row g-3 inicio-inferior">
                         <div className="col-12 col-lg-5">
-                            <DestacadoInicio />
+                            <article className="inicio-publicacion h-100">
+                                <div className="inicio-avatar">
+                                    <Imagen nombre="avatar.png" alt="Avatar" />
+                                </div>
+                                <div className="inicio-publicacion-contenido">
+                                    <h3>Destacado de la comunidad</h3>
+                                    <p>Compartí tus construcciones y mostrá lo que podés crear.</p>
+                                    <span className="inicio-publicacion-autor">Comunidad Wiki-Craft</span>
+                                    <EnlaceInicio to="/comunidad" className="inicio-enlace">
+                                        Ver publicaciones <i className="bi bi-arrow-right ms-2"></i>
+                                    </EnlaceInicio>
+                                </div>
+                            </article>
                         </div>
 
                         <div className="col-12 col-lg-7">
-                            <ConstruccionesInicio construcciones={contenido.construcciones} />
+                            <ConstruccionesInicio construcciones={construcciones} />
                         </div>
                     </section>
 
-                    <TiendaInicio />
+                    <section className="inicio-tienda">
+                        <div>
+                            <span className="inicio-categoria">TIENDA WIKI-CRAFT</span>
+                            <h2>Equipate para tu próxima aventura</h2>
+                            <p>Explorá los productos disponibles en nuestra tienda oficial.</p>
+                        </div>
+                        <EnlaceInicio to="/tienda" className="btn inicio-btn-principal">
+                            Explorar la tienda <i className="bi bi-arrow-right ms-2"></i>
+                        </EnlaceInicio>
+                    </section>
                 </div>
 
-                {/* Botón "Modo administrador" (solo con permiso "inicio"). */}
-                {puedeAdministrar && (
+                {esAdminAutorizado && (
                     <BotonAdmin
-                        permiso="inicio"
                         activo={editando}
                         alAlternar={() => {
                             setModoAdmin((actual) => !actual);
                             setModal(null);
                         }}
-                        aviso="Editá, agregá o eliminá secciones y construcciones del inicio."
-                    >
-                        <button
-                            type="button"
-                            className="boton-admin-toggle"
-                            onClick={cargarContenidoInicial}
-                            disabled={cargandoInicial}
-                        >
-                            {cargandoInicial ? "Cargando..." : "Cargar contenido inicial"}
-                        </button>
-                    </BotonAdmin>
+                        aviso="Administrá secciones, novedades y construcciones del inicio."
+                    />
                 )}
 
                 {modal && editando && (
                     <ModalAdminInicio
-                        key={`${modal.modo}-${modal.tipo}-${modal.id ?? "nuevo"}`}
                         modal={modal}
                         onGuardar={guardar}
-                        onEliminar={eliminar}
                         onCerrar={cerrarModal}
                     />
                 )}

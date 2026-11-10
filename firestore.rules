@@ -191,6 +191,67 @@ service cloud.firestore {
         ];
     }
 
+    match /secciones/{id} {
+      allow read: if adminDe('inicio')
+        || ('activo' in resource.data && resource.data.activo == true);
+
+      allow create, update: if adminDe('inicio')
+        && request.resource.data.keys().hasAll([
+          'titulo',
+          'descripcion',
+          'imagen',
+          'enlace',
+          'icono',
+          'activo'
+        ])
+        && request.resource.data.titulo is string
+        && request.resource.data.descripcion is string
+        && request.resource.data.imagen is string
+        && request.resource.data.enlace is string
+        && request.resource.data.icono is string
+        && request.resource.data.activo is bool;
+
+      allow delete: if false;
+    }
+
+    match /novedades/{id} {
+      allow read: if adminDe('inicio')
+        || ('activo' in resource.data && resource.data.activo == true);
+
+      allow create, update: if adminDe('inicio')
+        && request.resource.data.keys().hasAll([
+          'titulo',
+          'categoria',
+          'descripcion',
+          'imagen',
+          'enlace',
+          'activo'
+        ])
+        && request.resource.data.titulo is string
+        && request.resource.data.categoria is string
+        && request.resource.data.descripcion is string
+        && request.resource.data.imagen is string
+        && request.resource.data.enlace is string
+        && request.resource.data.activo is bool
+        && (!('fecha' in request.resource.data) || request.resource.data.fecha is string)
+        && (!('autor' in request.resource.data) || request.resource.data.autor is string);
+
+      allow delete: if false;
+    }
+
+    match /construcciones/{id} {
+      allow read: if adminDe('inicio')
+        || ('activo' in resource.data && resource.data.activo == true);
+
+      allow create, update: if adminDe('inicio')
+        && request.resource.data.keys().hasAll(['nombre', 'imagen', 'activo'])
+        && request.resource.data.nombre is string
+        && request.resource.data.imagen is string
+        && request.resource.data.activo is bool;
+
+      allow delete: if false;
+    }
+
     match /publicaciones/{id} {
       allow read: if cuentaActiva();
 

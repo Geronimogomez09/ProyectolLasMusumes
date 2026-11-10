@@ -1,43 +1,47 @@
-import { EnlaceInicio } from "./EdicionInicio";
+import { BotonAgregarInicio, useEdicionInicio } from "./EdicionInicio";
 import TarjetaNovedad from "./TarjetaNovedad";
 
-// Índice: Novedades del inicio.
-// ----------------- Novedades del inicio -----------------
-// Recibe la lista de novedades y el estado de carga. Muestra el contenido disponible o la indicación correspondiente mientras se esperan los datos.
-
-// NOVEDADES INICIO: bloque "Últimas novedades" del inicio. Muestra una TarjetaNovedad por
-// cada novedad automática (última publicación, versión, producto y canción).
-// Recibe: novedades (lista armada por cargarNovedadesInicio) y cargando (true mientras se buscan).
 export default function NovedadesInicio({ novedades, cargando }) {
+    const { editando } = useEdicionInicio();
+
+    const novedadesVisibles = novedades.filter(
+        (novedad) => editando || novedad.activo !== false
+    );
+
     return (
         <section className="inicio-seccion">
             <div className="inicio-titulo-fila">
                 <h2 className="inicio-titulo">
                     <span></span>
-                    Últimas novedades
+                    Novedades de la comunidad
                 </h2>
 
-                <EnlaceInicio to="/comunidad" className="inicio-ver-todo">
-                    Ver comunidad
-                    <i className="bi bi-arrow-right ms-1"></i>
-                </EnlaceInicio>
+                <span className="inicio-ver-todo text-muted">
+                    Gestión Firestore
+                </span>
             </div>
 
-            {/* Mensajes mientras se cargan las novedades o si no hay ninguna. */}
-            {cargando && <p className="inicio-vacio">Buscando novedades...</p>}
+            {cargando && <p className="inicio-vacio">Cargando novedades...</p>}
 
-            {!cargando && novedades.length === 0 && (
-                <p className="inicio-vacio">
-                    Todavía no hay novedades para mostrar.
-                </p>
+            {!cargando && novedadesVisibles.length === 0 && !editando && (
+                <p className="inicio-vacio">Todavía no hay novedades para mostrar.</p>
             )}
 
             <div className="row g-3">
-                {novedades.map((novedad) => (
-                    <div className="col-12 col-lg-6" key={novedad.id}>
+                {novedadesVisibles.map((novedad) => (
+                    <div
+                        className={`col-12 col-md-6 col-lg-4 ${novedad.activo === false ? 'opacity-50 border border-warning' : ''}`}
+                        key={novedad.id}
+                    >
                         <TarjetaNovedad novedad={novedad} />
                     </div>
                 ))}
+
+                <BotonAgregarInicio
+                    tipo="novedad"
+                    texto="Agregar novedad"
+                    columna="col-12 col-md-6 col-lg-4"
+                />
             </div>
         </section>
     );

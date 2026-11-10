@@ -1,21 +1,13 @@
-import {
-    BotonAgregarInicio,
-    ControlesAdminInicio,
-    EnlaceInicio,
-    useEdicionInicio,
-} from "./EdicionInicio";
+import { BotonAgregarInicio, useEdicionInicio } from "./EdicionInicio";
+import { ControlesAdminInicio, EnlaceInicio } from "./EdicionInicio";
 import { Imagen } from "./imagenesInicio";
 
-// Índice: Construcciones destacadas.
-// ----------------- Construcciones destacadas -----------------
-// Recibe la lista de construcciones que se mostrarán en el inicio. Presenta sus imágenes y nombres y, cuando corresponde, las opciones de administración.
-
-// CONSTRUCCIONES INICIO: bloque "Conocé las construcciones" del inicio. Muestra una miniatura
-// por cada construcción guardada en Firestore (imagen y nombre al pasar el cursor).
-// En modo administrador agrega editar, eliminar y el botón "Agregar".
-// Recibe: construcciones (lista de documentos con tipo "construccion").
 export default function ConstruccionesInicio({ construcciones }) {
     const { editando } = useEdicionInicio();
+
+    const construccionesVisibles = construcciones.filter(
+        (c) => editando || c.activo !== false
+    );
 
     return (
         <section className="inicio-construcciones h-100">
@@ -31,17 +23,19 @@ export default function ConstruccionesInicio({ construcciones }) {
                 </EnlaceInicio>
             </div>
 
-            {/* Mensaje cuando no hay construcciones y no se está editando. */}
-            {construcciones.length === 0 && !editando && (
+            {construccionesVisibles.length === 0 && !editando && (
                 <p className="inicio-vacio">
                     Todavía no hay construcciones para mostrar.
                 </p>
             )}
 
             <div className="row g-2">
-                {construcciones.map((construccion) => (
-                    <div className="col-4" key={construccion.id}>
-                        <div className="inicio-construccion-item">
+                {construccionesVisibles.map((construccion) => (
+                    <div
+                        className={`col-4 ${construccion.activo === false ? 'opacity-50 border border-warning' : ''}`}
+                        key={construccion.id}
+                    >
+                        <div className="inicio-construccion-item position-relative">
                             <ControlesAdminInicio tipo="construccion" item={construccion} />
 
                             <EnlaceInicio
