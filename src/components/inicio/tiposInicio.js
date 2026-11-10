@@ -21,6 +21,8 @@ const CAMPO_ENLACE = {
     limpiar: aRutaInterna,
 };
 
+const aMayusculas = (valor) => valor.toUpperCase();
+
 // TIPOS: un elemento por cada tipo de contenido editable.
 //   campos   -> lista de campos del formulario (tipo: texto, area, icono o imagen)
 //   nuevo()  -> datos iniciales de un elemento nuevo
@@ -41,6 +43,36 @@ export const TIPOS = {
             imagen: "",
             enlace: "/comunidad",
             icono: ICONOS[0] ?? "",
+        }),
+        nombreDe: (item) => item.titulo,
+    },
+
+    novedad: {
+        singular: "novedad",
+        campos: [
+            { nombre: "titulo", etiqueta: "Título", tipo: "texto", requerido: true },
+            {
+                nombre: "categoria",
+                etiqueta: "Categoría",
+                tipo: "texto",
+                requerido: true,
+                ayuda: "Por ejemplo: COMUNIDAD, VERSIONES o MÚSICA",
+                limpiar: aMayusculas,
+            },
+            { nombre: "fecha", etiqueta: "Fecha", tipo: "texto" },
+            { nombre: "autor", etiqueta: "Autor", tipo: "texto" },
+            { nombre: "descripcion", etiqueta: "Descripción", tipo: "area" },
+            CAMPO_ENLACE,
+            { nombre: "imagen", etiqueta: "Imagen", tipo: "imagen" },
+        ],
+        nuevo: () => ({
+            titulo: "",
+            categoria: "COMUNIDAD",
+            fecha: "",
+            autor: "",
+            descripcion: "",
+            enlace: "/comunidad",
+            imagen: "",
         }),
         nombreDe: (item) => item.titulo,
     },

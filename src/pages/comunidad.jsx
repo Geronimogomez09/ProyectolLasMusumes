@@ -535,6 +535,7 @@ export default function Comunidad() {
                             modoAdministrador={Boolean(puedeAdministrar)}
                             modoUsuario={!puedeAdministrar}
                             usuarioActualId={usuario?.uid}
+                            fotoUsuarioActual={perfil?.fotoPerfil || usuario?.photoURL || ""}
                             onEditarComentario={(comentarioId, texto) => editarComentario(p.id, comentarioId, texto)}
                             onEliminarComentario={(comentarioId) => borrarComentario(p.id, comentarioId)}
                             onDenunciarComentario={(comentario) =>

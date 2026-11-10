@@ -33,6 +33,13 @@
   height: 34px;
   font-size: .85rem;
   margin-top: .15rem;
+  overflow: hidden;
+}
+
+.lista-comentarios .avatar--comentario img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .lista-comentarios .comentario__cuerpo {

@@ -244,6 +244,7 @@ export default function Publicacion() {
                 modoAdministrador={puedeModerar}
                 modoUsuario={!puedeModerar}
                 usuarioActualId={usuario?.uid}
+                fotoUsuarioActual={perfil?.fotoPerfil || usuario?.photoURL || ""}
                 onEditarComentario={editarComentario}
                 onEliminarComentario={borrarComentario}
                 onDenunciarComentario={(comentario) => setModal({ tipo: "comentario", comentario })}

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { renderizarTextoConEmojis } from './emojis-minecraft';
 import ComentarioForm from './comentario-form';
+import AvatarComunidad from './avatar-comunidad';
 import '../../styles/lista-comentarios.css';
 
 // ÍNDICE GENERAL
@@ -21,6 +22,7 @@ function ListaComentarios({
   modoAdministrador = false,
   modoUsuario = false,
   usuarioActualId,
+  fotoUsuarioActual = '',
   onEditarComentario,
   onEliminarComentario,
   onDenunciarComentario,
@@ -59,7 +61,16 @@ function ListaComentarios({
       )}
       {comentarios.map((c) => (
         <div key={c.id} className="comentario">
-          <div className="avatar avatar--comentario" style={{ backgroundColor: c.colorAvatar }}>{c.inicial}</div>
+          <AvatarComunidad
+            className="avatar avatar--comentario"
+            style={{ backgroundColor: c.colorAvatar }}
+            foto={
+              c.autorFoto ||
+              c.fotoPerfil ||
+              (c.autorId === usuarioActualId ? fotoUsuarioActual : '')
+            }
+            nombre={c.autorNombre || c.usuario}
+          />
           <div className="comentario__cuerpo">
             <span className="comentario__usuario">{c.usuario}</span>
             {comentarioEditando === c.id ? (

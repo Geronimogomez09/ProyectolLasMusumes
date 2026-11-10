@@ -11,7 +11,7 @@ import { Icono, Imagen } from "./imagenesInicio";
 // Recibe: seccion (documento de la colección "inicio" con tipo "seccion").
 export default function TarjetaSeccion({ seccion }) {
     return (
-        <article className="card inicio-card-seccion h-100">
+        <article className="card inicio-card-seccion h-100 position-relative">
 
             {/* Botones de editar y eliminar (solo en modo administrador). */}
             <ControlesAdminInicio tipo="seccion" item={seccion} />

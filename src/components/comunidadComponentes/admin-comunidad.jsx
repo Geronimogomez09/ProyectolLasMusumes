@@ -53,7 +53,9 @@ const esAdmin = tienePermiso(perfil, "comunidad");
   if (!esAdmin) return null;
 
   const pendientes = denuncias.filter((d) => d.estado === "Pendiente");
-  const cuentas = usuarios.filter((u) => u.rol !== "admin");
+  const cuentas = usuarios.filter(
+    (u) => u.rol !== "admin" && u.rol !== "superadmin"
+  );
 
   // Eliminar una publicación desde el listado de contenido.
   async function borrarPublicacion(post) {

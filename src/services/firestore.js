@@ -486,6 +486,34 @@ export function escucharPublicaciones(callback, alError = console.error) {
   return escucharDocumentos(COLECCIONES.publicaciones, callback, { campoOrden: "fechaCreacion", direccion: "desc" }, alError);
 }
 
+export async function actualizarNombrePublicaciones(uid, nombre) {
+  const nombreActualizado = textoOVacio(nombre);
+  if (!uid || !nombreActualizado) {
+    throw new Error("Se necesita el usuario y el nombre actualizado.");
+  }
+
+  const publicaciones = await getDocs(
+    query(
+      collection(db, COLECCIONES.publicaciones),
+      where("autorId", "==", uid)
+    )
+  );
+  const pendientes = publicaciones.docs.filter(
+    (publicacion) => publicacion.data().autorNombre !== nombreActualizado
+  );
+
+  for (let inicio = 0; inicio < pendientes.length; inicio += 450) {
+    const lote = writeBatch(db);
+    pendientes.slice(inicio, inicio + 450).forEach((publicacion) => {
+      lote.update(publicacion.ref, {
+        autorNombre: nombreActualizado,
+        fechaActualizacion: serverTimestamp(),
+      });
+    });
+    await lote.commit();
+  }
+}
+
 // Actualiza una publicación existente.
 // Protege el sistema asegurando que SOLO se puedan editar las propiedades: contenido, categoria e imagen.
 // Marca automáticamente la publicación con la bandera "editado: true".
@@ -531,6 +559,7 @@ export async function crearComentario(publicacionId, datos, usuario, perfil = {}
     id: crypto.randomUUID(),
     autorId: usuario.uid,
     autorNombre: nombre,
+    autorFoto: perfil.fotoPerfil || usuario.photoURL || "",
     usuario: nombre,
     inicial: nombre.slice(0, 1).toUpperCase(),
     colorAvatar: "#16813b",
