@@ -30,6 +30,7 @@ import { Link } from "react-router-dom";
 import Header from "../components/header";
 import Footer from "../components/Footer";
 import NuevoPost from "../components/comunidadComponentes/nuevo-post";
+import AvatarComunidad from "../components/comunidadComponentes/avatar-comunidad";
 import ListaComentarios from "../components/comunidadComponentes/lista-comentarios";
 import DenunciaModal from "../components/comunidadComponentes/denuncia-modal";
 import AdminComunidad from "../components/comunidadComponentes/admin-comunidad";
@@ -398,10 +399,8 @@ export default function Comunidad() {
               {/* Componente del formulario para escribir nuevas publicaciones. */}
               <NuevoPost
                 usuario={{
-                  // Le mandamos la inicial del usuario calculada previamente.
-                  inicial: nombreUsuario(usuario, perfil)
-                    .slice(0, 1)
-                    .toUpperCase()
+                  nombre: nombreUsuario(usuario, perfil),
+                  foto: perfil?.fotoPerfil || usuario?.photoURL || ""
                 }}
                 categorias={CATEGORIAS}
                 onPublicar={publicar}
@@ -430,11 +429,15 @@ export default function Comunidad() {
                       {/* Encabezado del Post (Avatar, Nombre, Fecha, Categoría y Denuncia). */}
                       <div className="post-card__encabezado">
 
-                        <div className="avatar">
-                          {(p.autorNombre || "U")
-                            .slice(0, 1)
-                            .toUpperCase()}
-                        </div>
+                        <AvatarComunidad
+                          className="avatar"
+                          foto={
+                            p.autorId === usuario?.uid
+                              ? perfil?.fotoPerfil || usuario?.photoURL || p.autorFoto
+                              : p.autorFoto
+                          }
+                          nombre={p.autorNombre}
+                        />
 
                         <div className="post-card__meta">
                           <span className="post-card__usuario">

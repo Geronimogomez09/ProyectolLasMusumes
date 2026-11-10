@@ -1,4 +1,5 @@
 import ListaComentarios from '../comunidadComponentes/lista-comentarios';
+import { resolverImagenVersion } from '../../utils/imagenesVersion';
 import '../../styles/tarjeta-version.css';
 
 // Índice: Tarjeta de versión.
@@ -34,7 +35,7 @@ function TarjetaVersion({
 
       <div className="version-card__imagen-wrap">
         <img
-          src={version.imagen}
+          src={resolverImagenVersion(version.imagen)}
           alt={`Captura de ${version.nombre}`}
           className="version-card__imagen"
           onError={(e) => {

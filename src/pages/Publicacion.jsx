@@ -5,6 +5,7 @@ import Footer from "../components/Footer";
 import ListaComentarios from "../components/comunidadComponentes/lista-comentarios";
 import DenunciaModal from "../components/comunidadComponentes/denuncia-modal";
 import BotonGuardar from "../components/guardadosComponentes/BotonGuardar";
+import AvatarComunidad from "../components/comunidadComponentes/avatar-comunidad";
 import { useAuth } from "../context/AuthContext";
 import useGuardados from "../hooks/useGuardados";
 import { tienePermiso } from "../utils/permisos";
@@ -198,7 +199,16 @@ export default function Publicacion() {
         ) : (
           <article className="publicacion-detalle">
             <div className="publicacion-autor">
-              <div className="publicacion-avatar" style={{ backgroundColor: post.colorAvatar || "#278b45" }}>{(post.autorNombre || "U").slice(0, 1).toUpperCase()}</div>
+              <AvatarComunidad
+                className="publicacion-avatar"
+                style={{ backgroundColor: post.colorAvatar || "#278b45" }}
+                foto={
+                  post.autorId === usuario?.uid
+                    ? perfil?.fotoPerfil || usuario?.photoURL || post.autorFoto
+                    : post.autorFoto
+                }
+                nombre={post.autorNombre}
+              />
               <div className="publicacion-autor__datos"><strong>{post.autorNombre || "Usuario"}</strong><span>{post.fechaCreacion?.toDate?.().toLocaleString("es-AR") || "Publicación de la comunidad"}</span></div>
               <span className="publicacion-categoria">{post.categoria || "Comunidad"}</span>
 
