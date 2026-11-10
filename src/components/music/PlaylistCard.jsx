@@ -1,6 +1,10 @@
 
 import React from "react";
 
+// Índice: Tarjeta de lista de reproducción.
+// ----------------- Tarjeta de lista de reproducción -----------------
+// Recibe los datos de una lista y las acciones disponibles. Muestra el resumen de la lista y permite seleccionarla desde el catálogo.
+
 function PlaylistCard({
   playlist,
   songCount,

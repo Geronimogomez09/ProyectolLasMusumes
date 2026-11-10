@@ -18,6 +18,9 @@ import Album from "./pages/album";
 import Compositor from "./pages/compositor";
 import MaestroMelodias from "./pages/MaestroMelodias";
 import Nosotros from "./pages/nosotros";
+import Perfil from "./pages/perfil";
+import CrearAdmin from "./pages/crearAdmin";
+import Busqueda from "./pages/busqueda";
 
 import MusicPlayer from "./components/music/MusicPlayer";
 import { MusicProvider, useMusic } from "./context/MusicContext";
@@ -28,6 +31,13 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import "./styles/App.css";
 
+// ÍNDICE
+// - Reproductor global: mantiene disponible la canción activa al cambiar de página.
+// - Rutas de la aplicación: relaciona cada URL con su pantalla y sus permisos.
+// - Inicio de la aplicación: espera la sesión y conecta los contextos compartidos.
+
+// ----------------- Reproductor global de música -----------------
+// Usa el estado compartido de MusicContext para que la reproducción continúe al navegar.
 function GlobalMusicPlayer() {
     const music = useMusic();
 
@@ -62,6 +72,9 @@ function GlobalMusicPlayer() {
     );
 }
 
+// ----------------- Rutas y acceso a las páginas -----------------
+// Define las URLs de la aplicación. Las páginas privadas pasan por RutaProtegida;
+// las páginas públicas de acceso permiten iniciar sesión o crear una cuenta.
 function AppRoutes() {
     return (
         <>
@@ -70,6 +83,7 @@ function AppRoutes() {
                 <Route path="/" element={<RutaProtegida><Inicio /></RutaProtegida>} />
                 <Route path="/tienda" element={<RutaProtegida><Tienda /></RutaProtegida>} />
                 <Route path="/login" element={<Login />} />
+                <Route path="/registro" element={<Login />} />
                 <Route path="/comunidad" element={<RutaProtegida><Comunidad /></RutaProtegida>} />
                 <Route path="/publicacion/:id" element={<RutaProtegida><Publicacion /></RutaProtegida>} />
                 <Route path="/versiones" element={<RutaProtegida><Versiones /></RutaProtegida>} />
@@ -81,13 +95,17 @@ function AppRoutes() {
                 <Route path="/musica/compositor/:id" element={<RutaProtegida><Compositor /></RutaProtegida>} />
                 <Route path="/musica/maestro" element={<RutaProtegida permiso="musica"><MaestroMelodias /></RutaProtegida>}/>
                 <Route path="/nosotros" element={<RutaProtegida><Nosotros /></RutaProtegida>} />
+                <Route path="/buscar" element={<RutaProtegida><Busqueda /></RutaProtegida>} />
+                <Route path="/perfil" element={<RutaProtegida><Perfil /></RutaProtegida>} />
+                <Route path="/admin/usuarios" element={<RutaProtegida soloSuperAdmin><CrearAdmin /></RutaProtegida>} />
             </Routes>
             <GlobalMusicPlayer />
         </>
     );
 }
 
-// Componente principal de la aplicación.
+// ----------------- Carga de sesión y contextos -----------------
+// Espera a que AuthContext termine de comprobar la sesión antes de montar las rutas.
 function AppContent() {
     const { cargando } = useAuth();
 
@@ -116,6 +134,8 @@ function AppContent() {
     );
 }
 
+// ----------------- Punto de entrada de la aplicación -----------------
+// AuthProvider envuelve toda la aplicación para compartir la sesión en cada pantalla.
 export default function App() {
     return (
         <AuthProvider>

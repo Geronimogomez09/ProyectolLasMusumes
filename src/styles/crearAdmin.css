@@ -1,0 +1,582 @@
+/* Archivo: crearAdmin.css
+   Estilos de la página /admin/usuarios (pages/crearAdmin.jsx) y de los componentes
+   de components/admin/ (FormularioCrearAdmin, SelectorPermisos, ListaAdmins, ItemAdmin).
+   Usa la misma paleta crema, miel, madera y verde musgo que login.css y perfil.css.
+   Las fuentes MinecraftSeven y Minecrafttitulo se declaran en variables.css.
+   Todas las clases usan el prefijo crearadmin- para no chocar con otras páginas. */
+
+
+/* 1. PÁGINA Y VARIABLES */
+
+/* PÁGINA: fondo y variables de color. Deja espacio arriba porque el header es fixed. */
+.crearadmin-page {
+  --ca-cream: #f5ead1;
+  --ca-paper: #fff8e7;
+  --ca-paper-strong: #fffdf4;
+  --ca-honey: #e8b247;
+  --ca-wood: #966039;
+  --ca-wood-dark: #69452a;
+  --ca-moss: #83a73b;
+  --ca-moss-dark: #4e7b2f;
+  --ca-moss-soft: #e1e9bb;
+  --ca-text: #352b20;
+  --ca-muted: #7e6b50;
+  --ca-danger: #914b37;
+  --ca-border: rgba(113, 79, 37, 0.19);
+  --ca-border-focus: rgba(91, 139, 48, 0.62);
+  --ca-ease: cubic-bezier(0.22, 0.8, 0.24, 1);
+  --ca-ease-soft: cubic-bezier(0.25, 1, 0.5, 1);
+  --ca-fuente-titulo: "Minecrafttitulo", "MinecraftSeven", sans-serif;
+  --ca-fuente-pixel: "MinecraftSeven", "Segoe UI", sans-serif;
+
+  box-sizing: border-box;
+  min-height: 100vh;
+  padding: calc(var(--header-alto, 76px) + clamp(24px, 4vh, 48px)) 20px clamp(40px, 6vh, 72px);
+  background-color: var(--ca-cream);
+  background-image:
+    linear-gradient(112deg, rgba(255, 246, 220, 0.82) 0%, rgba(250, 232, 190, 0.66) 38%, rgba(225, 204, 147, 0.46) 100%),
+    radial-gradient(ellipse at 13% 15%, rgba(232, 176, 74, 0.38), transparent 38%),
+    radial-gradient(ellipse at 89% 82%, rgba(91, 139, 54, 0.28), transparent 36%);
+  background-attachment: fixed;
+  color: var(--ca-text);
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+.crearadmin-page *,
+.crearadmin-page *::before,
+.crearadmin-page *::after {
+  box-sizing: border-box;
+}
+
+/* ACCESIBILIDAD: contorno visible al navegar con teclado. */
+.crearadmin-page button:focus-visible,
+.crearadmin-page input:focus-visible {
+  outline: 2px solid var(--ca-moss);
+  outline-offset: 3px;
+}
+
+/* CONTENEDOR: limita el ancho y apila las secciones. */
+.crearadmin-contenedor {
+  display: grid;
+  gap: 22px;
+  width: 100%;
+  max-width: 900px;
+  margin-inline: auto;
+}
+
+
+/* 2. ENCABEZADO DE LA PÁGINA */
+
+.crearadmin-encabezado {
+  animation: crearadmin-entrada 600ms var(--ca-ease-soft) both;
+}
+
+.crearadmin-etiqueta {
+  display: inline-block;
+  margin-bottom: 10px;
+  padding: 6px 12px;
+  border: 1px solid rgba(116, 126, 76, 0.16);
+  border-radius: 999px;
+  background: rgba(255, 250, 229, 0.74);
+  color: var(--ca-moss-dark);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.crearadmin-titulo {
+  margin: 0 0 8px;
+  color: var(--ca-wood-dark);
+  font-family: var(--ca-fuente-titulo);
+  font-size: clamp(1.6rem, 3.2vw, 2.3rem);
+  font-weight: 400;
+  line-height: 1.25;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.crearadmin-texto {
+  max-width: 560px;
+  margin: 0;
+  color: var(--ca-muted);
+  font-size: 0.95rem;
+  line-height: 1.65;
+}
+
+@keyframes crearadmin-entrada {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: none; }
+}
+
+
+/* 3. TARJETAS (formulario y lista) */
+
+.crearadmin-tarjeta {
+  padding: 26px 28px 30px;
+  border: 1px solid rgba(255, 255, 255, 0.82);
+  border-radius: 26px;
+  background: rgba(255, 249, 233, 0.87);
+  -webkit-backdrop-filter: blur(24px) saturate(1.14);
+  backdrop-filter: blur(24px) saturate(1.14);
+  box-shadow:
+    0 28px 72px -34px rgba(73, 55, 34, 0.4),
+    0 10px 28px -16px rgba(126, 94, 54, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.92);
+  animation: crearadmin-entrada 700ms var(--ca-ease-soft) both;
+}
+
+.crearadmin-tarjeta-cabecera {
+  margin-bottom: 18px;
+}
+
+.crearadmin-tarjeta-cabecera h2 {
+  margin: 0 0 6px;
+  color: var(--ca-wood-dark);
+  font-family: var(--ca-fuente-titulo);
+  font-size: 1.25rem;
+  font-weight: 400;
+  line-height: 1.3;
+}
+
+.crearadmin-tarjeta-cabecera p {
+  margin: 0;
+  color: var(--ca-muted);
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+
+
+/* 4. FORMULARIO */
+
+.crearadmin-form {
+  display: grid;
+  gap: 18px;
+}
+
+.crearadmin-fila {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.crearadmin-campo {
+  display: grid;
+  gap: 7px;
+  align-content: start;
+}
+
+.crearadmin-campo label {
+  color: #57402b;
+  font-family: var(--ca-fuente-pixel);
+  font-size: 0.8rem;
+}
+
+.crearadmin-campo input {
+  width: 100%;
+  min-height: 46px;
+  padding: 10px 16px;
+  border: 1px solid rgba(130, 91, 42, 0.24);
+  border-radius: 14px;
+  background-color: rgba(255, 251, 238, 0.9);
+  color: var(--ca-text);
+  font: 400 0.94rem "Segoe UI", Roboto, Arial, sans-serif;
+  transition:
+    border-color 220ms var(--ca-ease),
+    background-color 220ms var(--ca-ease),
+    box-shadow 520ms var(--ca-ease-soft);
+}
+
+.crearadmin-campo input::placeholder {
+  color: rgba(112, 99, 79, 0.56);
+  font-size: 0.88rem;
+}
+
+.crearadmin-campo input:hover:not(:disabled) {
+  border-color: rgba(91, 139, 48, 0.5);
+}
+
+.crearadmin-campo input:focus {
+  border-color: var(--ca-border-focus);
+  outline: 0;
+  background-color: var(--ca-paper-strong);
+  box-shadow: 0 0 0 4px rgba(91, 139, 48, 0.17);
+}
+
+.crearadmin-campo input:disabled {
+  background: rgba(235, 218, 177, 0.5);
+  cursor: not-allowed;
+}
+
+/* CONTRASEÑA: campo con el botón Mostrar / Ocultar al lado. */
+.crearadmin-password {
+  display: flex;
+  gap: 8px;
+}
+
+.crearadmin-password input {
+  flex: 1;
+  min-width: 0;
+}
+
+.crearadmin-ver-password {
+  flex-shrink: 0;
+  padding: 0 14px;
+  border: 1px solid rgba(128, 96, 68, 0.3);
+  border-radius: 14px;
+  background: rgba(255, 253, 246, 0.82);
+  color: var(--ca-wood-dark);
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 220ms var(--ca-ease), color 220ms var(--ca-ease);
+}
+
+.crearadmin-ver-password:hover:not(:disabled) {
+  background: #fffdf6;
+  color: var(--ca-moss-dark);
+}
+
+
+/* 5. SELECTOR DE PERMISOS */
+
+.crearadmin-permisos {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.crearadmin-permisos legend {
+  margin-bottom: 10px;
+  padding: 0;
+  color: #57402b;
+  font-family: var(--ca-fuente-pixel);
+  font-size: 0.8rem;
+}
+
+.crearadmin-permisos-grilla {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.crearadmin-permiso {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 14px;
+  border: 1px solid var(--ca-border);
+  border-radius: 14px;
+  background: rgba(255, 251, 238, 0.9);
+  color: #665039;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background-color 220ms var(--ca-ease),
+    border-color 220ms var(--ca-ease),
+    color 220ms var(--ca-ease);
+}
+
+.crearadmin-permiso:hover {
+  border-color: rgba(91, 139, 48, 0.5);
+}
+
+.crearadmin-permiso.marcado {
+  border-color: #5f8e31;
+  background: var(--ca-moss-soft);
+  color: var(--ca-moss-dark);
+}
+
+.crearadmin-permiso input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--ca-moss-dark);
+  cursor: pointer;
+}
+
+.crearadmin-permisos:disabled .crearadmin-permiso {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+
+/* 6. BOTONES Y MENSAJES */
+
+.crearadmin-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.crearadmin-boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  padding: 10px 22px;
+  border: 1px solid #5f8e31;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #78a83a, #477d2d);
+  color: #fffdf6;
+  font-family: var(--ca-fuente-pixel);
+  font-size: 0.84rem;
+  font-weight: 700;
+  line-height: 1.15;
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow:
+    0 8px 18px -10px rgba(72, 119, 43, 0.72),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  transition:
+    background 220ms var(--ca-ease),
+    border-color 220ms var(--ca-ease),
+    box-shadow 520ms var(--ca-ease-soft),
+    transform 520ms var(--ca-ease-soft);
+}
+
+.crearadmin-boton:hover:not(:disabled) {
+  border-color: #3c7028;
+  background: linear-gradient(135deg, #679631, #3e7029);
+  box-shadow: 0 13px 24px -10px rgba(66, 112, 39, 0.55);
+  transform: translateY(-2px);
+}
+
+.crearadmin-boton:active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
+  transition-duration: 120ms;
+}
+
+.crearadmin-boton:disabled {
+  border-color: rgba(120, 134, 79, 0.4);
+  background: #aab98a;
+  box-shadow: none;
+  opacity: 0.78;
+  cursor: wait;
+}
+
+/* BOTÓN CHICO: el de las tarjetas de la lista. */
+.crearadmin-boton--chico {
+  min-height: 38px;
+  padding: 7px 16px;
+  font-size: 0.78rem;
+}
+
+/* BOTÓN SUAVE: acciones secundarias (Editar permisos, Cancelar). */
+.crearadmin-boton--suave {
+  border: 1px solid rgba(128, 96, 68, 0.3);
+  background: rgba(255, 253, 246, 0.82);
+  color: var(--ca-wood-dark);
+  box-shadow: none;
+}
+
+.crearadmin-boton--suave:hover:not(:disabled) {
+  border-color: rgba(83, 132, 46, 0.56);
+  background: #fffdf6;
+  color: var(--ca-moss-dark);
+  box-shadow: 0 7px 18px -12px rgba(83, 75, 51, 0.44);
+}
+
+/* BOTÓN PELIGRO: suspender una cuenta. */
+.crearadmin-boton--peligro {
+  border-color: #8a4331;
+  background: linear-gradient(135deg, #b0583f, #8a4331);
+  box-shadow: 0 8px 18px -10px rgba(138, 67, 49, 0.7);
+}
+
+.crearadmin-boton--peligro:hover:not(:disabled) {
+  border-color: #6f3425;
+  background: linear-gradient(135deg, #9c4a33, #733425);
+}
+
+/* MENSAJES: error y éxito debajo de formularios y tarjetas. */
+.crearadmin-mensaje {
+  margin: 0;
+  padding: 12px 16px;
+  border-radius: 15px;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.crearadmin-mensaje--error {
+  border: 1px solid rgba(174, 89, 65, 0.22);
+  background: rgba(255, 239, 229, 0.92);
+  color: var(--ca-danger);
+}
+
+.crearadmin-mensaje--exito {
+  border: 1px solid rgba(91, 139, 48, 0.3);
+  background: rgba(225, 233, 187, 0.8);
+  color: var(--ca-moss-dark);
+}
+
+.crearadmin-vacio {
+  margin: 0;
+  padding: 28px 18px;
+  border: 2px dashed rgba(91, 139, 48, 0.35);
+  border-radius: 20px;
+  background: rgba(225, 233, 187, 0.3);
+  color: var(--ca-muted);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+
+/* 7. LISTA DE ADMINS */
+
+.crearadmin-lista {
+  display: grid;
+  gap: 14px;
+}
+
+.crearadmin-admin {
+  display: grid;
+  gap: 14px;
+  padding: 18px 20px;
+  border: 1px solid var(--ca-border);
+  border-radius: 20px;
+  background: rgba(255, 251, 238, 0.9);
+}
+
+.crearadmin-admin.suspendido {
+  border-color: rgba(174, 89, 65, 0.3);
+  background: rgba(255, 239, 229, 0.55);
+}
+
+.crearadmin-admin-cabecera {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.crearadmin-admin-avatar {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border: 3px solid var(--ca-paper-strong);
+  border-radius: 50%;
+  background: var(--ca-moss-dark);
+  color: var(--ca-paper-strong);
+  font-family: var(--ca-fuente-titulo);
+  font-size: 1.1rem;
+  box-shadow: 0 0 0 3px rgba(232, 178, 71, 0.55);
+}
+
+.crearadmin-admin-datos {
+  display: grid;
+  flex: 1;
+  gap: 2px;
+  min-width: 0;
+}
+
+.crearadmin-admin-datos strong {
+  color: #57402b;
+  font-size: 0.95rem;
+  overflow-wrap: anywhere;
+}
+
+.crearadmin-admin-datos span {
+  color: var(--ca-muted);
+  font-size: 0.82rem;
+  overflow-wrap: anywhere;
+}
+
+/* ESTADO: etiqueta Activa / Suspendida. */
+.crearadmin-estado {
+  flex-shrink: 0;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: var(--ca-moss-soft);
+  color: var(--ca-moss-dark);
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.crearadmin-estado--suspendida {
+  background: rgba(255, 224, 210, 0.9);
+  color: var(--ca-danger);
+}
+
+/* SECCIONES: chips con las secciones que administra. */
+.crearadmin-admin-secciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.crearadmin-admin-secciones li {
+  padding: 5px 12px;
+  border: 1px solid rgba(116, 126, 76, 0.2);
+  border-radius: 999px;
+  background: rgba(255, 250, 229, 0.74);
+  color: var(--ca-moss-dark);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.crearadmin-admin-secciones li.vacio {
+  color: var(--ca-muted);
+  font-weight: 600;
+}
+
+.crearadmin-admin-edicion {
+  display: grid;
+  gap: 14px;
+}
+
+
+/* 8. RESPONSIVE */
+
+@media (max-width: 767.98px) {
+  .crearadmin-page {
+    padding-right: 12px;
+    padding-left: 12px;
+    background-attachment: scroll;
+  }
+
+  .crearadmin-tarjeta {
+    padding: 20px 18px 24px;
+    border-radius: 22px;
+  }
+
+  .crearadmin-fila {
+    grid-template-columns: 1fr;
+  }
+
+  .crearadmin-permisos-grilla {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .crearadmin-permisos-grilla {
+    grid-template-columns: 1fr;
+  }
+
+  .crearadmin-admin-cabecera {
+    flex-wrap: wrap;
+  }
+
+  .crearadmin-acciones .crearadmin-boton {
+    flex: 1 1 auto;
+  }
+}
+
+
+/* 9. ACCESIBILIDAD: REDUCIR MOVIMIENTO */
+
+@media (prefers-reduced-motion: reduce) {
+  .crearadmin-page *,
+  .crearadmin-page *::before,
+  .crearadmin-page *::after {
+    animation: none !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
+  }
+}

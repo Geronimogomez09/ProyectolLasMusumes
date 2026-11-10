@@ -1,5 +1,10 @@
+// Índice: Formulario para crear una publicación.
+// ----------------- Formulario para crear una publicación -----------------
+// Recibe los datos del usuario, las categorías y la acción para publicar. Reúne el contenido del post y lo entrega al componente de Comunidad para guardarlo.
+
 // components/comunidadComponentes/nuevo-post.jsx
 import { useState } from 'react';
+import AvatarComunidad from './avatar-comunidad';
 
 function NuevoPost({ usuario, categorias, onPublicar }) {
   const [texto, setTexto] = useState('');
@@ -30,7 +35,11 @@ function NuevoPost({ usuario, categorias, onPublicar }) {
   return (
     <section className="nuevo-post cascada-item">
       <div className="nuevo-post__fila">
-        <div className="avatar avatar--propio">{usuario.inicial}</div>
+        <AvatarComunidad
+          className="avatar avatar--propio"
+          foto={usuario.foto}
+          nombre={usuario.nombre}
+        />
         <textarea
           className="nuevo-post__texto"
           placeholder="¿Que vas a escribir hoy?"

@@ -8,6 +8,10 @@ import {
     totalStockPorTalle
 } from "../../data/productos";
 
+// Índice: Administraci?n de productos.
+// ----------------- Administraci?n de productos -----------------
+// Recibe el catálogo y las acciones para agregar, editar o eliminar productos. Valida y normaliza los campos del formulario antes de enviar los cambios al componente padre.
+
 // Categorías disponibles en el selector del panel administrativo.
 const categoriasAdmin = categorias
     .filter(([valor]) => valor !== "Todas")

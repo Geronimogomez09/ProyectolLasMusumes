@@ -1,5 +1,9 @@
 import MinecraftIcon from "./MinecraftIcon";
 
+// Índice: Búsqueda y filtros de tienda.
+// ----------------- Búsqueda y filtros de tienda -----------------
+// Recibe los valores y acciones de b?squeda, orden y filtros. Permite acotar el catálogo y comunica cada cambio a la página de tienda.
+
 // Agrupa el buscador con sus coincidencias y el acceso al panel del carrito.
 export default function ControlesTienda({
     busqueda,

@@ -1,5 +1,9 @@
 import React from "react";
 
+// Índice: Canciones destacadas.
+// ----------------- Canciones destacadas -----------------
+// Recibe canciones y compositores, relaciona cada canción con su autor y muestra las reproducciones. Devuelve una selección visual de canciones para descubrir.
+
 function FeaturedSongs({
   songs,
   composers,

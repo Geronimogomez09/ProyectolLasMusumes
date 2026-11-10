@@ -1,0 +1,1335 @@
+/*
+ * PÁGINA DE BÚSQUEDA - WIKI-CRAFT
+ *
+ * Este archivo contiene los estilos visuales de la página de búsqueda.
+ *
+ * La apariencia está inspirada en una estética de fantasía y construcción,
+ * utilizando elementos visuales asociados al papel, la madera, la miel
+ * y la naturaleza.
+ *
+ * La organización del CSS permite identificar fácilmente los estilos
+ * correspondientes al fondo, el contenedor principal, el encabezado,
+ * los resultados, los estados de búsqueda y la adaptación a dispositivos
+ * de diferentes tamaños.
+ *
+ * ÍNDICE GENERAL
+ *
+ * 1. CONTENEDOR PRINCIPAL Y VARIABLES
+ * 2. DECORACIÓN DEL FONDO
+ * 3. CONTENEDOR DEL CONTENIDO
+ * 4. ENCABEZADO
+ * 5. RESUMEN DE LA BÚSQUEDA
+ * 6. LISTA DE RESULTADOS
+ * 7. TARJETAS DE RESULTADOS
+ * 8. INFORMACIÓN DE CADA RESULTADO
+ * 9. MENSAJES Y ESTADOS
+ * 10. RESPONSIVE
+ * 11. ACCESIBILIDAD
+ */
+
+
+/* 1. CONTENEDOR PRINCIPAL Y VARIABLES
+ *
+ * .busqueda-pagina representa el contenedor general de la página.
+ * Funciona como base visual de toda la sección de búsqueda y establece
+ * los colores, las tipografías, los espacios y el comportamiento general.
+ *
+ * VARIABLES PERSONALIZADAS:
+ *
+ * Las propiedades que comienzan con dos guiones (--), como --bus-cream,
+ * son variables CSS. Permiten almacenar valores reutilizables para evitar
+ * repetir constantemente los mismos colores o configuraciones.
+ *
+ * Todas estas variables se declaran dentro de .busqueda-pagina, por lo
+ * que su alcance queda limitado a este contenedor y a sus descendientes.
+ *
+ * Esto evita interferir innecesariamente con los estilos de otras páginas.
+ *
+ * Variables de apariencia:
+ * - --bus-cream: color principal del fondo.
+ * - --bus-paper: tono claro utilizado para superficies.
+ * - --bus-paper-strong: variante más clara para destacar elementos.
+ * - --bus-sand: tono arena para detalles.
+ * - --bus-honey: color miel utilizado en elementos destacados.
+ * - --bus-wood: tono de madera para detalles y elementos secundarios.
+ * - --bus-wood-dark: tono oscuro utilizado principalmente en textos.
+ * - --bus-moss: verde musgo utilizado en detalles interactivos.
+ * - --bus-moss-dark: variante oscura para mejorar el contraste.
+ * - --bus-moss-soft: tono suave para fondos de etiquetas.
+ * - --bus-text: color general del texto.
+ * - --bus-muted: color para información secundaria.
+ * - --bus-border: color semitransparente para los bordes.
+ *
+ * Variables de animación:
+ * - --bus-ease: curva de aceleración y desaceleración para transiciones.
+ * - --bus-ease-soft: variante más suave para movimientos progresivos.
+ *
+ * Las funciones cubic-bezier() permiten personalizar cómo evoluciona
+ * una animación durante su duración, en lugar de utilizar una velocidad
+ * completamente uniforme.
+ */
+
+.busqueda-pagina {
+    --bus-cream: #f5ead1;
+    --bus-paper: #fff8e7;
+    --bus-paper-strong: #fffdf4;
+    --bus-sand: #ead5aa;
+    --bus-honey: #e8b247;
+    --bus-wood: #966039;
+    --bus-wood-dark: #69452a;
+    --bus-moss: #83a73b;
+    --bus-moss-dark: #4e7b2f;
+    --bus-moss-soft: #e1e9bb;
+    --bus-text: #352b20;
+    --bus-muted: #7e6b50;
+    --bus-border: rgba(113, 79, 37, 0.19);
+    --bus-ease: cubic-bezier(0.22, 0.8, 0.24, 1);
+    --bus-ease-soft: cubic-bezier(0.25, 1, 0.5, 1);
+
+    /*
+     * position: relative permite establecer este contenedor como referencia
+     * para elementos posicionados de manera absoluta en su interior.
+     *
+     * isolation: isolate crea un contexto de apilamiento independiente.
+     * Esto ayuda a controlar la posición de los elementos decorativos
+     * y evita que sus niveles de superposición interfieran con otras zonas.
+     *
+     * box-sizing: border-box hace que el ancho y alto declarados incluyan
+     * el contenido, el relleno interno (padding) y los bordes.
+     *
+     * min-height: 75vh establece una altura mínima equivalente al 75 %
+     * de la altura visible de la ventana del navegador.
+     *
+     * padding define el espacio interior:
+     * - Superior: utiliza la altura del encabezado general más un espacio
+     *   adicional adaptable mediante clamp().
+     * - Laterales: establece 20 píxeles.
+     * - Inferior: utiliza una separación adaptable a la pantalla.
+     *
+     * var(--header-alto, 76px) utiliza una variable posiblemente definida
+     * en los estilos generales del sitio. Si no existe, utiliza 76px.
+     *
+     * clamp() establece un valor adaptable entre un mínimo y un máximo.
+     * El navegador calcula el valor preferido según el tamaño de pantalla,
+     * pero nunca permite que salga de esos límites.
+     *
+     * overflow: hidden oculta cualquier contenido que sobresalga
+     * de los límites del contenedor, incluidos los adornos laterales.
+     */
+
+    position: relative;
+    isolation: isolate;
+    box-sizing: border-box;
+    min-height: 75vh;
+    padding: calc(var(--header-alto, 76px) + clamp(35px, 6vh, 65px))
+        20px clamp(55px, 8vh, 90px);
+    overflow: hidden;
+
+    /*
+     * FONDO PRINCIPAL:
+     *
+     * Se utiliza background-color como color base y background-image
+     * para construir un fondo compuesto por varias capas de degradados.
+     *
+     * La primera capa es un degradado lineal que combina distintos tonos
+     * crema y arena en dirección diagonal.
+     *
+     * La segunda capa es un degradado radial ubicado en la zona superior
+     * izquierda, que agrega una iluminación cálida similar al color miel.
+     *
+     * La tercera capa es otro degradado radial situado en la parte inferior
+     * derecha, que incorpora un tono verde suave.
+     *
+     * Al utilizar transparencias, las capas se mezclan visualmente
+     * y generan profundidad sin necesitar imágenes externas.
+     */
+
+    background-color: var(--bus-cream);
+    background-image:
+        linear-gradient(
+            115deg,
+            rgba(255, 246, 220, 0.86),
+            rgba(250, 232, 190, 0.68) 48%,
+            rgba(225, 204, 147, 0.48)
+        ),
+        radial-gradient(
+            ellipse at 12% 15%,
+            rgba(232, 176, 74, 0.35),
+            transparent 38%
+        ),
+        radial-gradient(
+            ellipse at 90% 85%,
+            rgba(91, 139, 54, 0.24),
+            transparent 38%
+        );
+
+    /*
+     * Se establece el color general del texto mediante la variable
+     * --bus-text. Los elementos descendientes pueden sobrescribirlo
+     * cuando necesitan utilizar colores específicos.
+     *
+     * font-family define una lista de tipografías alternativas.
+     * Si el navegador no dispone de Segoe UI, intenta utilizar Roboto,
+     * después Arial y finalmente una tipografía sans-serif genérica.
+     */
+
+    color: var(--bus-text);
+    font-family: "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+/*
+ * SELECTOR UNIVERSAL Y PSEUDOELEMENTOS:
+ *
+ * El selector * selecciona todos los elementos HTML que se encuentran
+ * dentro de .busqueda-pagina.
+ *
+ * ::before y ::after representan elementos generados mediante CSS
+ * antes y después del contenido de cada elemento seleccionado.
+ *
+ * Aplicar box-sizing: border-box a los tres casos mantiene un cálculo
+ * de dimensiones uniforme en toda la página.
+ *
+ * Esto facilita controlar los tamaños de tarjetas, contenedores,
+ * elementos decorativos y otros componentes.
+ */
+
+.busqueda-pagina *,
+.busqueda-pagina *::before,
+.busqueda-pagina *::after {
+    box-sizing: border-box;
+}
+
+/*
+ * ::selection permite personalizar la apariencia del texto cuando
+ * el usuario lo selecciona con el mouse o mediante el teclado.
+ *
+ * En este caso, se utiliza un fondo color arena y texto oscuro
+ * para mantener la coherencia visual con el diseño.
+ */
+
+.busqueda-pagina ::selection {
+    background: #e6d3ad;
+    color: var(--bus-text);
+}
+
+
+/* 2. DECORACIÓN DEL FONDO
+ *
+ * Esta sección incorpora formas geométricas decorativas utilizando
+ * pseudoelementos CSS.
+ *
+ * La ventaja de utilizar ::before y ::after es que se pueden crear
+ * elementos visuales sin agregarlos directamente al HTML.
+ *
+ * Como son elementos exclusivamente decorativos, no necesitan
+ * contenido ni interacción con el usuario.
+ */
+
+.busqueda-pagina::before,
+.busqueda-pagina::after {
+    /*
+     * position: absolute permite colocar las formas en posiciones
+     * específicas respecto al contenedor principal, que tiene
+     * position: relative.
+     *
+     * z-index: -1 las coloca detrás del contenido principal.
+     * isolation: isolate en el contenedor ayuda a mantener controlada
+     * esta superposición.
+     *
+     * content: "" es necesario para que los pseudoelementos existan
+     * y puedan dibujarse, aunque no contengan texto.
+     *
+     * pointer-events: none evita que interfieran con los clics,
+     * selecciones o interacciones del usuario.
+     *
+     * El borde y el fondo semitransparente generan formas discretas
+     * que aportan profundidad sin competir con los resultados.
+     */
+
+    position: absolute;
+    z-index: -1;
+    content: "";
+    pointer-events: none;
+    border: 1px solid rgba(128, 96, 68, 0.12);
+    background: rgba(255, 250, 239, 0.18);
+}
+
+/*
+ * PRIMERA FORMA DECORATIVA:
+ *
+ * Se ubica parcialmente fuera del límite izquierdo.
+ * Su posición superior, dimensiones y rotación permiten crear
+ * una figura geométrica que acompaña visualmente el fondo.
+ *
+ * border-radius suaviza sus esquinas para evitar una apariencia
+ * completamente rectangular.
+ */
+
+.busqueda-pagina::before {
+    top: 13%;
+    left: -75px;
+    width: 210px;
+    height: 210px;
+    border-radius: 42px;
+    transform: rotate(28deg);
+}
+
+/*
+ * SEGUNDA FORMA DECORATIVA:
+ *
+ * Se ubica en la parte inferior derecha y también sobresale
+ * parcialmente del contenedor.
+ *
+ * Utiliza dimensiones y rotación diferentes a la primera figura
+ * para evitar que ambas decoraciones se vean idénticas.
+ */
+
+.busqueda-pagina::after {
+    right: -55px;
+    bottom: 8%;
+    width: 180px;
+    height: 180px;
+    border-radius: 35px;
+    transform: rotate(22deg);
+}
+
+
+/* 3. CONTENEDOR DEL CONTENIDO
+ *
+ * .busqueda-contenido representa el panel principal donde se agrupan
+ * el encabezado, el resumen de la búsqueda y la lista de resultados.
+ *
+ * Su función es mantener todos estos elementos dentro de una superficie
+ * visual diferenciada del fondo general.
+ */
+
+.busqueda-contenido {
+    /*
+     * position: relative permite controlar su posición dentro
+     * de la página y utilizar z-index.
+     *
+     * z-index: 1 lo coloca por delante de las formas decorativas.
+     *
+     * width: min(100%, 900px) establece que el contenedor nunca supere
+     * los 900 píxeles de ancho, pero permite ocupar todo el espacio
+     * disponible cuando la pantalla es más pequeña.
+     *
+     * margin-inline: auto centra horizontalmente el contenedor.
+     *
+     * padding utiliza clamp() para adaptar el espacio interior
+     * según el ancho disponible.
+     */
+
+    position: relative;
+    z-index: 1;
+    width: min(100%, 900px);
+    margin-inline: auto;
+    padding: clamp(25px, 4vw, 42px);
+
+    /*
+     * APARIENCIA DEL PANEL:
+     *
+     * El borde blanco semitransparente y las esquinas redondeadas
+     * ayudan a separar visualmente el panel del fondo.
+     *
+     * background utiliza una superficie clara con transparencia.
+     *
+     * backdrop-filter aplica un desenfoque y aumenta ligeramente
+     * la saturación del contenido que se encuentra detrás del panel.
+     *
+     * - blur(20px): desenfoca el fondo.
+     * - saturate(1.1): aumenta ligeramente su saturación.
+     *
+     * La propiedad -webkit-backdrop-filter es una variante destinada
+     * a navegadores que utilizan el prefijo WebKit.
+     */
+
+    border: 1px solid rgba(255, 255, 255, 0.85);
+    border-radius: 28px;
+
+    background: rgba(255, 249, 233, 0.87);
+    -webkit-backdrop-filter: blur(20px) saturate(1.1);
+    backdrop-filter: blur(20px) saturate(1.1);
+
+    /*
+     * box-shadow genera varias sombras superpuestas:
+     *
+     * - La primera crea profundidad alrededor del panel.
+     * - La segunda agrega una sombra más cercana y suave.
+     * - La tercera utiliza inset para dibujar un brillo interior
+     *   en la parte superior.
+     *
+     * inset cambia la dirección de la sombra para que se dibuje
+     * dentro del elemento en lugar de proyectarse hacia afuera.
+     */
+
+    box-shadow:
+        0 28px 65px -35px rgba(73, 55, 34, 0.38),
+        0 10px 25px -16px rgba(126, 94, 54, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+
+    /*
+     * Se aplica la animación busqueda-entrada al aparecer el panel.
+     *
+     * 700ms determina la duración.
+     * var(--bus-ease-soft) establece la curva de movimiento.
+     * both permite conservar los estilos del primer y último fotograma
+     * durante la aplicación de la animación.
+     */
+
+    animation: busqueda-entrada 700ms var(--bus-ease-soft) both;
+}
+
+/*
+ * ANIMACIÓN DE ENTRADA DEL CONTENEDOR:
+ *
+ * @keyframes define los diferentes estados visuales de una animación.
+ *
+ * from representa el estado inicial:
+ * - opacity: 0 hace que el elemento comience invisible.
+ * - translateY(18px) lo coloca ligeramente por debajo.
+ * - scale(0.99) lo muestra apenas más pequeño.
+ *
+ * to representa el estado final:
+ * - opacity: 1 lo vuelve completamente visible.
+ * - translateY(0) elimina el desplazamiento vertical.
+ * - scale(1) recupera su tamaño original.
+ *
+ * El resultado es una aparición progresiva acompañada de un pequeño
+ * desplazamiento hacia arriba y un cambio de escala muy sutil.
+ */
+
+@keyframes busqueda-entrada {
+    from {
+        opacity: 0;
+        transform: translateY(18px) scale(0.99);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+
+/* 4. ENCABEZADO
+ *
+ * Esta sección controla la presentación del texto introductorio
+ * y del título principal de la página de búsqueda.
+ */
+
+/*
+ * ETIQUETA INTRODUCTORIA:
+ *
+ * .busqueda-etiqueta utiliza Flexbox mediante inline-flex.
+ *
+ * Flexbox permite alinear los elementos internos en una misma fila
+ * y controlar la separación entre ellos.
+ *
+ * align-items: center centra verticalmente el contenido.
+ * gap: 8px establece una separación entre sus elementos.
+ *
+ * El margen inferior crea distancia respecto al título principal.
+ */
+
+.busqueda-etiqueta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+
+    margin: 0 0 12px;
+    color: var(--bus-moss-dark);
+
+    /*
+     * Los valores tipográficos hacen que la etiqueta sea pequeña,
+     * destacada y fácilmente diferenciable del título principal.
+     *
+     * letter-spacing agrega separación entre caracteres.
+     * font-weight establece un grosor de letra elevado.
+     */
+
+    font-size: 0.76rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+}
+
+/*
+ * DETALLE DECORATIVO DE LA ETIQUETA:
+ *
+ * ::before genera un pequeño cuadrado redondeado antes del texto.
+ *
+ * Se utiliza como indicador visual sin necesidad de incorporar
+ * un elemento adicional en el HTML.
+ *
+ * box-shadow agrega un brillo suave alrededor de la figura.
+ */
+
+.busqueda-etiqueta::before {
+    width: 9px;
+    height: 9px;
+    border-radius: 3px;
+    background: var(--bus-honey);
+    box-shadow: 0 0 10px rgba(232, 178, 71, 0.35);
+    content: "";
+}
+
+/*
+ * TÍTULO PRINCIPAL:
+ *
+ * El selector .busqueda-contenido h1 afecta únicamente a los elementos
+ * h1 que se encuentran dentro del contenedor principal.
+ *
+ * Se elimina el margen predeterminado del navegador y se establece
+ * una tipografía específica para mantener la identidad visual.
+ *
+ * La fuente Minecrafttitulo tiene prioridad, seguida de MinecraftSeven.
+ * Si ninguna está disponible, se utiliza una fuente sans-serif.
+ *
+ * clamp() permite adaptar el tamaño del título al ancho de pantalla
+ * sin que sea demasiado pequeño o demasiado grande.
+ *
+ * line-height controla la distancia vertical entre líneas de texto.
+ *
+ * text-shadow añade una sombra muy ligera que mejora la separación
+ * visual del título respecto al fondo.
+ */
+
+.busqueda-contenido h1 {
+    margin: 0;
+
+    color: var(--bus-wood-dark);
+    font-family: "Minecrafttitulo", "MinecraftSeven", sans-serif;
+    font-size: clamp(1.55rem, 3.5vw, 2.15rem);
+    font-weight: 400;
+    line-height: 1.4;
+
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.55);
+}
+
+
+/* 5. RESUMEN DE LA BÚSQUEDA
+ *
+ * .busqueda-resumen define el bloque destinado a presentar información
+ * relacionada con la búsqueda realizada.
+ *
+ * Puede utilizarse, según el HTML y JavaScript que acompañen este CSS,
+ * para proporcionar contexto sobre la consulta o sus resultados.
+ *
+ * Este selector únicamente define su apariencia; no determina
+ * qué información contiene ni cómo se genera.
+ */
+
+.busqueda-resumen {
+    /*
+     * El margen separa el resumen del encabezado y de la lista
+     * de resultados.
+     *
+     * padding genera espacio interior para evitar que el texto
+     * quede demasiado cerca de los bordes.
+     *
+     * border-left utiliza un borde más grueso en el lateral izquierdo.
+     * Esto permite destacar visualmente el bloque sin utilizar
+     * un fondo demasiado intenso.
+     */
+
+    margin: 18px 0 24px;
+    padding: 13px 16px;
+
+    border: 1px solid rgba(128, 96, 68, 0.16);
+    border-left: 4px solid var(--bus-honey);
+    border-radius: 12px;
+
+    background: rgba(255, 250, 229, 0.78);
+    color: var(--bus-muted);
+
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+
+/*
+ * Los elementos strong que se encuentren dentro del resumen reciben
+ * un color más oscuro y un grosor de letra mayor.
+ *
+ * Esto permite destacar palabras o datos importantes sin modificar
+ * el estilo del resto del texto.
+ */
+
+.busqueda-resumen strong {
+    color: var(--bus-wood-dark);
+    font-weight: 800;
+}
+
+
+/* 6. LISTA DE RESULTADOS
+ *
+ * .busqueda-lista representa el conjunto de resultados de búsqueda.
+ *
+ * Se utiliza CSS Grid para organizar los elementos en una columna
+ * y mantener una separación uniforme entre ellos.
+ *
+ * list-style: none elimina los marcadores predeterminados de las listas,
+ * como los puntos de una lista desordenada.
+ *
+ * El espacio entre elementos se controla mediante gap.
+ */
+
+.busqueda-lista {
+    display: grid;
+    gap: 12px;
+
+    margin: 26px 0 0;
+    padding: 0;
+
+    list-style: none;
+}
+
+/*
+ * Cada li representa un elemento individual de la lista.
+ *
+ * min-width: 0 permite que el elemento pueda reducir su ancho
+ * dentro de su contenedor Grid, evitando desbordamientos provocados
+ * por contenido demasiado largo.
+ *
+ * Se aplica la animación busqueda-resultado-entrada a cada resultado.
+ */
+
+.busqueda-lista li {
+    min-width: 0;
+    animation: busqueda-resultado-entrada 450ms var(--bus-ease-soft) both;
+}
+
+/*
+ * RETRASOS PROGRESIVOS DE ANIMACIÓN:
+ *
+ * nth-child() permite seleccionar un elemento según su posición
+ * dentro de su elemento padre.
+ *
+ * En este caso, cada uno de los primeros cinco resultados recibe
+ * un retraso diferente mediante animation-delay.
+ *
+ * De esta manera, los resultados no aparecen todos al mismo tiempo,
+ * sino de forma escalonada.
+ *
+ * Por ejemplo:
+ * - Segundo resultado: espera 45 milisegundos.
+ * - Tercer resultado: espera 90 milisegundos.
+ * - Cuarto resultado: espera 135 milisegundos.
+ * - Quinto resultado: espera 180 milisegundos.
+ *
+ * Los elementos posteriores al quinto no reciben un retraso adicional
+ * mediante estas reglas.
+ */
+
+.busqueda-lista li:nth-child(2) {
+    animation-delay: 45ms;
+}
+
+.busqueda-lista li:nth-child(3) {
+    animation-delay: 90ms;
+}
+
+.busqueda-lista li:nth-child(4) {
+    animation-delay: 135ms;
+}
+
+.busqueda-lista li:nth-child(5) {
+    animation-delay: 180ms;
+}
+
+/*
+ * ANIMACIÓN DE APARICIÓN DE LOS RESULTADOS:
+ *
+ * from:
+ * - opacity: 0 hace que el resultado comience invisible.
+ * - translateY(9px) lo posiciona ligeramente por debajo.
+ *
+ * to:
+ * - opacity: 1 lo vuelve completamente visible.
+ * - translateY(0) lo devuelve a su posición normal.
+ *
+ * Esta animación es más breve y discreta que la del contenedor principal,
+ * porque su finalidad es acompañar la aparición individual de las tarjetas.
+ */
+
+@keyframes busqueda-resultado-entrada {
+    from {
+        opacity: 0;
+        transform: translateY(9px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+/* 7. TARJETAS DE RESULTADOS
+ *
+ * .busqueda-resultado define la apariencia de cada resultado individual.
+ *
+ * Estas tarjetas funcionan como elementos visuales interactivos.
+ * Por las propiedades utilizadas, están preparadas para representar
+ * enlaces que permiten acceder al contenido correspondiente.
+ *
+ * Su estructura visual combina:
+ * - Un fondo claro con degradado.
+ * - Bordes redondeados.
+ * - Sombras suaves.
+ * - Una línea lateral que aparece al interactuar.
+ * - Transiciones para suavizar los cambios de apariencia.
+ */
+
+.busqueda-resultado {
+    /*
+     * position: relative permite posicionar elementos decorativos
+     * internos tomando esta tarjeta como referencia.
+     *
+     * display: grid organiza el contenido interno en una estructura
+     * de una columna.
+     *
+     * gap establece una separación de 5 píxeles entre los elementos
+     * que se encuentren dentro de la tarjeta.
+     *
+     * min-width: 0 evita que el contenido interno obligue a la tarjeta
+     * a superar el ancho disponible.
+     *
+     * padding establece el espacio entre el contenido y los bordes.
+     */
+
+    position: relative;
+    display: grid;
+    gap: 5px;
+
+    min-width: 0;
+    padding: 17px 20px;
+
+    /*
+     * Se aplica un borde semitransparente y esquinas redondeadas.
+     *
+     * El fondo utiliza un degradado lineal para combinar dos tonos
+     * de papel, generando una variación visual muy sutil.
+     */
+
+    border: 1px solid var(--bus-border);
+    border-radius: 17px;
+
+    background:
+        linear-gradient(
+            125deg,
+            rgba(255, 253, 244, 0.98),
+            rgba(255, 248, 231, 0.93)
+        );
+
+    /*
+     * color: inherit hace que la tarjeta herede el color de texto
+     * del elemento que la contiene.
+     *
+     * text-decoration: none elimina decoraciones predeterminadas
+     * de los enlaces, como el subrayado.
+     *
+     * Las sombras crean profundidad:
+     * - La primera proyecta una sombra exterior discreta.
+     * - La segunda crea un brillo interior en la parte superior.
+     */
+
+    color: inherit;
+    text-decoration: none;
+
+    box-shadow:
+        0 3px 9px rgba(73, 55, 34, 0.035),
+        inset 0 1px 0 rgba(255, 255, 255, 0.85);
+
+    /*
+     * TRANSICIONES:
+     *
+     * transition establece cómo deben cambiar determinadas propiedades
+     * cuando el elemento pasa de un estado visual a otro.
+     *
+     * En este caso:
+     * - transform: suaviza los desplazamientos y cambios de escala.
+     * - border-color: suaviza el cambio del color del borde.
+     * - background-color: permite animar cambios de color de fondo.
+     * - box-shadow: suaviza los cambios de las sombras.
+     *
+     * Cada propiedad tiene una duración y una curva de movimiento.
+     *
+     * Esto permite que los efectos interactivos no aparezcan de manera
+     * brusca cuando el usuario coloca el cursor sobre la tarjeta.
+     */
+
+    transition:
+        transform 350ms var(--bus-ease-soft),
+        border-color 250ms var(--bus-ease),
+        background-color 250ms var(--bus-ease),
+        box-shadow 350ms var(--bus-ease-soft);
+}
+
+/*
+ * LÍNEA DECORATIVA LATERAL:
+ *
+ * ::before genera una pequeña barra vertical en el lado izquierdo
+ * de cada tarjeta.
+ *
+ * Como la tarjeta tiene position: relative, esta barra puede ubicarse
+ * mediante position: absolute tomando sus dimensiones como referencia.
+ *
+ * top y bottom determinan su separación respecto a los extremos.
+ * left: 0 la ubica junto al borde izquierdo.
+ *
+ * width establece su grosor.
+ * border-radius redondea sus extremos.
+ *
+ * opacity: 0 la mantiene inicialmente invisible.
+ *
+ * scaleY(0.5) hace que comience visualmente reducida a la mitad
+ * de su escala vertical.
+ *
+ * transition permite animar su aparición y crecimiento.
+ *
+ * content: "" es necesario para generar el pseudoelemento.
+ */
+
+.busqueda-resultado::before {
+    position: absolute;
+    top: 17px;
+    bottom: 17px;
+    left: 0;
+
+    width: 3px;
+    border-radius: 0 5px 5px 0;
+
+    background: var(--bus-moss);
+    opacity: 0;
+    transform: scaleY(0.5);
+
+    transition:
+        opacity 250ms var(--bus-ease),
+        transform 350ms var(--bus-ease-soft);
+
+    content: "";
+}
+
+/*
+ * ESTADO HOVER:
+ *
+ * :hover se activa cuando el cursor se encuentra sobre la tarjeta.
+ *
+ * En ese momento:
+ * - translateY(-3px) desplaza la tarjeta 3 píxeles hacia arriba.
+ * - border-color cambia el color del borde hacia un verde más visible.
+ * - background modifica el fondo para destacar la superficie.
+ * - box-shadow aumenta la profundidad visual.
+ *
+ * El objetivo es proporcionar una respuesta visual que permita
+ * identificar fácilmente qué resultado está señalando el usuario.
+ */
+
+.busqueda-resultado:hover {
+    transform: translateY(-3px);
+
+    border-color: rgba(83, 132, 46, 0.48);
+    background: var(--bus-paper-strong);
+
+    box-shadow:
+        0 12px 25px -13px rgba(73, 55, 34, 0.3),
+        0 4px 10px rgba(83, 132, 46, 0.07);
+}
+
+/*
+ * Cuando el cursor está sobre la tarjeta, también se modifica
+ * el pseudoelemento ::before.
+ *
+ * opacity: 1 lo vuelve visible.
+ * scaleY(1) recupera su altura completa.
+ *
+ * Gracias a la transición declarada anteriormente, la línea aparece
+ * y crece progresivamente.
+ */
+
+.busqueda-resultado:hover::before {
+    opacity: 1;
+    transform: scaleY(1);
+}
+
+/*
+ * ESTADO ACTIVE:
+ *
+ * :active se activa mientras el usuario mantiene presionado el elemento.
+ *
+ * La tarjeta reduce ligeramente su desplazamiento y su escala.
+ * Esto genera una sensación visual de presión o pulsación.
+ *
+ * transition-duration reduce la duración de la transición a 120ms,
+ * haciendo que la respuesta al clic sea más inmediata.
+ */
+
+.busqueda-resultado:active {
+    transform: translateY(-1px) scale(0.995);
+    transition-duration: 120ms;
+}
+
+/*
+ * ESTADO FOCUS-VISIBLE:
+ *
+ * :focus-visible identifica cuándo el elemento recibe el foco
+ * mediante mecanismos de navegación que requieren una indicación visual,
+ * especialmente el uso del teclado.
+ *
+ * outline dibuja un contorno alrededor de la tarjeta.
+ *
+ * outline-offset separa ese contorno del borde para hacerlo más visible.
+ *
+ * También se modifica el color del borde para mantener la coherencia
+ * visual con el indicador de enfoque.
+ *
+ * Este estado es importante para accesibilidad, ya que permite identificar
+ * qué enlace está seleccionado sin necesidad de utilizar un mouse.
+ */
+
+.busqueda-resultado:focus-visible {
+    outline: 2px solid var(--bus-moss-dark);
+    outline-offset: 4px;
+    border-color: var(--bus-moss-dark);
+}
+
+
+/* 8. INFORMACIÓN DE CADA RESULTADO
+ *
+ * Esta sección define los estilos de los elementos que componen
+ * el contenido interno de cada tarjeta.
+ *
+ * Se diferencian tres niveles de información:
+ *
+ * 1. Categoría: identifica el tipo de resultado.
+ * 2. Título: presenta el nombre principal del contenido.
+ * 3. Descripción: ofrece información complementaria.
+ *
+ * Esta separación permite reconocer rápidamente qué tipo de resultado
+ * se está mostrando y cuál es su contenido principal.
+ */
+
+/*
+ * CATEGORÍA DEL RESULTADO:
+ *
+ * .busqueda-tipo identifica una etiqueta que puede representar
+ * categorías como canciones, productos, secciones o historias,
+ * dependiendo de los datos proporcionados por el sistema.
+ *
+ * width: fit-content hace que la etiqueta ocupe el ancho necesario
+ * para contener su texto.
+ *
+ * max-width: 100% evita que supere el ancho disponible.
+ *
+ * padding establece una separación interna.
+ *
+ * text-transform: uppercase transforma visualmente el texto
+ * en mayúsculas sin modificar el contenido original.
+ *
+ * letter-spacing agrega separación entre caracteres.
+ */
+
+.busqueda-tipo {
+    width: fit-content;
+    max-width: 100%;
+    padding: 4px 10px;
+
+    border: 1px solid rgba(116, 126, 76, 0.13);
+    border-radius: 7px;
+
+    background: var(--bus-moss-soft);
+    color: var(--bus-moss-dark);
+
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.035em;
+    text-transform: uppercase;
+}
+
+/*
+ * TÍTULO DEL RESULTADO:
+ *
+ * .busqueda-titulo destaca el nombre principal de cada resultado.
+ *
+ * Se utiliza un tamaño de letra mayor que el de la descripción
+ * y un grosor elevado para establecer una jerarquía visual.
+ *
+ * line-height controla la separación entre líneas cuando el título
+ * ocupa más de una línea.
+ *
+ * overflow-wrap: anywhere permite dividir palabras largas cuando
+ * sea necesario para evitar que el texto desborde la tarjeta.
+ *
+ * transition suaviza los cambios de color.
+ */
+
+.busqueda-titulo {
+    color: var(--bus-wood-dark);
+
+    font-size: 1.05rem;
+    font-weight: 800;
+    line-height: 1.4;
+
+    overflow-wrap: anywhere;
+
+    transition: color 220ms var(--bus-ease);
+}
+
+/*
+ * Cuando el usuario coloca el cursor sobre la tarjeta, el título
+ * cambia a un verde más oscuro.
+ *
+ * Se utiliza un selector descendiente para que el cambio ocurra
+ * únicamente cuando el elemento padre .busqueda-resultado está
+ * en estado hover.
+ */
+
+.busqueda-resultado:hover .busqueda-titulo {
+    color: var(--bus-moss-dark);
+}
+
+/*
+ * DESCRIPCIÓN DEL RESULTADO:
+ *
+ * .busqueda-descripcion presenta información secundaria.
+ *
+ * Su color es más suave que el del título para mantener la jerarquía
+ * visual y evitar que todos los textos compitan por la atención.
+ *
+ * overflow-wrap: anywhere permite dividir cadenas largas y evitar
+ * desbordamientos horizontales.
+ */
+
+.busqueda-descripcion {
+    color: var(--bus-muted);
+
+    font-size: 0.86rem;
+    line-height: 1.55;
+
+    overflow-wrap: anywhere;
+}
+
+
+/* 9. MENSAJES Y ESTADOS
+ *
+ * Esta sección controla la apariencia de los mensajes que pueden
+ * aparecer en lugar de los resultados o acompañar el proceso de búsqueda.
+ *
+ * Se contemplan dos tipos principales:
+ *
+ * - .busqueda-vacia: representa un estado sin resultados o sin consulta.
+ * - .busqueda-aviso: representa mensajes informativos, como estados
+ *   de carga u otros avisos.
+ *
+ * El CSS únicamente define su presentación. La condición que determina
+ * cuándo aparece cada mensaje depende del HTML o JavaScript asociado.
+ */
+
+.busqueda-vacia,
+.busqueda-aviso {
+    /*
+     * El margen superior separa los mensajes de los elementos anteriores.
+     *
+     * padding crea espacio interno para que el texto sea legible.
+     *
+     * border utiliza un estilo discontinuo (dashed), que permite
+     * diferenciar estos mensajes de las tarjetas normales.
+     *
+     * El fondo semitransparente mantiene la integración con el diseño.
+     */
+
+    margin: 22px 0 0;
+    padding: 20px 22px;
+
+    border: 1px dashed rgba(128, 96, 68, 0.28);
+    border-radius: 17px;
+
+    background: rgba(255, 250, 229, 0.58);
+    color: var(--bus-muted);
+
+    font-size: 0.9rem;
+    line-height: 1.65;
+}
+
+/*
+ * ESTADO SIN RESULTADOS:
+ *
+ * .busqueda-vacia centra horizontalmente el contenido del mensaje.
+ *
+ * Esto resulta útil cuando se informa que una consulta no encontró
+ * coincidencias o cuando todavía no se ha realizado una búsqueda.
+ */
+
+.busqueda-vacia {
+    text-align: center;
+}
+
+/*
+ * ESTADO DE AVISO:
+ *
+ * .busqueda-aviso utiliza un borde continuo en lugar de discontinuo.
+ *
+ * Su fondo y texto tienen tonalidades verdes para diferenciarlo
+ * visualmente del mensaje de ausencia de resultados.
+ *
+ * Puede utilizarse para mostrar información relacionada con estados
+ * del proceso, siempre que el HTML o JavaScript lo utilicen de esa forma.
+ */
+
+.busqueda-aviso {
+    border-style: solid;
+    border-color: rgba(83, 132, 46, 0.22);
+
+    background: rgba(225, 233, 187, 0.35);
+    color: var(--bus-moss-dark);
+}
+
+/*
+ * SELECTOR DE ATRIBUTO [role="status"]:
+ *
+ * Este selector identifica cualquier elemento .busqueda-aviso
+ * que tenga el atributo HTML role con el valor status.
+ *
+ * font-weight: 600 aumenta el grosor del texto.
+ *
+ * El atributo role="status" pertenece a la semántica de accesibilidad
+ * de HTML y puede ayudar a las tecnologías de asistencia, como lectores
+ * de pantalla, a identificar información de estado.
+ *
+ * Esta regla modifica únicamente la apariencia; no agrega el atributo
+ * ni determina cómo se anuncian los mensajes.
+ */
+
+.busqueda-aviso[role="status"] {
+    font-weight: 600;
+}
+
+
+/* 10. RESPONSIVE
+ *
+ * El diseño responsive permite que la página adapte sus dimensiones
+ * y espacios según el tamaño de pantalla del dispositivo.
+ *
+ * Para ello se utilizan media queries, que permiten aplicar reglas CSS
+ * solamente cuando se cumple una determinada condición.
+ *
+ * En este archivo se establecen dos puntos de adaptación:
+ *
+ * - Hasta 767.98px: ajustes para pantallas pequeñas y dispositivos móviles.
+ * - Hasta 420px: ajustes adicionales para teléfonos de menor ancho.
+ *
+ * Las reglas de estas media queries sobrescriben los valores anteriores
+ * cuando la condición correspondiente se cumple.
+ */
+
+
+/*
+ * ADAPTACIÓN PARA PANTALLAS DE HASTA 767.98px:
+ *
+ * Esta media query se activa cuando el ancho de la ventana es igual
+ * o inferior a 767.98 píxeles.
+ *
+ * Se reducen los espacios exteriores e interiores para aprovechar mejor
+ * el espacio disponible y evitar que el contenido quede demasiado
+ * comprimido en dispositivos pequeños.
+ */
+
+@media (max-width: 767.98px) {
+
+    /*
+     * Se reduce el espacio lateral de la página.
+     *
+     * También se adapta la separación superior teniendo en cuenta
+     * la altura del encabezado general.
+     *
+     * background-attachment: scroll mantiene el comportamiento normal
+     * del fondo al desplazarse por la página.
+     */
+
+    .busqueda-pagina {
+        padding: calc(var(--header-alto, 76px) + 28px)
+            14px 55px;
+
+        background-attachment: scroll;
+    }
+
+    /*
+     * Se reduce el relleno interno y el redondeo de las esquinas
+     * del panel principal para adaptarlo a pantallas más pequeñas.
+     */
+
+    .busqueda-contenido {
+        padding: 25px 20px;
+        border-radius: 23px;
+    }
+
+    /*
+     * clamp() permite que el título reduzca su tamaño según el ancho
+     * disponible, respetando un mínimo de 1.35rem y un máximo de 1.8rem.
+     */
+
+    .busqueda-contenido h1 {
+        font-size: clamp(1.35rem, 5vw, 1.8rem);
+    }
+
+    /*
+     * Se reduce la separación entre los resultados y el margen superior
+     * de la lista para aprovechar mejor el espacio vertical.
+     */
+
+    .busqueda-lista {
+        gap: 10px;
+        margin-top: 21px;
+    }
+
+    /*
+     * Se ajusta el relleno interno y el redondeo de las tarjetas.
+     * Esto permite que el contenido conserve una distribución cómoda
+     * sin ocupar demasiado espacio horizontal.
+     */
+
+    .busqueda-resultado {
+        padding: 15px 16px;
+        border-radius: 14px;
+    }
+
+    /*
+     * Se reduce el desplazamiento vertical del efecto hover.
+     * Así, la interacción visual resulta más discreta en pantallas pequeñas.
+     */
+
+    .busqueda-resultado:hover {
+        transform: translateY(-2px);
+    }
+
+    /*
+     * Se disminuye ligeramente el tamaño del texto del resumen
+     * para conservar una proporción adecuada dentro del panel.
+     */
+
+    .busqueda-resumen {
+        font-size: 0.85rem;
+    }
+}
+
+
+/*
+ * ADAPTACIÓN PARA PANTALLAS DE HASTA 420px:
+ *
+ * Esta segunda media query se aplica a dispositivos todavía más
+ * estrechos, como teléfonos con pantallas pequeñas.
+ *
+ * Sus reglas tienen prioridad sobre las reglas generales y sobre
+ * las de la media query anterior cuando ambas condiciones se cumplen.
+ *
+ * El objetivo es evitar desbordamientos y mantener una lectura cómoda.
+ */
+
+@media (max-width: 420px) {
+
+    /*
+     * Se reduce el espacio horizontal exterior de la página.
+     * Esto permite aprovechar mejor el ancho disponible.
+     */
+
+    .busqueda-pagina {
+        padding-right: 10px;
+        padding-left: 10px;
+    }
+
+    /*
+     * Se reduce nuevamente el relleno del panel y el redondeo
+     * de sus esquinas para adaptarse al espacio más limitado.
+     */
+
+    .busqueda-contenido {
+        padding: 22px 15px;
+        border-radius: 19px;
+    }
+
+    /*
+     * Se disminuye el tamaño de la etiqueta introductoria.
+     */
+
+    .busqueda-etiqueta {
+        font-size: 0.7rem;
+    }
+
+    /*
+     * Se fija un tamaño específico para el título principal
+     * en dispositivos de ancho muy reducido.
+     */
+
+    .busqueda-contenido h1 {
+        font-size: 1.35rem;
+    }
+
+    /*
+     * Se reduce el tamaño del título de cada resultado
+     * para evitar que ocupe demasiado espacio.
+     */
+
+    .busqueda-titulo {
+        font-size: 0.96rem;
+    }
+
+    /*
+     * Se ajusta el tamaño de las descripciones para mantener
+     * una buena proporción con los títulos y las tarjetas.
+     */
+
+    .busqueda-descripcion {
+        font-size: 0.82rem;
+    }
+}
+
+
+/* 11. ACCESIBILIDAD
+ *
+ * Esta sección contempla las preferencias de movimiento del usuario.
+ *
+ * Algunos usuarios pueden experimentar molestias o dificultades
+ * al visualizar animaciones, desplazamientos o transiciones constantes.
+ *
+ * Para contemplar esta situación, CSS ofrece la media query
+ * prefers-reduced-motion.
+ *
+ * Esta consulta permite detectar si el sistema operativo o el navegador
+ * tiene configurada una preferencia para reducir el movimiento.
+ *
+ * Cuando esa preferencia está activa, se eliminan las animaciones
+ * y transiciones de los elementos pertenecientes a la página.
+ *
+ * El objetivo es conservar la presentación y la funcionalidad general
+ * reduciendo los efectos visuales animados.
+ */
+
+@media (prefers-reduced-motion: reduce) {
+
+    /*
+     * Se seleccionan todos los elementos dentro de .busqueda-pagina,
+     * incluidos sus pseudoelementos ::before y ::after.
+     *
+     * animation: none desactiva las animaciones.
+     *
+     * transition: none elimina las transiciones entre estados visuales.
+     *
+     * scroll-behavior: auto evita el desplazamiento animado y establece
+     * el comportamiento de desplazamiento automático.
+     *
+     * !important aumenta la prioridad de estas declaraciones para
+     * evitar que otras reglas de animación o transición prevalezcan.
+     *
+     * Es importante destacar que estas reglas no eliminan elementos
+     * ni modifican la estructura de la página: únicamente reducen
+     * los efectos de movimiento.
+     */
+
+    .busqueda-pagina *,
+    .busqueda-pagina *::before,
+    .busqueda-pagina *::after {
+        animation: none !important;
+        transition: none !important;
+        scroll-behavior: auto !important;
+    }
+}

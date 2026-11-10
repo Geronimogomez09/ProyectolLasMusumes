@@ -1,17 +1,15 @@
 
-const DEFAULT_COVER = "/music/covers/sweden.jpg";
+// CATÁLOGO MUSICAL: datos locales de canciones, álbumes, listas y compositores.
+// Se usan como contenido inicial; MusicContext puede sincronizar después desde Firestore.
+// La duración se obtiene leyendo los metadatos del audio, no se define aquí.
+//
+// ÍNDICE
+// - Canciones: títulos, archivos de audio, álbumes y estado de publicación.
+// - Álbumes y listas: relaciones entre canciones y colecciones.
+// - Compositores: información y canciones relacionadas.
+// - Consultas: búsquedas por id, álbum, compositor o estado.
 
-/**
- * Catálogo local de música.
- *
- * Estructura preparada para migrar posteriormente a una base de datos.
- * La duración no se define manualmente: la obtendrá el reproductor
- * leyendo los metadatos de cada archivo de audio.
- *
- * status:
- * - published: tiene archivo de audio disponible.
- * - draft: todavía falta completar algún dato o archivo.
- */
+const DEFAULT_COVER = "/music/covers/sweden.jpg";
 
 const createSong = (
   id,
@@ -33,12 +31,12 @@ const createSong = (
   updatedAt: null,
 });
 
-// =====================================================
-// CANCIONES
-// =====================================================
+// ----------------- Canciones -----------------
+// Entradas: datos locales con id, título y ruta de audio; sin archivo quedan como borrador.
+// Salida: objetos de canción que consumen el reproductor y el catálogo musical.
 
 export const songs = [
-  // MINECRAFT - VOLUME ALPHA
+  // Minecraft - Volume Alpha
   createSong(1, "Sweden", "sweden.mp3", 1, 1, "/music/covers/sweden.jpg"),
   createSong(2, "Wet Hands", "wet-hands.mp3", 1, 1, "/music/covers/wet-hands.jpg"),
   createSong(3, "Mice on Venus", "mice-on-venus.mp3", 1, 1, "/music/covers/mice-on-venus.jpg"),
@@ -46,7 +44,7 @@ export const songs = [
   createSong(5, "Minecraft", "minecraft.mp3", 1, 1, "/music/covers/minecraft.jpg"),
   createSong(6, "Subwoofer Lullaby", "subwoofer-lullaby.mp3", 1, 1, "/music/covers/subwoofer-lullaby.jpg"),
 
-  // MINECRAFT - VOLUME BETA
+  // Minecraft - Volume Beta
   createSong(7, "Ki", "ki.mp3", 1, 2),
   createSong(8, "Alpha", "alpha.mp3", 1, 2),
   createSong(9, "Dead Voxel", "dead-voxel.mp3", 1, 2),
@@ -78,14 +76,14 @@ export const songs = [
   createSong(35, "Far", "far.mp3", 1, 2),
   createSong(36, "Intro", "intro.mp3", 1, 2),
 
-  // NETHER UPDATE
+  // Nether Update
   createSong(37, "Chrysopoeia", "chrysopoeia.mp3", 2, 3),
   createSong(38, "Rubedo", "rubedo.mp3", 2, 3),
   createSong(39, "So Below", "so-below.mp3", 2, 3),
   createSong(40, "Pigstep (Mono Mix)", "pigstep-mono.mp3", 2, 3),
   createSong(41, "Pigstep (Stereo Mix)", "pigstep-stereo.mp3", 2, 3),
 
-  // VOLUME ALPHA - CANCIONES AGREGADAS
+  // Volume Alpha - canciones agregadas
   createSong(42, "Beginning", "beginning.mp3", 1, 1),
   createSong(43, "Cat", "cat.mp3", 1, 1),
   createSong(44, "Chris", "chris.mp3", 1, 1),
@@ -105,7 +103,7 @@ export const songs = [
   createSong(58, "Oxygène", "oxygene.mp3", 1, 1),
   createSong(59, "Thirteen", "thirteen.mp3", 1, 1),
 
-  // CAVES & CLIFFS
+  // Caves & Cliffs
   createSong(60, "Stand Tall", "stand-tall.mp3", 2, 4),
   createSong(61, "Left to Bloom", "left-to-bloom.mp3", 2, 4),
   createSong(62, "Ancestry", "ancestry.mp3", 2, 4),
@@ -117,20 +115,20 @@ export const songs = [
   createSong(68, "Comforting Memories", "comforting-memories.mp3", 6, 4),
   createSong(69, "An Ordinary Day", "an-ordinary-day.mp3", 6, 4),
 
-  // THE WILD UPDATE
+  // The Wild Update
   createSong(70, "Firebugs", "firebugs.mp3", 2, 5),
   createSong(71, "Aerie", "aerie.mp3", 2, 5),
   createSong(72, "Labyrinthine", "labyrinthine.mp3", 2, 5),
   createSong(73, "Five", "five.mp3", 4, 5),
 
-  // TRAILS & TALES
+  // Trails & Tales
   createSong(74, "Echo in the Wind", "echo-in-the-wind.mp3", 5, 6),
   createSong(75, "A Familiar Room", "a-familiar-room.mp3", 5, 6),
   createSong(76, "Bromeliad", "bromeliad.mp3", 5, 6),
   createSong(77, "Crescent Dunes", "crescent-dunes.mp3", 5, 6),
   createSong(78, "Relic", "relic.mp3", 5, 6),
 
-  // TRICKY TRIALS
+  // Tricky Trials
   createSong(79, "Featherfall", "featherfall.mp3", 5, 7),
   createSong(80, "Watcher", "watcher.mp3", 5, 7),
   createSong(81, "Puzzlebox", "puzzlebox.mp3", 5, 7),
@@ -144,7 +142,7 @@ export const songs = [
   createSong(89, "Creator (Music Box Version)", "creator-music-box-version.mp3", 2, 7),
   createSong(90, "Precipice", "precipice.mp3", 5, 7),
 
-  // CHASE THE SKIES
+  // Chase the Skies
   createSong(91, "Lilypad", "lilypad.mp3", 7, 8),
   createSong(92, "Below and Above", "below-and-above.mp3", 7, 8),
   createSong(93, "O's Piano", "os-piano.mp3", 7, 8),
@@ -152,7 +150,7 @@ export const songs = [
   createSong(95, "Fireflies", "fireflies.mp3", 7, 8),
   createSong(96, "Tears", "tears.mp3", 7, 8),
 
-  // CHAOS CUBED
+  // Chaos Cubed
   createSong(97, "Memories", "memories.mp3", 8, 9),
   createSong(98, "Ebb", "ebb.mp3", 8, 9),
   createSong(99, "Home", "home.mp3", 8, 9),
@@ -160,20 +158,19 @@ export const songs = [
   createSong(101, "Nightly", "nightly.mp3", 8, 9),
   createSong(102, "Bounce", "bounce.mp3", 8, 9),
 
-  // ÁLBUMES INDIVIDUALES
+  // Álbumes individuales
   createSong(103, "11 (Music Disc)", "disc-11.mp3", 1, 11),
   createSong(104, "Axolotl", "axolotl.mp3", 1, 12),
   createSong(105, "Dragon Fish", "dragon-fish.mp3", 1, 13),
   createSong(106, "Shuniji", "shuniji.mp3", 2, 14),
   createSong(107, "Boss", "boss.mp3", 1, 15),
 
-  // LAVA CHICKEN
+  // Lava Chicken
   createSong(108, "Lava Chicken", "lava-chicken.mp3", 9, 10),
 ];
 
-// =====================================================
-// ÁLBUMES
-// =====================================================
+// ----------------- Álbumes -----------------
+// Las canciones se relacionan por albumId; más abajo se completa la lista de ids de cada álbum.
 
 const albumDefinitions = [
   {
@@ -319,7 +316,7 @@ export const albums = albumDefinitions.map((album) => ({
     .filter((song) => song.albumId === album.id)
     .map((song) => song.id),
 }));
-// Cada canción utiliza la portada de su álbum.
+// Cada canción utiliza la portada de su álbum cuando existe esa relación.
 songs.forEach((song) => {
   const album = albums.find((item) => item.id === song.albumId);
 
@@ -327,9 +324,8 @@ songs.forEach((song) => {
     song.cover = album.cover;
   }
 });
-// =====================================================
-// LISTAS DE REPRODUCCIÓN
-// =====================================================
+// ----------------- Listas de reproducción -----------------
+// Incluye listas iniciales del sitio y sus ids de canciones.
 
 export const playlists = [
   {
@@ -370,9 +366,8 @@ export const playlists = [
 },
 ];
 
-// =====================================================
-// COMPOSITORES
-// =====================================================
+// ----------------- Compositores -----------------
+// La lista final también incluye los ids de canciones y álbumes asociados.
 
 const composerDefinitions = [
   {
@@ -453,9 +448,8 @@ export const composers = composerDefinitions.map((composer) => ({
     .map((album) => album.id),
 }));
 
-// =====================================================
-// FUNCIONES DE CONSULTA
-// =====================================================
+// ----------------- Funciones de consulta -----------------
+// Reciben ids y devuelven un elemento, una lista filtrada o null si no hay coincidencia.
 
 export const getSongById = (id) =>
   songs.find((song) => song.id === Number(id)) ?? null;

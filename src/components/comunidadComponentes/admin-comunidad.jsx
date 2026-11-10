@@ -14,6 +14,10 @@ import {
 
 import "../../styles/AdminComunidad.css";
 
+// Índice: Moderación de publicaciones y denuncias.
+// ----------------- Moderación de publicaciones y denuncias -----------------
+// Recibe publicaciones y la acción para volver a Comunidad. Si el perfil tiene permiso, escucha denuncias y cuentas, y permite moderar contenido o suspender cuentas; al desmontarse, retira las escuchas.
+
 /**
  * Panel de moderación de Comunidad.
  *
@@ -49,7 +53,9 @@ const esAdmin = tienePermiso(perfil, "comunidad");
   if (!esAdmin) return null;
 
   const pendientes = denuncias.filter((d) => d.estado === "Pendiente");
-  const cuentas = usuarios.filter((u) => u.rol !== "admin");
+  const cuentas = usuarios.filter(
+    (u) => u.rol !== "admin" && u.rol !== "superadmin"
+  );
 
   // Eliminar una publicación desde el listado de contenido.
   async function borrarPublicacion(post) {

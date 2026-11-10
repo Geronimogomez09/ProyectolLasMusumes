@@ -11,6 +11,9 @@ import privacidadIcono from "../assets/iconos/ender_chest.png";
 import responsabilidadIcono from "../assets/iconos/brush.png";
 import "../styles/nosotros.css";
 
+// Índice: equipo del proyecto; pautas de comunidad; formulario de contacto; modales informativos.
+// ----------------- Equipo y pautas de la comunidad -----------------
+// Estos datos alimentan las tarjetas informativas; el componente también controla el formulario de contacto.
 const integrantes = [
     {
         numero: "01",
@@ -148,6 +151,8 @@ function Nosotros() {
         };
     }, [mensajeEnviado]);
 
+    // ----------------- Envío del formulario de contacto -----------------
+    // Recibe los campos del formulario, los envía al servicio de contacto y actualiza el mensaje de resultado.
     async function enviarFormulario(evento) {
         evento.preventDefault();
         setEnviandoFormulario(true);
@@ -200,6 +205,8 @@ function Nosotros() {
         }
     }
 
+    // ----------------- Equipo, pautas y contacto -----------------
+    // La interfaz presenta el contenido informativo y los modales de detalle y confirmación de envío.
     return (
         <div className="nosotros-page" id="top">
             <Header />

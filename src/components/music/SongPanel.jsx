@@ -2,7 +2,23 @@
 import React, { useEffect } from "react";
 import { useMusic } from "../../context/MusicContext";
 
+// ÍNDICE GENERAL
+// 1. Iconos SVG reutilizables
+// 2. Propiedades que describen la canción seleccionada
+// 3. Sincronización de apertura con el reproductor global
+// 4. Cierre por teclado y acciones de detalle
+
+// PANEL DE DETALLE DE CANCIÓN
+// Este componente recibe los datos ya relacionados por su padre: canción, compositor y
+// álbum. Sus callbacks también llegan desde fuera, por lo que el panel se concentra en
+// mostrar información y comunicar la intención de la persona usuaria. MusicContext solo
+// se usa para avisar al reproductor global si hay un detalle abierto, estado que puede
+// afectar la interfaz de reproducción.
+
 function ActionIcon({ name, className = "action-icon" }) {
+  // common reúne atributos compartidos para no repetirlos en cada SVG. El switch selecciona
+  // una figura por nombre; devolver null para un nombre desconocido evita insertar un icono
+  // incorrecto. aria-hidden comunica que estos dibujos acompañan botones con texto accesible.
   const common = {
     className,
     viewBox: "0 0 24 24",
@@ -80,9 +96,17 @@ export default function SongPanel({
   onOpenAlbum,
   onOpenComposer,
 }) {
+  // song puede ser null: esa es la señal para que el panel permanezca cerrado. Las demás
+  // propiedades describen la canción sin volver a buscarla en el catálogo. onClose,
+  // onPlay y los callbacks de navegación son responsabilidades del padre para conservar
+  // una única fuente de estado.
   const { setIsSongDetailsOpen } = useMusic();
 
-  // Sincroniza el estado compartido con la apertura del cartel.
+  // El primer efecto comunica si el panel está abierto. La limpieza se ejecuta tanto al
+  // cerrar como al desmontar, evitando que MusicContext conserve un estado abierto viejo.
+  // El segundo efecto instala un listener de teclado solo cuando hay canción. Escape
+  // invoca onClose; el return elimina exactamente el mismo listener al cambiar o cerrar,
+  // para que no queden atajos activos en una pantalla sin panel.
   useEffect(() => {
     setIsSongDetailsOpen(Boolean(song));
 

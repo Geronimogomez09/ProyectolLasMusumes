@@ -49,34 +49,131 @@ service cloud.firestore {
       return cuentaActiva() && superAdmin();
     }
 
+    function perfilAdminValido(uid) {
+      return request.resource.data.uid == uid
+        && request.resource.data.rol == 'admin'
+        && request.resource.data.estado == 'activo'
+        && request.resource.data.email is string
+        && request.resource.data.nombreUsuario is string
+        && request.resource.data.nombreUsuario.size() >= 3
+        && request.resource.data.nombreUsuario.size() <= 24
+        && request.resource.data.permisos is list
+        && request.resource.data.permisos.size() > 0
+        && request.resource.data.permisos.hasOnly([
+          'inicio',
+          'historia',
+          'versiones',
+          'comunidad',
+          'musica',
+          'tienda'
+        ])
+        && request.resource.data.keys().hasAll([
+          'uid',
+          'email',
+          'nombreUsuario',
+          'nombre',
+          'apellido',
+          'fotoPerfil',
+          'biografia',
+          'ubicacion',
+          'sitioWeb',
+          'fechaNacimiento',
+          'pais',
+          'notificaciones',
+          'rol',
+          'permisos',
+          'estado',
+          'fechaRegistro',
+          'fechaActualizacion'
+        ])
+        && request.resource.data.keys().hasOnly([
+          'uid',
+          'email',
+          'nombreUsuario',
+          'nombre',
+          'apellido',
+          'fotoPerfil',
+          'biografia',
+          'ubicacion',
+          'sitioWeb',
+          'fechaNacimiento',
+          'pais',
+          'notificaciones',
+          'rol',
+          'permisos',
+          'estado',
+          'fechaRegistro',
+          'fechaActualizacion'
+        ]);
+    }
+
     match /usuarios/{uid} {
       allow read: if logueado()
         && (request.auth.uid == uid || puedeAdministrarUsuarios());
 
-      allow create: if logueado()
+      allow create: if (
+        logueado()
         && request.auth.uid == uid
+        && request.resource.data.uid == uid
         && request.resource.data.rol == 'usuario'
+        && request.resource.data.permisos == []
         && request.resource.data.estado == 'activo'
         && request.resource.data.email == request.auth.token.email
         && request.resource.data.keys().hasOnly([
           'uid',
           'email',
           'nombreUsuario',
+          'nombre',
+          'apellido',
           'fotoPerfil',
           'biografia',
+          'ubicacion',
+          'sitioWeb',
+          'fechaNacimiento',
+          'pais',
+          'notificaciones',
           'rol',
+          'permisos',
           'estado',
-          'fechaRegistro'
-        ]);
+          'fechaRegistro',
+          'fechaActualizacion'
+        ])
+      ) || (
+        puedeAdministrarUsuarios()
+        && perfilAdminValido(uid)
+      );
 
       allow update: if puedeAdministrarUsuarios()
+        || (
+          adminDe('comunidad')
+          && resource.data.rol == 'usuario'
+          && request.resource.data.diff(resource.data)
+            .affectedKeys()
+            .hasOnly([
+              'estado',
+              'fechaActualizacion'
+            ])
+          && request.resource.data.estado in ['activo', 'suspendido']
+        )
         || (
           cuentaActiva()
           && request.auth.uid == uid
           && request.resource.data.rol == resource.data.rol
           && request.resource.data.diff(resource.data)
             .affectedKeys()
-            .hasOnly(['nombreUsuario', 'fotoPerfil', 'biografia'])
+            .hasOnly([
+              'nombreUsuario',
+              'nombre',
+              'apellido',
+              'fotoPerfil',
+              'biografia',
+              'ubicacion',
+              'sitioWeb',
+              'fechaNacimiento',
+              'pais',
+              'notificaciones',
+              'fechaActualizacion'
+            ])
         );
 
       allow delete: if puedeAdministrarUsuarios();
@@ -85,7 +182,13 @@ service cloud.firestore {
     match /usuarios/{uid}/{subcoleccion}/{documentoId} {
       allow read, create, update, delete: if cuentaActiva()
         && request.auth.uid == uid
-        && subcoleccion in ['favoritos', 'seguidos', 'playlists'];
+        && subcoleccion in [
+          'favoritos',
+          'seguidos',
+          'playlists',
+          'publicacionesGuardadas',
+          'productosFavoritos'
+        ];
     }
 
     match /publicaciones/{id} {
@@ -129,6 +232,17 @@ service cloud.firestore {
             && request.resource.data.contenido is string
             && request.resource.data.contenido.size() > 0
             && request.resource.data.contenido.size() <= 5000
+          )
+          || (
+            resource.data.autorId == request.auth.uid
+            && request.resource.data.autorId == resource.data.autorId
+            && request.resource.data.diff(resource.data)
+              .affectedKeys()
+              .hasOnly([
+                'autorNombre',
+                'fechaActualizacion'
+              ])
+            && request.resource.data.autorNombre == perfilActual().nombreUsuario
           )
           || (
             adminDe('comunidad')

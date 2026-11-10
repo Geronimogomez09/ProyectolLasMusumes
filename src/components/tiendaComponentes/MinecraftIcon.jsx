@@ -1,3 +1,7 @@
+// Índice: Iconos de Minecraft.
+// ----------------- Iconos de Minecraft -----------------
+// Recibe el nombre del icono y atributos visuales opcionales. Devuelve el icono correspondiente para reutilizarlo en la tienda.
+
 // Rutas de los recursos pixelados reutilizados por los componentes de la tienda.
 const ICONOS_MINECRAFT = {
     carrito: "/iconos/carrito.png",

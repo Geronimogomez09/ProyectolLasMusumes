@@ -32,8 +32,21 @@ import {
   updateDoc,
 } from "firebase/firestore";
 
+// ÍNDICE
+// - Catálogo y preferencias: escucha Firestore y estado del usuario autenticado.
+// - Reproducción: cola, metadatos de audio, ranking y controles de avance.
+// - Biblioteca personal: favoritos, compositores seguidos, listas y bloqueos.
+// - Errores: las lecturas y escrituras fallidas se registran en consola.
+
 const MusicContext = createContext(null);
 
+// ----------------- Lectura y normalización -----------------
+// Los documentos de Firestore se convierten al formato que usa el reproductor.
+// Estas funciones son deliberadamente pequeñas y no alteran los valores originales:
+// preparan datos consistentes antes de que cualquier componente los consuma.
+// LEER ALMACENAMIENTO LOCAL: recupera una preferencia que quedó guardada en el navegador.
+// JSON.parse puede fallar si el valor fue editado o quedó corrupto; el bloque catch evita
+// que eso rompa el reproductor y devuelve fallback, que es el estado seguro por defecto.
 const readStorage = (key, fallback) => {
   try {
     const value = localStorage.getItem(key);
@@ -43,6 +56,11 @@ const readStorage = (key, fallback) => {
   }
 };
 
+// NORMALIZAR DOCUMENTO: adapta un documento de una colección musical a la estructura
+// interna. Firestore entrega el id por separado y como texto, por eso se incorpora como
+// número. status admite el formato actual y el campo antiguo published: si no hay estado,
+// published: false equivale a borrador y todo lo demás a publicado. activo se interpreta
+// como true salvo que el documento lo haya desactivado explícitamente.
 function normalizarDocumento(documento) {
   const datos = documento.data();
 
@@ -59,6 +77,9 @@ function normalizarDocumento(documento) {
   };
 }
 
+// CONTENIDO PÚBLICO: devuelve un array nuevo que excluye borradores y registros
+// desactivados. No modifica documentos; lo usan los listeners para que el catálogo que
+// ven las personas usuarias no exponga material que el administrador retiró.
 function contenidoPublico(documentos) {
   return documentos.filter(
     (item) => item.activo && item.status === "published"
@@ -81,6 +102,9 @@ export function MusicProvider({ children }) {
   // Reproducciones acumuladas por canción.
   const [rankingCounts, setRankingCounts] = useState({});
 
+  // ----------------- Catálogo musical -----------------
+  // Escucha las colecciones públicas; al desmontarse, cancela todas las suscripciones.
+  // Si una lectura falla, guarda el error para que la interfaz pueda mostrarlo.
   useEffect(() => {
     setCatalogLoading(true);
     setCatalogError("");
@@ -121,7 +145,8 @@ export function MusicProvider({ children }) {
     };
   }, []);
 
-  // Preferencias musicales vinculadas a Firebase.
+  // ----------------- Preferencias del usuario -----------------
+  // Las listas personales se leen desde usuarios/{uid}; sin sesión se vacían.
   const [favorites, setFavorites] = useState([]);
   const [followingComposers, setFollowingComposers] = useState([]);
   const [userPlaylists, setUserPlaylists] = useState([]);
@@ -231,7 +256,8 @@ export function MusicProvider({ children }) {
   const [repeatMode, setRepeatMode] = useState("off");
   const [songDurations, setSongDurations] = useState({});
 
-  // Obtener la portada del álbum.
+  // ----------------- Reproducción y metadatos -----------------
+  // La portada del álbum reemplaza la portada individual cuando está disponible.
   const aplicarPortadaAlbum = useCallback(
     (song) => {
       if (!song) return song;
@@ -319,7 +345,7 @@ export function MusicProvider({ children }) {
     };
   }, [songs]);
 
-  // Registrar una reproducción en Firestore.
+  // Una reproducción autenticada incrementa el ranking; los errores no detienen el audio.
   const registrarReproduccion = useCallback(
     (songOrId) => {
       const songId = Number(
@@ -372,7 +398,8 @@ export function MusicProvider({ children }) {
     [favorites]
   );
 
-  // Favoritos.
+  // ----------------- Acciones de biblioteca -----------------
+  // Las escrituras requieren sesión; si Firestore falla, se informa en consola.
   const toggleFavorite = useCallback(
     async (songOrId) => {
       const id = Number(
@@ -422,7 +449,6 @@ export function MusicProvider({ children }) {
     [followingComposers]
   );
 
-  // Seguir compositores.
   const toggleFollowComposer = useCallback(
     async (composerOrId) => {
       const id = Number(
@@ -459,7 +485,7 @@ export function MusicProvider({ children }) {
     [followingComposers, uid]
   );
 
-  // Crear playlist personal.
+  // Las listas personales y sus canciones se guardan en la subcolección del usuario.
   const createUserPlaylist = useCallback(
     async (playlistData) => {
       if (!uid) return null;
@@ -490,7 +516,6 @@ export function MusicProvider({ children }) {
     [uid]
   );
 
-  // Editar playlist personal.
   const updateUserPlaylist = useCallback(
     async (playlistId, changes) => {
       if (!uid || !playlistId) return;
@@ -510,7 +535,6 @@ export function MusicProvider({ children }) {
     [uid]
   );
 
-  // Eliminar playlist personal.
   const deleteUserPlaylist = useCallback(
     async (playlistId) => {
       if (!uid || !playlistId) return;
@@ -526,7 +550,6 @@ export function MusicProvider({ children }) {
     [uid]
   );
 
-  // Agregar canción a playlist.
   const addSongToUserPlaylist = useCallback(
     async (playlistId, songOrId) => {
       const songId = Number(
@@ -552,7 +575,6 @@ export function MusicProvider({ children }) {
     [uid]
   );
 
-  // Quitar canción de playlist.
   const removeSongFromUserPlaylist = useCallback(
     async (playlistId, songOrId) => {
       const songId = Number(
@@ -578,7 +600,7 @@ export function MusicProvider({ children }) {
     [uid]
   );
 
-  // Bloquear o desbloquear canción.
+  // Los bloqueos se guardan localmente y también detienen la canción activa si coincide.
   const toggleBlocked = useCallback((songOrId) => {
     const id = Number(
       typeof songOrId === "object"
@@ -599,7 +621,8 @@ export function MusicProvider({ children }) {
     );
   }, []);
 
-  // Reproducir canción individual.
+  // ----------------- Cola y controles del reproductor -----------------
+  // Solo reproduce canciones disponibles y no bloqueadas; registra el inicio en el ranking.
   const playSong = useCallback(
     (songOrId, collection = songsWithAlbumCover) => {
       const song = aplicarPortadaAlbum(
@@ -654,7 +677,7 @@ export function MusicProvider({ children }) {
     ]
   );
 
-  // Reproducir colección.
+  // Crea una cola desde una colección y, si se solicita, mezcla su orden.
   const playCollection = useCallback(
     (collection, options = {}) => {
       let orderedQueue = (collection || [])
@@ -689,7 +712,7 @@ export function MusicProvider({ children }) {
     [blockedSongs, aplicarPortadaAlbum, registrarReproduccion]
   );
 
-  // Siguiente canción.
+  // Avanza según repetición y mezcla; ignora canciones bloqueadas.
   const playNext = useCallback(
     (fromEnded = false) => {
       if (!queue.length || !currentSong) return;
@@ -761,7 +784,7 @@ export function MusicProvider({ children }) {
     ]
   );
 
-  // Canción anterior.
+  // Retrocede buscando una canción que no esté bloqueada.
   const playPrevious = useCallback(() => {
     if (!queue.length || !currentSong) return;
 
@@ -781,7 +804,8 @@ export function MusicProvider({ children }) {
     }
   }, [queue, currentSong, blockedSongs, registrarReproduccion]);
 
-  // Canciones disponibles y favoritas.
+  // ----------------- Datos derivados y salida del proveedor -----------------
+  // Expone catálogo, estado y acciones a los componentes dentro de MusicProvider.
   const availableSongs = useMemo(
     () =>
       songsWithAlbumCover.filter(

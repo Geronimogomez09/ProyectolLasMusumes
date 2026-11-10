@@ -1,4 +1,11 @@
-// Productos de muestra para la migración o restauración de la tienda.
+// PRODUCTOS DE MUESTRA: datos de respaldo para migrar o restaurar la tienda.
+//
+// ÍNDICE
+// - Talles y stock: crea, normaliza y suma existencias por talle.
+// - Productos y categorías: contenido inicial y nombres válidos para mostrar o filtrar.
+
+// ----------------- Talles y stock -----------------
+// Las funciones reciben las cantidades existentes y devuelven un stock compatible por talle.
 export const TALLES_ROPA = ["S", "M", "L", "XL", "XXL"];
 
 export function crearStockPorTalle(stockInicial = 0) {
@@ -22,6 +29,8 @@ export function totalStockPorTalle(talles) {
     return TALLES_ROPA.reduce((total, talle) => total + Number(talles[talle] || 0), 0);
 }
 
+// ----------------- Productos iniciales -----------------
+// Registros de ejemplo que se usan cuando se carga o restaura el catálogo.
 export const productosIniciales = [
     {
         id: 1,
@@ -74,7 +83,8 @@ export const productosIniciales = [
     }
 ];
 
-// Cada par contiene [categoría guardada y usada para filtrar, etiqueta visible].
+// ----------------- Categorías -----------------
+// Cada par contiene [valor guardado y usado para filtrar, etiqueta visible].
 export const categorias = [
     ["Todas", "Todos"],
     ["Ropa", "Ropa"],
@@ -86,7 +96,7 @@ export const categorias = [
     ["Otros", "Otros"]
 ];
 
-// Convierte categorías anteriores al nuevo nombre para no perder compatibilidad con Firebase.
+// Acepta nombres antiguos de Firebase y devuelve la categoría actual equivalente.
 export function normalizarCategoriaProducto(categoria) {
     const equivalencias = {
         Tazas: "Objetos",

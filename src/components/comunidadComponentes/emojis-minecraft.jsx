@@ -1,6 +1,10 @@
 
 import React from "react";
 
+// Índice: Emojis de Minecraft en el texto.
+// ----------------- Emojis de Minecraft en el texto -----------------
+// Recibe un texto y devuelve su representación con los códigos de emoji convertidos en elementos visuales. Se reutiliza al mostrar contenido de Comunidad.
+
 // ==========================================
 // EMOJIS MINECRAFT
 // Las imágenes están en src/assets/iconos/

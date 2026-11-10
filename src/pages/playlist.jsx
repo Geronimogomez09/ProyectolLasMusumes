@@ -9,7 +9,23 @@ import SongPanel from "../components/music/SongPanel";
 import "../styles/playlist.css";
 import "../styles/musica.css";
 
+// ÍNDICE GENERAL
+// 1. Lista seleccionada desde la URL
+// 2. Lista de sistema y lista común
+// 3. Canciones reproducibles tras aplicar bloqueos
+// 4. Reproducción de una fila o de la colección completa
+// 5. Panel de detalles, favoritos y navegación
+
+// PÁGINA DE LISTA DE REPRODUCCIÓN
+// Una playlist común guarda IDs de canciones. La playlist system es una excepción: su
+// contenido se calcula a partir de los favoritos del usuario actual. Por eso la página
+// resuelve cada id contra el catálogo antes de dibujar una fila y descarta referencias
+// que ya no existan. MusicContext conserva tanto el reproductor como las preferencias.
 function Playlist() {
+  // selectedSong abre/cierra el panel de una canción sin modificar la cola. playlistSongs
+  // construye la colección concreta: map traduce IDs en objetos de canción y filter(Boolean)
+  // elimina undefined. playableSongs aplica después el bloqueo personal, así el botón de
+  // reproducir nunca introduce a propósito una canción que la persona eligió ocultar.
   const { id } = useParams();
   const navigate = useNavigate();
   const [selectedSong, setSelectedSong] = useState(null);
@@ -64,6 +80,8 @@ function Playlist() {
   const getAlbum = (song) =>
     albums.find((item) => item.id === song?.albumId);
 
+  // ----------------- Canciones y reproducción -----------------
+  // Las filas usan los controles globales de Música; el panel permite ver datos y abrir elementos relacionados.
   return (
     <>
       <Header />

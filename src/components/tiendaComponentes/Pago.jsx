@@ -3,6 +3,10 @@ import { useState } from "react";
 import MinecraftIcon from "./MinecraftIcon";
 import "../../styles/tienda.css";
 
+// Índice: Datos de entrega y pago.
+// ----------------- Datos de entrega y pago -----------------
+// Recibe el carrito y las acciones para cerrar el pago o vaciarlo. Guía el formulario de entrega, la elección del medio de pago y la confirmaci?n del pedido.
+
 // Flujo de compra de demostración: datos de entrega, elección de pago y confirmación.
 export default function Pago({
     carrito,
