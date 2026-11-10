@@ -223,6 +223,17 @@ service cloud.firestore {
             && request.resource.data.contenido.size() <= 5000
           )
           || (
+            resource.data.autorId == request.auth.uid
+            && request.resource.data.autorId == resource.data.autorId
+            && request.resource.data.diff(resource.data)
+              .affectedKeys()
+              .hasOnly([
+                'autorNombre',
+                'fechaActualizacion'
+              ])
+            && request.resource.data.autorNombre == perfilActual().nombreUsuario
+          )
+          || (
             adminDe('comunidad')
             && request.resource.data.diff(resource.data)
               .affectedKeys()

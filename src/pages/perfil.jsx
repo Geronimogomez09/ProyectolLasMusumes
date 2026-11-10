@@ -18,6 +18,7 @@ import { SECCIONES_ADMIN, esSuperAdmin, tienePermiso } from "../utils/permisos";
 import {
   COLECCIONES,
   actualizarDocumento,
+  actualizarNombrePublicaciones,
   escucharPorCampo,
   escucharProductos,
   escucharPublicaciones,
@@ -194,6 +195,7 @@ export default function Perfil() {
   const [guardando, setGuardando] = useState(false);
   const [mensaje, setMensaje] = useState("");
   const [error, setError] = useState("");
+  const [nombrePublicacionesPendiente, setNombrePublicacionesPendiente] = useState(false);
 
   // 6.1. ESTADOS PARA LOS DATOS OBTENIDOS DE FIRESTORE
   // Estos estados almacenan colecciones que se reciben desde el servicio firestore.js.
@@ -545,6 +547,11 @@ export default function Perfil() {
     // y puede utilizarlo para reflejar que la operación está en curso.
     setGuardando(true);
 
+    let perfilGuardado = false;
+    const cambiaNombreUsuario =
+      cambios.nombreUsuario !== undefined &&
+      cambios.nombreUsuario !== perfil.nombreUsuario;
+
     try {
       // 16.3. ENVÍO DE LA ACTUALIZACIÓN A FIRESTORE
       // actualizarDocumento recibe tres argumentos:
@@ -556,6 +563,16 @@ export default function Perfil() {
       // Si la promesa se resuelve correctamente, se ejecutan las instrucciones siguientes.
       // Si se rechaza por un error, la ejecución pasa directamente al bloque catch.
       await actualizarDocumento(COLECCIONES.usuarios, usuario.uid, cambios);
+      perfilGuardado = true;
+
+      if (cambiaNombreUsuario) setNombrePublicacionesPendiente(true);
+      if (cambiaNombreUsuario || nombrePublicacionesPendiente) {
+        await actualizarNombrePublicaciones(
+          usuario.uid,
+          cambios.nombreUsuario || perfil.nombreUsuario
+        );
+        setNombrePublicacionesPendiente(false);
+      }
 
       // 16.4. RESPUESTA CUANDO EL GUARDADO FINALIZA CORRECTAMENTE
       // Se cierra el modo de edición para volver a mostrar los datos en modo lectura.
@@ -569,7 +586,11 @@ export default function Perfil() {
       // la revisión técnica del problema.
       // setError() guarda un mensaje más sencillo para que lo vea el usuario.
       console.error(err);
-      setError("No pudimos guardar los cambios. Revisá tu conexión e intentá de nuevo.");
+      setError(
+        perfilGuardado
+          ? "Guardamos tu perfil, pero no pudimos actualizar el nombre en tus publicaciones. Volvé a guardar para reintentarlo."
+          : "No pudimos guardar los cambios. Revisá tu conexión e intentá de nuevo."
+      );
     } finally {
       // 16.6. FINALIZACIÓN DEL ESTADO DE GUARDADO
       // finally se ejecuta tanto si la operación tuvo éxito como si ocurrió un error.
