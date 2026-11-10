@@ -79,6 +79,7 @@ export const COLECCIONES = {
   albumes: "albumes",
   compositores: "compositores",
   playlists: "playlists",
+  historia: "historia",
 };
 
 // 3. OPERACIONES GENERALES: LECTURA DE DOCUMENTOS
@@ -434,6 +435,50 @@ export async function importarDocumentos(nombreColeccion, items) {
 
   // Envía y procesa el paquete completo.
   await lote.commit();
+}
+
+export async function inicializarDocumentosSiVacia(nombreColeccion, items) {
+  const resultado = await getDocs(collection(db, nombreColeccion));
+  if (!resultado.empty) return false;
+
+  await importarDocumentos(nombreColeccion, items);
+  return true;
+}
+
+export async function reemplazarDocumentos(nombreColeccion, items) {
+  const actuales = await getDocs(collection(db, nombreColeccion));
+  const idsNuevos = new Set(items.map(({ id }) => String(id)));
+  const operaciones = [];
+
+  actuales.docs.forEach((documento) => {
+    if (!idsNuevos.has(documento.id)) {
+      operaciones.push({ tipo: "eliminar", referencia: documento.ref });
+    }
+  });
+
+  items.forEach(({ id, ...datos }) => {
+    operaciones.push({
+      tipo: "guardar",
+      referencia: doc(db, nombreColeccion, String(id)),
+      datos: {
+        ...datos,
+        fechaCreacion: serverTimestamp(),
+        fechaActualizacion: serverTimestamp(),
+      },
+    });
+  });
+
+  for (let inicio = 0; inicio < operaciones.length; inicio += 450) {
+    const lote = writeBatch(db);
+    operaciones.slice(inicio, inicio + 450).forEach((operacion) => {
+      if (operacion.tipo === "eliminar") {
+        lote.delete(operacion.referencia);
+      } else {
+        lote.set(operacion.referencia, operacion.datos);
+      }
+    });
+    await lote.commit();
+  }
 }
 
 // Propósito: Agregar o quitar un elemento de un array (lista interna) adentro de un documento,
