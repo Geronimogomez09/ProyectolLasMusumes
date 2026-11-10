@@ -4,8 +4,8 @@
 
 // IMÁGENES INICIO (components/inicio/imagenesInicio.jsx): busca imágenes y iconos de la
 // página de Inicio y los muestra con una imagen de respaldo si algo falla.
-// PARA QUÉ SE USA: TarjetaSeccion, TarjetaNovedad, ConstruccionesInicio, DestacadoInicio,
-// HeroInicio y ModalAdminInicio.
+// PARA QUÉ SE USA: TarjetaSeccion, TarjetaNovedad, ConstruccionesInicio, HeroInicio
+// y ModalAdminInicio.
 // DE DÓNDE SALEN: todos los archivos de src/assets (los iconos están en src/assets/iconos).
 // Además acepta URLs completas (https://...) y rutas que empiezan con "/".
 

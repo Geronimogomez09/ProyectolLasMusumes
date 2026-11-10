@@ -1,3 +1,164 @@
+/*
+Este archivo contiene la pantalla principal de la tienda de Wiki-Craft. No es
+solamente una lista de productos: coordina el catálogo público, el carrusel de
+banners, el detalle de cada producto, el carrito y las herramientas de
+administración.
+
+CÓMO SE ORGANIZA EL ARCHIVO
+---------------------------
+1. IMPORTACIONES
+   React aporta useState, useEffect y useMemo:
+   - useState conserva información que puede cambiar mientras se usa la página.
+   - useEffect ejecuta tareas relacionadas con el ciclo de vida: escuchar Firebase,
+     iniciar temporizadores y registrar eventos del navegador.
+   - useMemo conserva un resultado calculado y lo vuelve a calcular cuando cambian
+     sus dependencias.
+
+   Los componentes Header, Footer, TarjetaProducto, ControlesTienda,
+   CategoriasTienda, AdministrarProductos, Carrito, BotonAdmin y DetalleProducto
+   separan partes de la interfaz. Tienda les pasa información y funciones mediante
+   props; los componentes hijos no necesitan duplicar toda la lógica de esta página.
+
+   useAuth obtiene el perfil de la sesión. tienePermiso comprueba si ese perfil
+   puede administrar la tienda. useGuardados administra los productos favoritos.
+   Las funciones importadas desde firestore.js son la conexión entre esta pantalla
+   y la base de datos Firestore.
+
+2. BANNERS PREDETERMINADOS
+   slidesBanner es el contenido de respaldo del carrusel. Cada elemento es un objeto
+   con textos e imagen. Se usa cuando todavía no llegaron banners desde Firestore
+   o cuando se inicializa una tienda vacía.
+
+3. BANNERTIENDA
+   Es un componente independiente que muestra el carrusel público.
+   - slideActual indica qué posición se está mostrando.
+   - transicionActiva decide si el movimiento tiene animación CSS.
+   - slidesCarrusel agrega una copia del último banner al principio y una copia del
+     primero al final. Esas copias permiten simular un carrusel infinito.
+   - setInterval cambia de banner cada cinco segundos.
+   - setTimeout y requestAnimationFrame permiten saltar de las copias a los banners
+     reales sin que el salto técnico se vea animado.
+   - moverSlide responde a las flechas y limita el índice para que no se salga del
+     rango disponible.
+   - finalizarTransicion es una segunda protección para corregir el índice cuando
+     termina una transición en uno de los extremos.
+
+4. ADMINISTRARBANNERS
+   Es el panel que permite crear, modificar y eliminar banners.
+   - formularioInicial define la forma de los datos que se editan.
+   - form conserva los valores escritos en los campos.
+   - bannerEditando guarda el ID del banner que se está modificando. Si vale null,
+     el formulario está creando uno nuevo.
+   - busquedaProducto permite buscar un producto para asociarlo al botón del banner.
+   - guardando evita presentar el formulario como disponible mientras se guarda.
+   - cambiarCampo actualiza una propiedad del formulario según el atributo name
+     del input o textarea.
+   - guardarBanner decide entre crear y modificar, y después limpia el formulario.
+   - editarBanner carga los datos de un banner existente en el formulario.
+   - borrarBanner pide confirmación y evita que la lista quede sin ningún banner.
+
+5. MIGRACIÓN DE DATOS LOCALES
+   cargarProductos y cargarBanners leen respaldos antiguos de localStorage.
+   localStorage guarda texto en el navegador, por eso JSON.parse convierte ese texto
+   en arrays u objetos de JavaScript. JSON.stringify realiza el proceso inverso.
+   Estas funciones sirven como compatibilidad con datos de una versión anterior;
+   no reemplazan la sincronización normal con Firestore.
+
+6. COMPONENTE TIENDA Y ESTADOS
+   Tienda es el componente principal. Sus estados son la memoria de trabajo de esta
+   pantalla:
+   - productos: catálogo recibido desde Firestore.
+   - banners: banners recibidos desde Firestore.
+   - restaurandoTienda: indica que se está guardando o restaurando una copia.
+   - administradorAbierto: indica si el panel administrativo está desplegado.
+   - carrito: array de unidades agregadas por la persona.
+   - busqueda: texto escrito en el buscador.
+   - categoriaActiva: categoría seleccionada.
+   - carritoAbierto: controla la visibilidad del carrito.
+   - productoDetalleId: ID del producto solicitado en la URL.
+
+   Un estado no es una variable común: al cambiar mediante su función set..., React
+   vuelve a renderizar el componente para reflejar el nuevo valor en la pantalla.
+
+7. PERMISOS Y FIRESTORE
+   useAuth entrega perfil. tienePermiso(perfil, "tienda") produce puedeAdministrar.
+   El efecto de sincronización llama a escucharProductos y escucharHeroes. Estas
+   funciones mantienen la pantalla actualizada cuando cambian documentos remotos.
+   Devuelven funciones canceladoras, que se ejecutan al desmontar el componente o
+   cuando cambia puedeAdministrar. La inicialización de una tienda vacía solo se
+   intenta desde una sesión con permiso de administración.
+
+8. DETALLE MEDIANTE HASH
+   El hash es la parte de la URL que aparece después de #. Esta pantalla usa
+   #producto=ID para abrir un producto sin crear una ruta nueva.
+   hashchange es un evento del navegador que se dispara cuando cambia ese fragmento.
+   leerHash interpreta el ID y lo guarda en productoDetalleId. Después, find busca
+   el objeto completo dentro del array productos.
+
+9. BÚSQUEDA Y FILTROS
+   productosFiltrados parte de los productos activos y aplica la categoría elegida.
+   productosEncontrados busca por nombre y se usa para las sugerencias rápidas.
+   filter devuelve un array nuevo con los elementos que cumplen una condición.
+   find devuelve el primer elemento que coincide.
+   includes comprueba si un texto contiene otro texto.
+   useMemo evita repetir estos cálculos mientras sus datos de entrada no cambien.
+
+10. CARRITO
+    agregarCarrito agrega una unidad al array.
+    agregarDesdeDetalle agrega tantas copias del producto como indique cantidad y,
+    si se eligió un talle, agrega esa propiedad a cada unidad.
+    quitarCarrito usa filter y el índice para eliminar una sola unidad, incluso si
+    hay varias unidades del mismo producto.
+    El carrito vive en el estado de Tienda y se pasa al componente Carrito mediante
+    props. En este archivo no se está persistiendo el carrito en Firestore.
+
+11. OPERACIONES ADMINISTRATIVAS
+    agregarProducto, modificarProducto y eliminarProducto delegan las escrituras
+    en las funciones importadas desde firestore.js. Antes verifican puedeAdministrar.
+    Las funciones de banners hacen lo mismo con crearHero, actualizarHero y eliminarHero.
+    guardarProductosActuales crea/actualiza la copia predeterminada con el catálogo
+    actual. restaurarProductosGuardados reemplaza el catálogo por esa copia.
+    Ambas operaciones usan confirmaciones, try/catch/finally y el estado
+    restaurandoTienda para evitar acciones repetidas y comunicar errores.
+
+12. RENDERIZADO FINAL
+    Si mostrandoDetalle es false, se dibuja el catálogo, el banner, las categorías,
+    las tarjetas y, si corresponde, el administrador.
+    Si mostrandoDetalle es true, se dibuja DetalleProducto.
+    Header y Footer permanecen en ambas vistas.
+    BotonAdmin solo aparece si el usuario tiene permiso y no está en la vista detalle.
+    Carrito se monta al final del componente y recibe el estado y las funciones para
+    abrirlo, cerrarlo, quitar unidades o vaciarlo.
+
+OPERADORES Y EXPRESIONES IMPORTANTES
+------------------------------------
+- === compara igualdad estricta: compara valor y tipo sin convertirlos.
+- !== significa "distinto de".
+- && significa AND lógico: ambas condiciones deben ser verdaderas.
+- || significa OR lógico: alcanza con que una condición sea verdadera.
+- ! niega una condición booleana.
+- ?. accede a una propiedad o método solo si el valor anterior no es null ni undefined.
+- ?? usa el valor de la derecha solamente cuando el de la izquierda es null o undefined.
+- ... copia o expande elementos de un array/objeto (spread).
+- => crea una función flecha.
+- async permite usar await dentro de una función.
+- await espera el resultado de una operación asíncrona antes de continuar.
+- return entrega un resultado o termina la función.
+- map transforma cada elemento de un array en otro resultado.
+- filter conserva solamente los elementos que cumplen una condición.
+- find busca y devuelve el primer elemento coincidente.
+- some devuelve true si al menos un elemento cumple la condición.
+- trim elimina espacios al principio y al final de un texto.
+- toLocaleLowerCase("es") convierte texto a minúsculas usando reglas del español.
+
+IMPORTANTE
+----------
+Los comentarios explican el código; no cambian su ejecución. Se conserva el código
+original debajo de esta guía para que puedas consultarlo y compararlo sin que se
+haya modificado su comportamiento.
+================================================================================
+*/
+
 
 import { useEffect, useMemo, useState } from "react";
 
