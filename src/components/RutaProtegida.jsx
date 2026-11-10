@@ -1,5 +1,5 @@
 
-import { Navigate } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { esSuperAdmin, tienePermiso } from "../utils/permisos";
 
@@ -46,6 +46,7 @@ function RutaProtegida({
                         Tu cuenta no puede acceder a Wiki-Craft.
                         Contactá con la administración.
                     </p>
+                    <Link to="/login">Volver a la pantalla de acceso</Link>
                 </section>
             </main>
         );

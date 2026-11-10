@@ -145,6 +145,17 @@ service cloud.firestore {
 
       allow update: if puedeAdministrarUsuarios()
         || (
+          adminDe('comunidad')
+          && resource.data.rol == 'usuario'
+          && request.resource.data.diff(resource.data)
+            .affectedKeys()
+            .hasOnly([
+              'estado',
+              'fechaActualizacion'
+            ])
+          && request.resource.data.estado in ['activo', 'suspendido']
+        )
+        || (
           cuentaActiva()
           && request.auth.uid == uid
           && request.resource.data.rol == resource.data.rol

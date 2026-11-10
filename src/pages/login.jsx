@@ -27,7 +27,7 @@ export default function Login() {
 
   // USUARIO YA LOGUEADO: si hay sesión y perfil, va al inicio. Es lo que lleva al usuario
   // al inicio después de entrar o registrarse (AuthContext vuelve a montar la app al cambiar la sesión).
-  if (usuario && perfil) {
+  if (usuario && perfil && perfil.estado !== "suspendido") {
     return <Navigate to="/" replace />;
   }
 
@@ -58,6 +58,13 @@ export default function Login() {
                 Tu próxima aventura empieza acá
               </span>
             </div>
+
+            {perfil?.estado === "suspendido" && (
+              <div className="alert alert-warning" role="alert">
+                Esta cuenta está suspendida. Podés iniciar sesión con otra cuenta o
+                contactar a la administración para solicitar la reactivación.
+              </div>
+            )}
 
             {/* FORMULARIO: login o registro según la vista. */}
             {vista === "login" ? (
