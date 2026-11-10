@@ -21,6 +21,7 @@ function ModalEvento({ inicial, eraInicial, onGuardar, onCerrar }) {
             : { ...VACIO, era: eraInicial || ERAS[0].id }
     );
     const [error, setError] = useState('');
+    const [guardando, setGuardando] = useState(false);
     const primerCampo = useRef(null);
 
     // Cierra con Escape y bloquea el scroll de la página.
@@ -36,8 +37,9 @@ function ModalEvento({ inicial, eraInicial, onGuardar, onCerrar }) {
     };
 
     // ENVIAR: valida los campos y, si está todo bien, entrega el hito a la página.
-    function enviar(ev) {
+    async function enviar(ev) {
         ev.preventDefault();
+        if (guardando) return;
         if (!d.titulo.trim()) return setError('Escribí un título para el hito.');
         if (!/^\d{4}-\d{2}-\d{2}$/.test(d.fecha)) return setError('Elegí una fecha válida.');
         if (!d.descripcion.trim()) return setError('Agregá una descripción.');
@@ -45,20 +47,28 @@ function ModalEvento({ inicial, eraInicial, onGuardar, onCerrar }) {
             return setError('La imagen tiene que ser un enlace que empiece con http:// o https://');
         }
 
-        onGuardar({
-            id: inicial?.id,
-            era: d.era,
-            fecha: d.fecha,
-            fechaTexto: d.fechaTexto.trim() || formatearFecha(d.fecha),
-            tipo: d.tipo,
-            version: d.version.trim(),
-            titulo: d.titulo.trim(),
-            descripcion: d.descripcion.trim(),
-            puntos: d.puntosTexto.split('\n').map((p) => p.trim()).filter(Boolean),
-            imagen: d.imagen.trim(),
-            ajuste: d.ajuste,
-            destacada: d.destacada,
-        });
+        setGuardando(true);
+        try {
+            await onGuardar({
+                id: inicial?.id,
+                era: d.era,
+                fecha: d.fecha,
+                fechaTexto: d.fechaTexto.trim() || formatearFecha(d.fecha),
+                tipo: d.tipo,
+                version: d.version.trim(),
+                titulo: d.titulo.trim(),
+                descripcion: d.descripcion.trim(),
+                puntos: d.puntosTexto.split('\n').map((p) => p.trim()).filter(Boolean),
+                imagen: d.imagen.trim(),
+                ajuste: d.ajuste,
+                destacada: d.destacada,
+            });
+        } catch (error) {
+            console.error('No se pudo guardar el hito en Firestore:', error);
+            setError('No se pudo guardar el hito en Firebase. Revisá tu conexión e intentá de nuevo.');
+        } finally {
+            setGuardando(false);
+        }
     }
 
     return (
@@ -229,9 +239,9 @@ function ModalEvento({ inicial, eraInicial, onGuardar, onCerrar }) {
                 </div>
 
                 <div className="inicio-modal-pie">
-                    <button type="button" className="inicio-btn-secundario" onClick={onCerrar}>Cancelar</button>
-                    <button type="submit" className="inicio-btn-principal">
-                        {inicial ? 'Guardar cambios' : 'Agregar hito'}
+                    <button type="button" className="inicio-btn-secundario" onClick={onCerrar} disabled={guardando}>Cancelar</button>
+                    <button type="submit" className="inicio-btn-principal" disabled={guardando}>
+                        {guardando ? 'Guardando...' : inicial ? 'Guardar cambios' : 'Agregar hito'}
                     </button>
                 </div>
             </form>

@@ -8,7 +8,7 @@ import { useModal } from './ayudasHistoria';
 // un texto de aviso y los botones "Cancelar" y el de confirmar (por ejemplo "Eliminar" o
 // "Restaurar"). Se usa para eliminar un hito y para restaurar los hitos originales.
 // Recibe: titulo, texto, textoBoton, onConfirmar, onCerrar. Se usa en historia.jsx.
-function ModalConfirmar({ titulo, texto, textoBoton, onConfirmar, onCerrar }) {
+function ModalConfirmar({ titulo, texto, textoBoton, error, onConfirmar, onCerrar }) {
     // Cierra con Escape y bloquea el scroll de la página.
     useModal(onCerrar);
 
@@ -28,6 +28,7 @@ function ModalConfirmar({ titulo, texto, textoBoton, onConfirmar, onCerrar }) {
                 </div>
                 <div className="inicio-modal-cuerpo">
                     <p className="inicio-modal-texto">{texto}</p>
+                    {error && <p className="inicio-campo-error" role="alert">{error}</p>}
                 </div>
                 <div className="inicio-modal-pie">
                     <button type="button" className="inicio-btn-secundario" onClick={onCerrar}>Cancelar</button>

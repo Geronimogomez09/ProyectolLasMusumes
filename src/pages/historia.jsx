@@ -39,6 +39,14 @@ import ModalConfirmar from '../components/historia/ModalConfirmar';
 // Importamos utilidades y datos iniciales predefinidos[cite: 13].
 import { porFecha, desplazarA } from '../components/historia/ayudasHistoria';
 import { ERAS, EVENTOS_INICIALES } from '../data/historiaData';
+import {
+    COLECCIONES,
+    crearDocumento,
+    eliminarDocumento,
+    escucharDocumentos,
+    inicializarDocumentosSiVacia,
+    reemplazarDocumentos,
+} from '../services/firestore';
 
 // Importamos el contexto de autenticación para verificar permisos de usuario[cite: 13].
 import { useAuth } from '../context/AuthContext';
@@ -76,6 +84,8 @@ function Historia({ eventos: eventosProp }) {
     // Inicializa la lista de eventos con una jerarquía de prioridades:
     // 1. Propiedades recibidas (eventosProp), 2. Datos locales (leerGuardado), 3. Datos duros (EVENTOS_INICIALES)[cite: 13].
     const [eventos, setEventos] = useState(() => eventosProp || leerGuardado() || EVENTOS_INICIALES);
+    const [errorPersistencia, setErrorPersistencia] = useState('');
+    const inicializacionEnCursoRef = useRef(false);
     
     // Obtiene el perfil del usuario activo para evaluar sus capacidades[cite: 13].
     const { perfil } = useAuth();
@@ -106,7 +116,7 @@ function Historia({ eventos: eventosProp }) {
     // Memoriza la función de cierre para no recrearla innecesariamente en la memoria[cite: 13].
     const cerrarModal = useCallback(() => setModal(null), []);
 
-    // 5. EFECTOS: PROTECCIÓN DE RUTAS Y GUARDADO LOCAL
+    // 5. EFECTOS: PROTECCIÓN DE RUTAS Y SINCRONIZACIÓN CON FIREBASE
 
     // Efecto de seguridad: Si mientras está navegando el usuario pierde el permiso, 
     // se le cierra forzosamente el modo administrador y cualquier modal abierto[cite: 13].
@@ -117,8 +127,46 @@ function Historia({ eventos: eventosProp }) {
         }
     }, [puedeAdministrar]);
 
-    // Efecto de persistencia: Cada vez que el array 'eventos' muta (por edición, creación o borrado),
-    // se guarda automáticamente una copia actualizada en el localStorage del navegador[cite: 13].
+    useEffect(() => {
+        if (eventosProp) return undefined;
+
+        return escucharDocumentos(
+            COLECCIONES.historia,
+            (documentos) => {
+                if (documentos.length === 0) {
+                    setEventos(leerGuardado() || EVENTOS_INICIALES);
+
+                    if (puedeAdministrar && !inicializacionEnCursoRef.current) {
+                        inicializacionEnCursoRef.current = true;
+                        inicializarDocumentosSiVacia(
+                            COLECCIONES.historia,
+                            leerGuardado() || EVENTOS_INICIALES
+                        ).catch((error) => {
+                            console.error('No se pudo inicializar la historia en Firestore:', error);
+                            setErrorPersistencia('No se pudieron inicializar los hitos en Firebase.');
+                        });
+                    }
+                    return;
+                }
+
+                setErrorPersistencia('');
+                setEventos(documentos.map((evento) => {
+                    const idNumerico = Number(evento.id);
+                    return {
+                        ...evento,
+                        id: Number.isSafeInteger(idNumerico) ? idNumerico : evento.id,
+                    };
+                }));
+            },
+            {},
+            (error) => {
+                console.error('No se pudieron cargar los hitos desde Firestore:', error);
+                setErrorPersistencia('No se pudo cargar la historia desde Firebase.');
+            }
+        );
+    }, [eventosProp, puedeAdministrar]);
+
+    // Guarda una copia local para conservar la historia visible si Firebase no está disponible.
     useEffect(() => {
         try { window.localStorage.setItem(CLAVE_GUARDADO, JSON.stringify(eventos)); } catch { /* sin storage */ }
     }, [eventos]);
@@ -168,7 +216,11 @@ function Historia({ eventos: eventosProp }) {
                     if (!en.isIntersecting) return;
                     // Extrae los atributos de datos HTML (data-era y data-evento) del nodo visible[cite: 13].
                     const era = en.target.dataset.era;
-                    const evento = en.target.dataset.evento ? Number(en.target.dataset.evento) : null;
+                    const eventoDato = en.target.dataset.evento;
+                    const eventoNumero = Number(eventoDato);
+                    const evento = eventoDato
+                        ? (Number.isSafeInteger(eventoNumero) ? eventoNumero : eventoDato)
+                        : null;
                     // Actualiza el estado de la zona actual[cite: 13].
                     setZona((previa) => (previa.era === era && previa.evento === evento ? previa : { era, evento }));
                 });
@@ -250,35 +302,41 @@ function Historia({ eventos: eventosProp }) {
     // Alterna el diccionario de visibilidad de detalles para un evento específico[cite: 13].
     const alternarDetalle = (id) => setAbiertos((previo) => ({ ...previo, [id]: !previo[id] }));
 
-    // Propósito: Guarda un evento modificado o inserta uno completamente nuevo en el estado local[cite: 13].
-    function guardarEvento(datos) {
+    // Guarda un evento nuevo o actualizado en Firestore.
+    async function guardarEvento(datos) {
         if (!puedeAdministrar) return;
-        const esNuevo = datos.id == null;
-        // Si es nuevo, calcula un ID incrementando en 1 el ID máximo actual[cite: 13].
-        const nuevoId = Math.max(0, ...eventos.map((e) => e.id)) + 1;
-        
-        setEventos((previo) =>
-            esNuevo
-                ? [...previo, { ...datos, id: nuevoId }]
-                : previo.map((e) => (e.id === datos.id ? { ...e, ...datos } : e))
-        );
+        const { id, ...datosGuardados } = datos;
+        const idGuardado = id == null
+            ? await crearDocumento(COLECCIONES.historia, datosGuardados)
+            : await crearDocumento(COLECCIONES.historia, datosGuardados, id);
+
+        setErrorPersistencia('');
         setModal(null);
-        // Fuerza al navegador a hacer scroll suavemente hacia el evento recién creado[cite: 13].
-        setTimeout(() => desplazarA(`evento-${esNuevo ? nuevoId : datos.id}`), 150);
+        setTimeout(() => desplazarA(`evento-${idGuardado}`), 150);
     }
 
-    // Filtra la lista actual quitando el evento que coincide con el ID enviado[cite: 13].
-    function eliminarEvento(id) {
+    async function eliminarEvento(id) {
         if (!puedeAdministrar) return;
-        setEventos((previo) => previo.filter((e) => e.id !== id));
-        setModal(null);
+        try {
+            await eliminarDocumento(COLECCIONES.historia, id);
+            setErrorPersistencia('');
+            setModal(null);
+        } catch (error) {
+            console.error('No se pudo eliminar el hito de Firestore:', error);
+            setErrorPersistencia('No se pudo eliminar el hito en Firebase. Revisá tu conexión e intentá de nuevo.');
+        }
     }
 
-    // Sobrescribe el almacenamiento con la constante dura de eventos iniciales del sistema[cite: 13].
-    function restaurarOriginales() {
+    async function restaurarOriginales() {
         if (!puedeAdministrar) return;
-        setEventos(EVENTOS_INICIALES);
-        setModal(null);
+        try {
+            await reemplazarDocumentos(COLECCIONES.historia, EVENTOS_INICIALES);
+            setErrorPersistencia('');
+            setModal(null);
+        } catch (error) {
+            console.error('No se pudieron restaurar los hitos originales en Firestore:', error);
+            setErrorPersistencia('No se pudieron restaurar los hitos originales en Firebase.');
+        }
     }
 
     // Pre-cálculos para la portada de presentación[cite: 13].
@@ -291,6 +349,7 @@ function Historia({ eventos: eventosProp }) {
         <>
             <Header />
             <div ref={raizRef} className={`inicio historia${modoAdmin ? ' inicio-modo-admin' : ''}`}>
+                {errorPersistencia && <p className="inicio-campo-error" role="alert">{errorPersistencia}</p>}
                 <HeroHistoria
                     anios={anios}
                     cantidadEventos={eventos.length}
@@ -376,6 +435,7 @@ function Historia({ eventos: eventosProp }) {
                         titulo="Eliminar hito"
                         texto={`¿Estás seguro de que querés eliminar «${modal.evento.titulo}»? Esta acción no se puede deshacer.`}
                         textoBoton="Eliminar"
+                        error={errorPersistencia}
                         onConfirmar={() => eliminarEvento(modal.evento.id)}
                         onCerrar={cerrarModal}
                     />
@@ -385,6 +445,7 @@ function Historia({ eventos: eventosProp }) {
                         titulo="Restaurar originales"
                         texto="Se van a perder los cambios que hiciste y la línea de tiempo vuelve a los hitos originales."
                         textoBoton="Restaurar"
+                        error={errorPersistencia}
                         onConfirmar={restaurarOriginales}
                         onCerrar={cerrarModal}
                     />
