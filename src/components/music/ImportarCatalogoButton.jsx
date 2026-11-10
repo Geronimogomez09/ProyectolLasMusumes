@@ -1,6 +1,10 @@
 import React, { useState } from "react";
 import { importarCatalogoMusical } from "../../services/ImportarCatalogoMusical";
 
+// Índice: Importar catálogo musical.
+// ----------------- Importar catálogo musical -----------------
+// No recibe propiedades. Solicita confirmaci?n, inicia la importación del catálogo y muestra el estado y el resumen del resultado.
+
 function ImportarCatalogoButton() {
   const [cargando, setCargando] = useState(false);
   const [mensaje, setMensaje] = useState("");

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import MinecraftIcon from "./MinecraftIcon";
+import BotonGuardar from "../guardadosComponentes/BotonGuardar";
 import {
     crearStockPorTalle,
     normalizarCategoriaProducto,
@@ -7,8 +8,14 @@ import {
     TALLES_ROPA
 } from "../../data/productos";
 
+// Índice: Detalle de producto y favoritos.
+// ----------------- Detalle de producto y favoritos -----------------
+// Recibe el producto, el catálogo, el carrito y las acciones para volver, agregar o abrir otro producto. Muestra galería, talles, stock, favoritos y productos relacionados.
+
 export default function DetalleProducto({
     producto,
+    guardado,
+    alAlternarGuardado,
     productos,
     carrito,
     volverProductos,
@@ -390,6 +397,15 @@ export default function DetalleProducto({
 
                     </button>
 
+                    <BotonGuardar
+                        guardado={guardado}
+                        alAlternar={alAlternarGuardado}
+                        variante="ancho"
+                        conTexto
+                        textoActivo="En favoritos"
+                        textoInactivo="Agregar a favoritos"
+                        nombre={producto.nombre}
+                    />
 
                     <div className="detalle-beneficios">
 

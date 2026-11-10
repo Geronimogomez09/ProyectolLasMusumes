@@ -1,10 +1,15 @@
 
 import { useEffect, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { esSuperAdmin } from "../utils/permisos";
 
 import "../styles/variables.css";
 import "../styles/header.css";
+
+// Índice: Encabezado, navegación y b?squeda.
+// ----------------- Encabezado, navegación y b?squeda -----------------
+// Reúne los enlaces principales, el buscador y los menús de cuenta. Usa la ruta y el estado de autenticación para mostrar u ocultar opciones, y cierra los menús al navegar o cerrar sesión.
 
 // Distancia de scroll necesaria para activar el header compacto.
 const LIMITE_SCROLL = 300;
@@ -28,15 +33,28 @@ const ENLACES = [
 
 function Header() {
     const location = useLocation();
+    const navigate = useNavigate();
 
     // Datos de autenticación.
-    const { usuario, cerrarSesion } = useAuth();
+    const { usuario, perfil, cerrarSesion } = useAuth();
 
     // Estados del header y sus menús.
     const [encogido, setEncogido] = useState(false);
     const [hoverActivo, setHoverActivo] = useState(false);
     const [menuAbierto, setMenuAbierto] = useState(false);
     const [perfilAbierto, setPerfilAbierto] = useState(false);
+
+    // AVATAR DEL PERFIL: foto guardada en el perfil (fotoPerfil). Si no hay foto
+    // o no carga, se muestra la inicial del nombre de usuario o del correo.
+    const fotoPerfil = perfil?.fotoPerfil || "";
+    const [fotoFallo, setFotoFallo] = useState(false);
+    const inicialPerfil =
+        (perfil?.nombreUsuario || usuario?.email)?.charAt(0).toUpperCase() || "P";
+
+    // Si cambia la foto, se vuelve a intentar cargarla.
+    useEffect(() => {
+        setFotoFallo(false);
+    }, [fotoPerfil]);
 
     // Detecta el desplazamiento.
     useEffect(() => {
@@ -77,6 +95,26 @@ function Header() {
     // Cierra el menú de navegación.
     const cerrarMenu = () => {
         setMenuAbierto(false);
+    };
+
+    const manejarBusqueda = (event) => {
+        event.preventDefault();
+        const datos = new FormData(event.currentTarget);
+        const consulta = String(datos.get("q") || "").trim();
+
+        if (!consulta) return;
+
+        navigate(`/buscar?q=${encodeURIComponent(consulta)}`);
+        cerrarMenu();
+        setPerfilAbierto(false);
+    };
+
+    // CERRAR MENÚS DEL PERFIL: cierra el menú de navegación y el menú de perfil.
+    // Se usa en los enlaces del menú de perfil, porque algunos llevan a /perfil
+    // estando ya en /perfil (la ruta no cambia y el menú no se cerraría solo).
+    const cerrarMenus = () => {
+        setMenuAbierto(false);
+        setPerfilAbierto(false);
     };
 
     // Cierra la sesión del usuario.
@@ -148,11 +186,16 @@ function Header() {
                             <form
                                 className="header-search"
                                 role="search"
-                                onSubmit={(event) => event.preventDefault()}
+                                onSubmit={manejarBusqueda}
                             >
                                 <input
+                                    key={location.search}
                                     className="header-search-input"
                                     type="search"
+                                    name="q"
+                                    defaultValue={
+                                        new URLSearchParams(location.search).get("q") || ""
+                                    }
                                     placeholder="Buscar algo nuevo..."
                                     aria-label="Buscar en Wiki-Craft"
                                 />
@@ -223,13 +266,20 @@ function Header() {
                                         )
                                     }
                                 >
+                                    {/* AVATAR DEL HEADER: foto de perfil si existe; si no, la inicial. */}
                                     <span
                                         className="profile-avatar"
                                         aria-hidden="true"
                                     >
-                                        {usuario?.email
-                                            ?.charAt(0)
-                                            .toUpperCase() || "P"}
+                                        {fotoPerfil && !fotoFallo ? (
+                                            <img
+                                                src={fotoPerfil}
+                                                alt=""
+                                                onError={() => setFotoFallo(true)}
+                                            />
+                                        ) : (
+                                            inicialPerfil
+                                        )}
                                     </span>
 
                                     <span className="profile-text">
@@ -266,50 +316,76 @@ function Header() {
                                                 </span>
                                             </li>
 
+                                            {/* CONFIGURACIÓN: abre Datos personales del perfil. */}
                                             <li>
-                                                <span className="profile-menu-item">
+                                                <Link
+                                                    to="/perfil"
+                                                    state={{ seccion: "datos" }}
+                                                    className="profile-menu-item"
+                                                    onClick={cerrarMenus}
+                                                >
                                                     Configuración
-                                                </span>
+                                                </Link>
+                                            </li>
+
+                                            {/* MI PERFIL: abre el resumen del perfil. */}
+                                            <li>
+                                                <Link
+                                                    to="/perfil"
+                                                    state={{ seccion: "resumen" }}
+                                                    className="profile-menu-item"
+                                                    onClick={cerrarMenus}
+                                                >
+                                                    Mi perfil
+                                                </Link>
                                             </li>
 
                                             <li>
                                                 <Link
                                                     to="/"
                                                     className="profile-menu-item"
-                                                    onClick={cerrarMenu}
-                                                >
-                                                    Mi perfil
-                                                </Link>
-                                            </li>
-                                            <li>
-                                                <Link
-                                                    to="/"
-                                                    className="profile-menu-item"
-                                                    onClick={cerrarMenu}
+                                                    onClick={cerrarMenus}
                                                 >
                                                     Carrito
                                                 </Link>
                                             </li>
 
+                                            {/* FAVORITAS: abre Contenido guardado. */}
                                             <li>
                                                 <Link
-                                                    to="/"
+                                                    to="/perfil"
+                                                    state={{ seccion: "guardado" }}
                                                     className="profile-menu-item"
-                                                    onClick={cerrarMenu}
+                                                    onClick={cerrarMenus}
                                                 >
-                                                    Canciones favoritas
+                                                    Favoritos
                                                 </Link>
                                             </li>
 
+                                            {/* MIS PUBLICACIONES: abre las publicaciones del usuario. */}
                                             <li>
                                                 <Link
-                                                    to=""
+                                                    to="/perfil"
+                                                    state={{ seccion: "publicaciones" }}
                                                     className="profile-menu-item"
-                                                    onClick={cerrarMenu}
+                                                    onClick={cerrarMenus}
                                                 >
                                                     Mis publicaciones
                                                 </Link>
                                             </li>
+
+                                            {/* CREAR ADMINISTRADOR: solo lo ve el superadmin. */}
+                                            {esSuperAdmin(perfil) && (
+                                                <li>
+                                                    <Link
+                                                        to="/admin/usuarios"
+                                                        className="profile-menu-item"
+                                                        onClick={cerrarMenus}
+                                                    >
+                                                        Crear administrador
+                                                    </Link>
+                                                </li>
+                                            )}
 
                                             <li>
                                                 <hr className="profile-menu-divider" />

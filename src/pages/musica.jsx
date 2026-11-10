@@ -17,11 +17,36 @@ import SongPanel from "../components/music/SongPanel";
 
 import "../styles/musica.css";
 
+// ÍNDICE GENERAL
+// 1. Catálogo compartido y control de acceso
+// 2. Estado local de la pantalla
+// 3. Canciones disponibles y límite de la lista inicial
+// 4. Ranking y relaciones entre canciones, álbumes y compositores
+// 5. Reproducción de una lista completa
+// 6. Filtro de contenido público
+// 7. Renderizado del repertorio, ranking, listas, álbumes y compositores
+// 8. Panel de detalle y acceso al administrador musical
+
+// 1. PÁGINA PRINCIPAL DE MÚSICA
+// Esta página presenta el catálogo, pero no posee la reproducción por sí misma. Usa
+// MusicContext como fuente única de canciones y acciones; de esa manera una canción
+// puede seguir sonando aunque se navegue a otra página. Los componentes SongRow,
+// PlaylistCard y ComposerCard se ocupan de partes visuales, mientras que Musica decide
+// qué datos llega a cada uno y qué acción global debe ejecutarse al interactuar.
 export default function Musica() {
+  // 1.1. NAVEGACIÓN Y PERMISO ADMINISTRATIVO
+  // navigate() crea enlaces mediante código para abrir el detalle de álbum, lista o
+  // compositor. tienePermiso() recibe el perfil, no solo el usuario de autenticación,
+  // porque los permisos específicos de Wiki-Craft viven en ese perfil.
   const navigate = useNavigate();
   const { perfil } = useAuth();
   const puedeAdministrar = tienePermiso(perfil, "musica");
 
+  // 2. ESTADO LOCAL DE LA INTERFAZ
+  // selectedSong representa la canción cuyo panel informativo está abierto. null
+  // significa que no hay panel. showAllSongs define si el repertorio muestra solo las
+  // primeras diez canciones o la lista completa. Estos estados no duplican el catálogo:
+  // solamente controlan cómo se presenta.
   const [selectedSong, setSelectedSong] = useState(null);
   const [showAllSongs, setShowAllSongs] = useState(false);
 
@@ -41,6 +66,11 @@ export default function Musica() {
     songDurations,
   } = useMusic();
 
+  // 3. CANCIONES DISPONIBLES
+  // isBlocked() consulta la preferencia personal almacenada por MusicContext. filter()
+  // devuelve un nuevo array, por lo tanto no cambia songs ni elimina canciones del
+  // catálogo global. songsToShow aplica slice(0, 10) solo en modo resumido; slice tampoco
+  // modifica el array original y el límite final no se incluye.
   const availableSongs = songs.filter(
     (song) => !isBlocked(song)
   );
@@ -49,7 +79,12 @@ export default function Musica() {
     ? availableSongs
     : availableSongs.slice(0, 10);
 
-  // Ranking: cinco canciones con más reproducciones.
+  // 4. RANKING DE CANCIONES DESTACADAS
+  // [...availableSongs] crea primero una copia porque sort() sí modifica el array que
+  // recibe. La comparación resta las reproducciones: un resultado positivo coloca b
+  // antes que a, por eso quedan primero las más escuchadas. ?? 0 cubre canciones que
+  // todavía no tienen contador. Después slice conserva cinco y map agrega el valor
+  // reproducciones que FeaturedSongs necesita para mostrar el ranking.
   const featuredSongs = [...availableSongs]
     .sort(
       (a, b) =>
@@ -62,6 +97,10 @@ export default function Musica() {
       reproducciones: rankingCounts[song.id] ?? 0,
     }));
 
+  // RELACIONES DEL CATÁLOGO: una canción almacena IDs, mientras los nombres, portadas y
+  // otros datos viven en sus colecciones. Number() permite comparar un id recibido como
+  // texto desde Firestore con uno numérico de los datos iniciales. find() devuelve el
+  // primer elemento coincidente o undefined, que el renderizado trata con alternativas.
   const getComposer = (song) =>
     composers.find(
       (composer) =>
@@ -74,12 +113,21 @@ export default function Musica() {
         Number(album.id) === Number(song?.albumId)
     );
 
+  // getAlbumSongs aplica el mismo vínculo inverso para contar o reproducir las canciones
+  // del álbum. Solo usa availableSongs: una canción bloqueada no reaparece por pertenecer
+  // a un álbum.
   const getAlbumSongs = (album) =>
     availableSongs.filter(
       (song) =>
         Number(song.albumId) === Number(album.id)
     );
 
+  // 5. REPRODUCIR UNA LISTA
+  // Las listas del sistema no guardan IDs propios: representan los favoritos actuales.
+  // Las listas comunes sí contienen playlist.songs. map busca cada id y puede producir
+  // undefined cuando una canción ya no existe; filter(Boolean) elimina esos resultados
+  // antes de crear la cola. Si la lista queda vacía no se llama al reproductor, evitando
+  // sustituir la cola actual por una cola sin canciones.
   const playPlaylist = (playlist) => {
     const playlistSongs = playlist.system
       ? favoriteSongs.filter(
@@ -98,6 +146,11 @@ export default function Musica() {
     }
   };
 
+  // 6. CONTENIDO PUBLICABLE
+  // Estas tres listas excluyen elementos desactivados y borradores. La condición
+  // activo !== false considera visible a un registro antiguo que no incluya activo,
+  // mientras status === "published" exige una publicación explícita. Cada filter crea
+  // un resultado nuevo para no cambiar los arrays que pertenecen al contexto.
   const publicPlaylists = playlists.filter(
     (playlist) =>
       playlist.activo !== false &&
@@ -116,6 +169,12 @@ export default function Musica() {
       composer.status === "published"
   );
 
+  // 7. ESTRUCTURA VISUAL DEL CATÁLOGO
+  // El renderizado pasa datos y funciones a los componentes hijos. Al hacer clic en una
+  // canción, playSong recibe además availableSongs para construir la cola a partir de
+  // lo que realmente se puede reproducir. El panel inferior recibe selectedSong y sus
+  // relaciones calculadas; sus callbacks cierran el panel antes de navegar cuando la
+  // persona abre el álbum o compositor asociado.
   return (
     <>
       <Header />
@@ -143,7 +202,9 @@ export default function Musica() {
 
         <div className="container">
 
-          {/* TODO EL REPERTORIO */}
+          {/* REPERTORIO: cada SongRow recibe una duración medida si ya se conoce; de
+              lo contrario conserva la duración del catálogo. La clave id permite a
+              React identificar cada fila cuando cambia la lista. */}
           <section className="music-section">
             <div className="section-title">
               <div>
@@ -207,7 +268,7 @@ export default function Musica() {
             )}
           </section>
 
-          {/* RANKING DE CANCIONES DESTACADAS */}
+          {/* RANKING: usa el array derivado featuredSongs, no reordena el catálogo base. */}
           <section className="music-section">
             <div className="section-title">
               <div>
@@ -235,7 +296,7 @@ export default function Musica() {
             />
           </section>
 
-          {/* LISTAS DE REPRODUCCIÓN */}
+          {/* LISTAS: el conteo considera favoritos o IDs todavía disponibles según el tipo. */}
           <section className="music-section">
             <div className="section-title">
               <div>
@@ -283,7 +344,7 @@ export default function Musica() {
             </div>
           </section>
 
-          {/* ÁLBUMES */}
+          {/* ÁLBUMES: getComposer y getAlbumSongs transforman IDs en información visible. */}
           <section className="music-section">
             <div className="section-title">
               <div>
@@ -337,7 +398,7 @@ export default function Musica() {
             </div>
           </section>
 
-          {/* COMPOSITORES */}
+          {/* COMPOSITORES: cada tarjeta navega al detalle del compositor seleccionado. */}
           <section className="music-section">
             <div className="section-title">
               <div>
@@ -370,6 +431,8 @@ export default function Musica() {
           </section>
         </div>
 
+        {/* 8. PANEL DE DETALLE: se mantiene montado, pero null indica que no debe mostrar
+            una canción. Esto permite cerrar el panel sin alterar el catálogo ni la cola. */}
         <SongPanel
           song={selectedSong}
           composer={

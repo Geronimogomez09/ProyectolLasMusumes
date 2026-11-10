@@ -20,6 +20,7 @@ import AgregarVersion from '../components/versionesComponentes/agregar-version';
 
 import '../styles/versiones.css';
 
+// Índice: versiones iniciales; carga desde Firestore; administración; búsqueda y filtros; tarjetas informativas.
 // -----------------------------------------------------------------------------
 // VERSIONES ORIGINALES
 // -----------------------------------------------------------------------------
@@ -161,6 +162,8 @@ const versionesIniciales = [
 
 const EDICIONES_FILTRO = ['Todas', 'Java', 'Bedrock'];
 
+// ----------------- Catálogo y administración de versiones -----------------
+// Firestore aporta las versiones; el permiso habilita altas, cambios y eliminaciones, y los filtros ordenan la lista.
 function Versiones({ versiones: versionesProp }) {
   const { perfil } = useAuth();
   const puedeAdministrar = tienePermiso(perfil, "versiones");

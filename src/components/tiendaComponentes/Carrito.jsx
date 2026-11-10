@@ -3,6 +3,18 @@ import { useState } from "react";
 import Pago from "./Pago";
 import MinecraftIcon from "./MinecraftIcon";
 
+// ÍNDICE GENERAL
+// 1. Datos y acciones recibidos de la tienda
+// 2. Estado que abre el flujo de pago
+// 3. Cálculo del total
+// 4. Lista de unidades, eliminación y confirmación
+
+// CARRITO LATERAL
+// carrito es un array donde cada entrada representa una unidad elegida, incluso si dos
+// entradas corresponden al mismo producto pero con talles diferentes. Por eso quitarCarrito
+// recibe el índice de la unidad y la key combina id e índice. La página Tienda es dueña del
+// estado y entrega los callbacks; Carrito solamente solicita los cambios necesarios.
+
 export default function Carrito({
     abierto,
     cerrarCarrito,
@@ -10,10 +22,13 @@ export default function Carrito({
     quitarCarrito,
     vaciarCarrito
 }) {
-    // El paso de pago se monta solo al abrir el flujo y conserva este carrito como resumen.
+    // pagoAbierto no significa que la compra esté pagada: solo indica que se debe montar
+    // el componente Pago. Al cerrarlo, el resumen del carrito sigue disponible.
     const [pagoAbierto, setPagoAbierto] = useState(false);
 
-    // Calcula el subtotal sumando cada unidad guardada en el carrito.
+    // reduce recorre cada unidad y acumula su precio. Number cubre precios que lleguen
+    // como texto desde los datos; el valor inicial 0 permite calcular correctamente un
+    // carrito vacío. No modifica carrito ni los productos contenidos en él.
     const total = carrito.reduce(
         (suma, producto) => suma + Number(producto.precio),
         0
@@ -41,7 +56,9 @@ export default function Carrito({
                 </div>
 
                 <div>
-                    {/* Muestra el estado vacío o una fila por cada unidad agregada. */}
+                    {/* El ternario diferencia un carrito sin elementos de una fila por
+                        unidad. toLocaleString aplica el formato monetario argentino solo
+                        para mostrar; el cálculo conserva el número sin redondearlo aquí. */}
                     {carrito.length === 0 ? (
                         <p>El carrito está vacío.</p>
                     ) : (
@@ -86,7 +103,8 @@ export default function Carrito({
                 </button>
             </aside>
 
-            {/* El componente de pago solo se crea mientras el flujo está abierto. */}
+            {/* Pago recibe el mismo carrito como resumen y un callback para vaciarlo al
+                completar el flujo. Si pagoAbierto es false, React no lo monta. */}
             {pagoAbierto && (
                 <Pago
                     carrito={carrito}

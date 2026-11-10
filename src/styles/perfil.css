@@ -1,362 +1,1015 @@
-/* ==========================================================================
-   perfil.css — página de perfil (carrito, publicaciones y favoritas)
-   ========================================================================== */
-.perfil-pagina {
-  --perfil-borde: #dcdcdc;
-  --perfil-texto: #1c1c1c;
-  --perfil-suave: #5b5b57;
-  --perfil-peligro: #b3462c;
+/* Archivo: perfil.css
+   Estilos de la página de perfil (pages/perfil.jsx y components/perfil/*).
+   Misma estética que login.css: crema, miel, madera y verde musgo.
+   Las fuentes MinecraftSeven y Minecrafttitulo se declaran en login.css / variables.css.
+   Todas las clases usan el prefijo perfil- para no chocar con otras páginas. */
 
-  min-height: 100vh;
+/* ==========================================================================
+   1. VARIABLES Y FONDO DE LA PÁGINA
+   ========================================================================== */
+
+.perfil-page {
+  --per-cream: #f5ead1;
+  --per-paper: #fff8e7;
+  --per-paper-strong: #fffdf4;
+  --per-sand: #ead5aa;
+  --per-honey: #e8b247;
+  --per-wood: #966039;
+  --per-wood-dark: #69452a;
+  --per-moss: #83a73b;
+  --per-moss-dark: #4e7b2f;
+  --per-moss-soft: #e1e9bb;
+  --per-text: #352b20;
+  --per-muted: #7e6b50;
+  --per-danger: #914b37;
+  --per-border: rgba(113, 79, 37, 0.19);
+  --per-border-focus: rgba(91, 139, 48, 0.62);
+  --per-radius: 30px;
+  --per-ease: cubic-bezier(0.22, 0.8, 0.24, 1);
+  --per-ease-soft: cubic-bezier(0.25, 1, 0.5, 1);
+  --per-fuente-titulo: "Minecrafttitulo", "MinecraftSeven", sans-serif;
+  --per-fuente-pixel: "MinecraftSeven", "Segoe UI", sans-serif;
+
+  position: relative;
+  isolation: isolate;
   box-sizing: border-box;
-  padding: 7.5rem 1rem 3rem;
-  background: #f4f4f2;
-  color: var(--perfil-texto);
-  font-family: 'Segoe UI', Roboto, sans-serif;
+  min-height: 100vh;
+  /* El header es fixed: se deja su altura arriba para que no tape el contenido. */
+  padding: calc(var(--header-alto, 76px) + clamp(24px, 4vh, 48px)) 20px clamp(40px, 6vh, 72px);
+  overflow: hidden;
+  background-color: var(--per-cream);
+  background-image:
+    linear-gradient(112deg, rgba(255, 246, 220, 0.82) 0%, rgba(250, 232, 190, 0.66) 38%, rgba(225, 204, 147, 0.46) 100%),
+    radial-gradient(ellipse at 13% 15%, rgba(232, 176, 74, 0.38), transparent 38%),
+    radial-gradient(ellipse at 89% 82%, rgba(91, 139, 54, 0.28), transparent 36%);
+  background-attachment: fixed;
+  color: var(--per-text);
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
 }
 
-.perfil-cabecera,
-.perfil-tabs,
-.perfil-panel {
-  max-width: 920px;
+.perfil-page *,
+.perfil-page *::before,
+.perfil-page *::after {
+  box-sizing: border-box;
+}
+
+.perfil-page ::selection {
+  background: #e6d3ad;
+  color: var(--per-text);
+}
+
+.perfil-page a:focus-visible,
+.perfil-page button:focus-visible,
+.perfil-page input:focus-visible,
+.perfil-page select:focus-visible,
+.perfil-page textarea:focus-visible {
+  outline: 2px solid var(--per-moss);
+  outline-offset: 3px;
+}
+
+/* ESTADO DE CARGA: indicador centrado mientras llega el perfil. */
+.perfil-page--cargando {
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 12px;
+  color: var(--per-moss-dark);
+}
+
+/* ==========================================================================
+   2. DECORACIÓN DEL FONDO (PerfilDecoracion)
+   ========================================================================== */
+
+.perfil-decoracion {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.perfil-deco {
+  position: absolute;
+  width: 62px;
+  height: 62px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  user-select: none;
+  filter: drop-shadow(0 12px 13px rgba(74, 65, 34, 0.2));
+  animation: perfil-flota 7.5s ease-in-out infinite;
+}
+
+.perfil-deco--1 { top: 16%; left: 4%; }
+.perfil-deco--2 { bottom: 12%; left: 7%; width: 50px; height: 50px; opacity: 0.76; animation-delay: -2.4s; }
+.perfil-deco--3 { top: 22%; right: 4%; width: 52px; height: 52px; opacity: 0.8; animation-delay: -4.2s; }
+.perfil-deco--4 { bottom: 14%; right: 5%; width: 64px; height: 64px; animation-delay: -2.8s; }
+.perfil-deco--5 { top: 9%; left: 30%; width: 44px; height: 44px; opacity: 0.76; animation-delay: -4s; }
+.perfil-deco--6 { bottom: 6%; right: 26%; width: 56px; height: 56px; opacity: 0.8; animation-delay: -1.2s; }
+
+@keyframes perfil-flota {
+  0%, 100% { translate: 0 0; rotate: -5deg; }
+  50%      { translate: 0 -10px; rotate: 2deg; }
+}
+
+/* ==========================================================================
+   3. TARJETA PRINCIPAL
+   ========================================================================== */
+
+.perfil-contenedor {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 1040px;
   margin-inline: auto;
+}
+
+/* TARJETA: dos columnas, menú lateral (290px) y contenido. */
+.perfil-card {
+  display: grid;
+  grid-template-columns: 290px minmax(0, 1fr);
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.82);
+  border-radius: var(--per-radius);
+  background: rgba(255, 249, 233, 0.87);
+  -webkit-backdrop-filter: blur(24px) saturate(1.14);
+  backdrop-filter: blur(24px) saturate(1.14);
+  box-shadow:
+    0 28px 72px -34px rgba(73, 55, 34, 0.4),
+    0 10px 28px -16px rgba(126, 94, 54, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.92);
+  animation: perfil-entrada 780ms var(--per-ease-soft) both;
+}
+
+@keyframes perfil-entrada {
+  from { opacity: 0; transform: translateY(20px) scale(0.985); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* ==========================================================================
+   4. MENÚ LATERAL (PerfilMenuLateral)
+   ========================================================================== */
+
+.perfil-panel-izq {
+  position: relative;
+  z-index: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 34px 22px 26px;
+  overflow: hidden;
+  text-align: center;
+  border-right: 1px solid rgba(87, 127, 47, 0.25);
+  background:
+    radial-gradient(circle at 86% 14%, rgba(255, 255, 255, 0.72), transparent 34%),
+    linear-gradient(145deg, rgba(218, 232, 175, 0.96), rgba(241, 211, 145, 0.91) 58%, rgba(248, 232, 190, 0.93));
+}
+
+.perfil-panel-izq::before,
+.perfil-panel-izq::after {
+  position: absolute;
+  z-index: -1;
+  content: "";
+  pointer-events: none;
+}
+
+.perfil-panel-izq::before {
+  right: -54px;
+  bottom: -70px;
+  width: 190px;
+  height: 190px;
+  border: 1px solid rgba(125, 137, 85, 0.16);
+  border-radius: 42px;
+  background: rgba(255, 250, 239, 0.2);
+  transform: rotate(28deg);
+}
+
+.perfil-panel-izq::after {
+  right: 22px;
+  bottom: 24px;
+  width: 54px;
+  height: 54px;
+  border: 1px solid rgba(128, 96, 68, 0.12);
+  border-radius: 15px;
+  background: rgba(213, 173, 112, 0.12);
+  transform: rotate(18deg);
+}
+
+/* AVATAR (PerfilAvatar): círculo con la foto o las iniciales. */
+.perfil-avatar {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  overflow: hidden;
+  border: 3px solid var(--per-paper-strong);
+  border-radius: 50%;
+  background: var(--per-moss-dark);
+  color: var(--per-paper-strong);
+  font-family: var(--per-fuente-titulo);
+  font-size: 1.3rem;
+  box-shadow:
+    0 0 0 3px rgba(232, 178, 71, 0.55),
+    0 10px 22px -10px rgba(73, 55, 34, 0.55);
+}
+
+.perfil-avatar img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.perfil-avatar--grande {
+  width: 112px;
+  height: 112px;
+  font-size: 2rem;
+}
+
+.perfil-nombre {
+  max-width: 100%;
+  margin: 18px 0 8px;
+  color: var(--per-wood-dark);
+  font-family: var(--per-fuente-titulo);
+  font-size: 1.3rem;
+  font-weight: 400;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+/* ETIQUETA DE ROL: puede ser larga ("Administrador de Inicio, Música"), por eso se parte en líneas. */
+.perfil-rol {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  max-width: 100%;
+  padding: 7px 13px;
+  border: 1px solid rgba(116, 126, 76, 0.16);
+  border-radius: 18px;
+  background: rgba(255, 250, 229, 0.74);
+  color: #436e2d;
+  font-size: 0.78rem;
+  font-weight: 800;
+  line-height: 1.35;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+
+.perfil-rol i {
+  flex-shrink: 0;
+  color: #a47d45;
+}
+
+.perfil-rol--admin {
+  border-color: rgba(150, 96, 57, 0.3);
+  background: var(--per-wood);
+  color: var(--per-paper-strong);
+}
+
+.perfil-rol--admin i {
+  color: var(--per-honey);
+}
+
+/* BOTONES DE SECCIÓN */
+.perfil-nav {
+  display: grid;
+  gap: 6px;
+  width: 100%;
+  margin-top: 26px;
+}
+
+.perfil-nav button {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+  padding: 11px 15px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  color: #665039;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background-color 220ms var(--per-ease),
+    color 220ms var(--per-ease),
+    box-shadow 520ms var(--per-ease-soft);
+}
+
+.perfil-nav button i {
+  font-size: 1rem;
+  color: var(--per-moss-dark);
+  transition: color 220ms var(--per-ease);
+}
+
+.perfil-nav button:hover {
+  background: rgba(255, 251, 232, 0.72);
+  color: var(--per-moss-dark);
+}
+
+.perfil-nav button.activo {
+  border-color: #5f8e31;
+  background: linear-gradient(135deg, #78a83a, #477d2d);
+  color: #fffdf6;
+  box-shadow:
+    0 8px 18px -10px rgba(72, 119, 43, 0.72),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+.perfil-nav button.activo i {
+  color: #fffdf6;
+}
+
+.perfil-estado {
+  margin: auto 0 0;
+  padding-top: 24px;
+  color: #806b4e;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.perfil-punto {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 7px;
+  border-radius: 2px;
+  background: var(--per-moss-dark);
+  box-shadow: 0 0 10px rgba(78, 123, 47, 0.6);
+}
+
+/* ==========================================================================
+   5. PANEL DERECHO: cabecera, título y mensajes
+   ========================================================================== */
+
+.perfil-panel-der {
+  min-width: 0;
+  padding: 30px 34px 36px;
 }
 
 .perfil-cabecera {
   display: flex;
   align-items: center;
-  gap: 1.25rem;
-  padding: 1.5rem;
-  background: var(--blanco, #fffdf9);
-  border: 1px solid var(--perfil-borde);
-  border-bottom: 4px solid var(--verde, #1db53c);
-  border-radius: 6px;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
 }
 
-.perfil-cabecera h1 {
-  margin: 0;
-  font-size: 1.6rem;
-}
-
-.perfil-cabecera p {
-  margin: 0.15rem 0 0.4rem;
-  color: var(--perfil-suave);
-}
-
-.perfil-avatar {
-  flex: none;
-  width: 72px;
-  height: 72px;
-  display: grid;
-  place-items: center;
-  overflow: hidden;
-  font-size: 2rem;
+.perfil-etiqueta,
+.perfil-nota {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.75rem;
   font-weight: 700;
-  color: #fff;
-  background: var(--verde, #1db53c);
-  border: 3px solid var(--marron, #7a573a);
 }
 
-.perfil-avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
+.perfil-etiqueta { color: var(--per-moss-dark); letter-spacing: 0.035em; }
+.perfil-etiqueta i { color: #bd9255; font-size: 1rem; }
+.perfil-nota { color: #85745d; }
+.perfil-nota i { color: #9a9b70; }
 
-/* ------------------------------ pestañas ------------------------------ */
-.perfil-tabs {
+.perfil-titulo-fila {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-block: 1.25rem 1rem;
-}
-
-.perfil-tab {
-  padding: 0.6rem 1.1rem;
-  font: inherit;
-  font-weight: 600;
-  color: var(--perfil-texto);
-  background: #e9e9e9;
-  border: 1px solid transparent;
-  border-radius: 999px;
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s;
-}
-
-.perfil-tab:hover {
-  background: #dcdcdc;
-}
-
-.perfil-tab.activo {
-  color: #fff;
-  background: var(--verde, #1db53c);
-}
-
-/* ------------------------------ panel ------------------------------ */
-.perfil-panel {
-  padding: 1.25rem;
-  background: var(--blanco, #fffdf9);
-  border: 1px solid var(--perfil-borde);
-  border-radius: 6px;
-}
-
-.perfil-lista {
-  display: grid;
-  gap: 0.75rem;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.perfil-item {
-  display: grid;
-  grid-template-columns: 64px 1fr auto auto auto;
   align-items: center;
-  gap: 0.9rem;
-  padding: 0.75rem;
-  border: 1px solid var(--perfil-borde);
-  border-radius: 6px;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
 }
 
-.perfil-item__imagen {
-  width: 64px;
-  height: 64px;
+.perfil-titulo {
+  margin: 0;
+  color: var(--per-wood-dark);
+  font-family: var(--per-fuente-titulo);
+  font-size: clamp(1.4rem, 2.4vw, 1.9rem);
+  font-weight: 400;
+  line-height: 1.3;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+/* CONTENIDO: se vuelve a animar cada vez que cambia la sección (key en perfil.jsx). */
+.perfil-contenido {
   display: grid;
-  place-items: center;
-  overflow: hidden;
-  font-size: 1.6rem;
-  font-weight: 700;
-  color: var(--marron, #7a573a);
-  background: #e9e9e9;
-  border-radius: 4px;
+  gap: 16px;
+  animation: perfil-contenido-entra 520ms var(--per-ease-soft) both;
 }
 
-.perfil-item__imagen img {
-  width: 100%;
-  height: 100%;
+@keyframes perfil-contenido-entra {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.perfil-alerta {
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  border-radius: 15px;
+  font-size: 0.88rem;
+}
+
+.perfil-alerta--exito {
+  border: 1px solid rgba(91, 139, 48, 0.3);
+  background: rgba(225, 233, 187, 0.8);
+  color: var(--per-moss-dark);
+}
+
+.perfil-alerta--error {
+  border: 1px solid rgba(174, 89, 65, 0.22);
+  background: rgba(255, 239, 229, 0.92);
+  color: var(--per-danger);
+}
+
+/* El error dentro del formulario ya tiene su propio espacio por el gap del grid. */
+.perfil-form .perfil-alerta { margin-bottom: 0; }
+
+/* ==========================================================================
+   6. BLOQUES (PerfilResumen)
+   ========================================================================== */
+
+.perfil-bloque {
+  padding: 20px 22px;
+  border: 1px solid var(--per-border);
+  border-radius: 20px;
+  background: rgba(255, 251, 238, 0.9);
+}
+
+.perfil-bloque-cab {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.perfil-bloque h3,
+.perfil-bloque-cab h3 {
+  margin: 0;
+  color: #57402b;
+  font-family: var(--per-fuente-pixel);
+  font-size: 0.95rem;
+  font-weight: 400;
+}
+
+.perfil-bloque-cab h3 i {
+  margin-right: 6px;
+  color: var(--per-honey);
+}
+
+.perfil-texto {
+  margin: 0 0 12px;
+  color: #665039;
+  font-size: 0.9rem;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+
+.perfil-dato {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  margin: 0 0 7px;
+  color: var(--per-muted);
+  font-size: 0.84rem;
+  overflow-wrap: anywhere;
+}
+
+.perfil-dato i { color: var(--per-moss-dark); }
+.perfil-dato a { color: var(--per-moss-dark); font-weight: 600; }
+
+.perfil-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.perfil-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--per-moss-dark);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.perfil-link:hover { color: var(--per-wood-dark); }
+
+.perfil-vacio-chico {
+  margin: 0;
+  color: var(--per-muted);
+  font-size: 0.86rem;
+}
+
+/* ESTADÍSTICAS: tres cápsulas con ícono. */
+.perfil-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.perfil-stats article {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  padding: 14px 16px;
+  border: 1px solid rgba(116, 126, 76, 0.16);
+  border-radius: 999px;
+  background: rgba(255, 250, 229, 0.74);
+}
+
+.perfil-stats i {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--per-moss-soft);
+  color: var(--per-moss-dark);
+  font-size: 1.05rem;
+}
+
+.perfil-stats strong {
+  display: block;
+  color: var(--per-wood-dark);
+  font-size: 0.95rem;
+  line-height: 1.25;
+}
+
+.perfil-stats small { color: var(--per-muted); font-size: 0.75rem; }
+
+/* ÚLTIMAS PUBLICACIONES: filas cortas dentro del resumen. */
+.perfil-mini {
+  display: grid;
+  gap: 2px;
+  padding: 10px 0;
+  border-top: 1px dashed var(--per-border);
+  color: inherit;
+  text-decoration: none;
+}
+
+.perfil-mini strong { color: var(--per-moss-dark); font-size: 0.8rem; }
+
+.perfil-mini span {
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--per-muted);
+  font-size: 0.85rem;
+  line-height: 1.5;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.perfil-mini:hover strong { color: var(--per-wood-dark); }
+
+/* HERRAMIENTAS DE ADMINISTRADOR */
+.perfil-bloque--admin {
+  border-color: rgba(150, 96, 57, 0.3);
+  background: linear-gradient(135deg, rgba(241, 211, 145, 0.35), rgba(255, 251, 238, 0.9));
+}
+
+.perfil-accesos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.perfil-accesos a {
+  padding: 8px 14px;
+  border: 1px solid rgba(128, 96, 68, 0.3);
+  border-radius: 999px;
+  background: rgba(255, 253, 246, 0.82);
+  color: var(--per-wood-dark);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background-color 220ms var(--per-ease), color 220ms var(--per-ease), border-color 220ms var(--per-ease);
+}
+
+.perfil-accesos a:hover {
+  border-color: rgba(83, 132, 46, 0.56);
+  background: #fffdf6;
+  color: var(--per-moss-dark);
+}
+
+/* ==========================================================================
+   7. PUBLICACIONES (PerfilPublicaciones)
+   ========================================================================== */
+
+.perfil-lista { display: grid; gap: 14px; }
+
+.perfil-post-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.perfil-post-top small { color: var(--per-muted); font-size: 0.76rem; }
+
+.perfil-chip {
+  padding: 5px 11px;
+  border-radius: 999px;
+  background: var(--per-moss-soft);
+  color: var(--per-moss-dark);
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.perfil-post-imagen {
+  display: block;
+  max-width: 100%;
+  max-height: 280px;
+  margin-bottom: 12px;
+  border-radius: 14px;
   object-fit: cover;
 }
 
-.perfil-item__datos {
+.perfil-post-pie {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  color: var(--per-muted);
+  font-size: 0.8rem;
+}
+
+.perfil-post-pie i { color: var(--per-moss-dark); }
+
+/* ESTADO VACÍO */
+.perfil-vacio {
   display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding: 46px 20px;
+  border: 2px dashed rgba(91, 139, 48, 0.35);
+  border-radius: 22px;
+  background: rgba(225, 233, 187, 0.3);
+  text-align: center;
+}
+
+.perfil-vacio > i { color: var(--per-moss-dark); font-size: 2.2rem; }
+
+.perfil-vacio h3 {
+  margin: 0;
+  color: var(--per-wood-dark);
+  font-family: var(--per-fuente-pixel);
+  font-size: 1.05rem;
+  font-weight: 400;
+}
+
+.perfil-vacio p {
+  max-width: 340px;
+  margin: 0 0 8px;
+  color: var(--per-muted);
+  font-size: 0.88rem;
+}
+
+/* ==========================================================================
+   8. CONTENIDO GUARDADO (PerfilGuardados)
+   ========================================================================== */
+
+.perfil-guardados { display: grid; gap: 16px; }
+
+.perfil-contador {
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--per-moss-soft);
+  color: var(--per-moss-dark);
+  font-weight: 800;
+}
+
+/* FILA GUARDADA: imagen, título con detalle y botón Quitar. */
+.perfil-guardado-fila {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px dashed var(--per-border);
+}
+
+.perfil-guardado-img {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  background: var(--per-moss-soft);
+  object-fit: cover;
+}
+
+.perfil-guardado-img--vacia { color: var(--per-moss-dark); font-size: 1.2rem; }
+
+.perfil-guardado-texto {
+  display: grid;
+  flex: 1;
+  gap: 2px;
   min-width: 0;
 }
 
-.perfil-item__titulo {
+.perfil-guardado-texto a { color: var(--per-wood-dark); text-decoration: none; }
+.perfil-guardado-texto a:hover { color: var(--per-moss-dark); }
+
+.perfil-guardado-texto strong {
+  overflow: hidden;
+  font-size: 0.88rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.perfil-guardado-texto small {
+  overflow: hidden;
+  color: var(--per-muted);
+  font-size: 0.76rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.perfil-btn-quitar {
+  flex-shrink: 0;
+  padding: 6px 12px;
+  border: 1px solid rgba(145, 75, 55, 0.3);
+  border-radius: 999px;
+  background: rgba(255, 245, 238, 0.9);
+  color: var(--per-danger);
+  font: inherit;
+  font-size: 0.76rem;
   font-weight: 700;
-  color: var(--perfil-texto);
-  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 220ms var(--per-ease), color 220ms var(--per-ease);
+}
+
+.perfil-btn-quitar:hover { background: var(--per-danger); color: #fffdf6; }
+
+/* ==========================================================================
+   9. DATOS PERSONALES (PerfilDatos y PerfilFormulario)
+   ========================================================================== */
+
+.perfil-datos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 26px;
+}
+
+.perfil-datos > div {
+  display: grid;
+  gap: 4px;
+  padding: 14px 0;
+  border-bottom: 1px dashed var(--per-border);
+}
+
+.perfil-datos small { color: var(--per-muted); font-size: 0.76rem; }
+
+.perfil-datos strong {
+  color: #57402b;
+  font-size: 0.92rem;
   overflow-wrap: anywhere;
 }
 
-.perfil-item__titulo:hover {
-  color: var(--verde-hover, #00a521);
+.perfil-form { display: grid; gap: 16px; }
+
+.perfil-form label {
+  display: grid;
+  gap: 7px;
+  color: #57402b;
+  font-family: var(--per-fuente-pixel);
+  font-size: 0.82rem;
 }
 
-.perfil-item__detalle {
-  font-size: 0.85rem;
-  color: var(--perfil-suave);
+/* CAMPOS: inputs de texto, selector y área de texto. Los checkbox tienen su propio estilo. */
+.perfil-form input:not([type="checkbox"]),
+.perfil-form select,
+.perfil-form textarea {
+  width: 100%;
+  min-height: 47px;
+  padding: 10px 16px;
+  border: 1px solid rgba(130, 91, 42, 0.24);
+  border-radius: 14px;
+  background-color: rgba(255, 251, 238, 0.9);
+  color: var(--per-text);
+  font: 400 0.94rem "Segoe UI", Roboto, Arial, sans-serif;
+  box-shadow: inset 0 1px 2px rgba(71, 55, 34, 0.025);
+  transition:
+    border-color 220ms var(--per-ease),
+    background-color 220ms var(--per-ease),
+    box-shadow 520ms var(--per-ease-soft);
 }
 
-.perfil-item__subtotal {
-  min-width: 6rem;
-  text-align: right;
+.perfil-form select { cursor: pointer; }
+
+.perfil-form textarea { resize: vertical; line-height: 1.5; }
+
+.perfil-form input::placeholder,
+.perfil-form textarea::placeholder {
+  color: rgba(112, 99, 79, 0.56);
+  font-size: 0.88rem;
 }
 
-.perfil-cantidad {
-  display: inline-flex;
-  align-items: center;
-  border: 1px solid var(--perfil-borde);
-  border-radius: 999px;
+.perfil-form input:hover:not(:disabled):not([type="checkbox"]),
+.perfil-form select:hover,
+.perfil-form textarea:hover {
+  border-color: rgba(91, 139, 48, 0.5);
 }
 
-.perfil-cantidad button {
-  width: 2rem;
-  height: 2rem;
-  font: inherit;
-  font-size: 1.1rem;
-  background: none;
-  border: 0;
-  cursor: pointer;
+.perfil-form input:not([type="checkbox"]):focus,
+.perfil-form select:focus,
+.perfil-form textarea:focus {
+  border-color: var(--per-border-focus);
+  outline: 0;
+  background-color: var(--per-paper-strong);
+  box-shadow: 0 0 0 4px rgba(91, 139, 48, 0.17);
 }
 
-.perfil-cantidad button:disabled {
-  opacity: 0.35;
+.perfil-form input:disabled {
+  background: rgba(235, 218, 177, 0.5);
+  color: var(--per-muted);
   cursor: not-allowed;
 }
 
-.perfil-cantidad span {
-  min-width: 1.6rem;
-  text-align: center;
-  font-weight: 600;
+.perfil-form label small {
+  color: var(--per-muted);
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+  font-size: 0.74rem;
 }
 
-.perfil-icono-peligro {
-  width: 2rem;
-  height: 2rem;
-  font-size: 1.3rem;
-  line-height: 1;
-  color: var(--perfil-peligro);
-  background: none;
-  border: 1px solid transparent;
-  border-radius: 50%;
+/* CASILLA DE NOTIFICACIONES */
+.perfil-form label.perfil-check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   cursor: pointer;
 }
 
-.perfil-icono-peligro:hover {
-  border-color: var(--perfil-peligro);
+.perfil-check input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--per-moss-dark);
 }
 
-.perfil-total {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-top: 1.25rem;
-  padding-top: 1rem;
-  border-top: 1px dashed var(--perfil-borde);
-}
-
-.perfil-total div {
+.perfil-form-fila {
   display: grid;
-  text-align: right;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
 }
 
-.perfil-total strong {
-  font-size: 1.4rem;
-}
-
-/* ------------------------------ publicaciones ------------------------------ */
-.perfil-publicacion {
-  padding: 1rem;
-  border: 1px solid var(--perfil-borde);
-  border-radius: 6px;
-}
-
-.perfil-publicacion__cabecera {
+.perfil-form-foto {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-  color: var(--perfil-suave);
+  gap: 16px;
 }
 
-.perfil-publicacion p {
-  margin: 0.6rem 0;
-  overflow-wrap: anywhere;
-}
-
-.perfil-publicacion__imagen {
-  max-width: 100%;
-  max-height: 260px;
-  margin-bottom: 0.6rem;
-  border-radius: 4px;
-}
-
-.perfil-textarea {
-  width: 100%;
-  margin-block: 0.6rem;
-  padding: 0.6rem;
-  font: inherit;
-  border: 1px solid var(--perfil-borde);
-  border-radius: 4px;
-  resize: vertical;
-}
+.perfil-form-foto label { flex: 1; min-width: 0; }
 
 .perfil-acciones {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 6px;
 }
 
-.perfil-etiqueta {
-  display: inline-block;
-  padding: 0.15rem 0.6rem;
-  font-size: 0.78rem;
-  font-weight: 600;
-  background: var(--verde-claro, #67ff6767);
+/* ==========================================================================
+   10. BOTONES
+   ========================================================================== */
+
+.perfil-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 46px;
+  padding: 10px 22px;
+  border: 1px solid #5f8e31;
   border-radius: 999px;
-}
-
-.perfil-etiqueta--admin {
-  color: #fff;
-  background: var(--marron, #7a573a);
-}
-
-/* ------------------------------ comunes ------------------------------ */
-.perfil-boton {
-  display: inline-block;
-  padding: 0.55rem 1.1rem;
-  font: inherit;
-  font-weight: 600;
-  color: #fff;
+  background: linear-gradient(135deg, #78a83a, #477d2d);
+  color: #fffdf6;
+  font-family: var(--per-fuente-pixel);
+  font-size: 0.84rem;
+  font-weight: 700;
+  line-height: 1.15;
   text-decoration: none;
-  background: var(--verde, #1db53c);
-  border: 0;
-  border-radius: 4px;
+  white-space: nowrap;
   cursor: pointer;
+  box-shadow:
+    0 8px 18px -10px rgba(72, 119, 43, 0.72),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  transition:
+    background 220ms var(--per-ease),
+    border-color 220ms var(--per-ease),
+    box-shadow 520ms var(--per-ease-soft),
+    transform 520ms var(--per-ease-soft);
 }
 
-.perfil-boton:hover:not(:disabled) {
-  background: var(--verde-hover, #00a521);
+.perfil-btn:hover:not(:disabled) {
+  border-color: #3c7028;
+  background: linear-gradient(135deg, #679631, #3e7029);
+  color: #fffdf6;
+  box-shadow: 0 13px 24px -10px rgba(66, 112, 39, 0.55);
+  transform: translateY(-2px);
 }
 
-.perfil-boton:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+.perfil-btn:active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
+  transition-duration: 120ms;
 }
 
-.perfil-boton--secundario {
-  color: var(--perfil-texto);
-  background: #e9e9e9;
+.perfil-btn:disabled {
+  border-color: rgba(120, 134, 79, 0.4);
+  background: #aab98a;
+  box-shadow: none;
+  opacity: 0.78;
+  cursor: wait;
 }
 
-.perfil-boton--secundario:hover:not(:disabled) {
-  background: #dcdcdc;
+.perfil-btn--suave {
+  border: 1px solid rgba(128, 96, 68, 0.3);
+  background: rgba(255, 253, 246, 0.82);
+  color: var(--per-wood-dark);
+  box-shadow: none;
 }
 
-.perfil-enlace {
-  padding: 0;
-  font: inherit;
-  font-weight: 600;
-  color: var(--marron, #7a573a);
-  text-decoration: underline;
-  background: none;
-  border: 0;
-  cursor: pointer;
+.perfil-btn--suave:hover:not(:disabled) {
+  border-color: rgba(83, 132, 46, 0.56);
+  background: #fffdf6;
+  color: var(--per-moss-dark);
+  box-shadow: 0 7px 18px -12px rgba(83, 75, 51, 0.44);
 }
 
-.perfil-enlace--peligro {
-  color: var(--perfil-peligro);
+/* ==========================================================================
+   11. RESPONSIVE
+   ========================================================================== */
+
+@media (max-width: 991.98px) {
+  .perfil-deco--5,
+  .perfil-deco--6 { display: none; }
+  .perfil-deco { opacity: 0.4; }
+
+  .perfil-stats { grid-template-columns: 1fr; }
+  .perfil-stats article { border-radius: 22px; }
+  .perfil-grid { grid-template-columns: 1fr; }
 }
 
-.perfil-vacio,
-.perfil-estado {
-  display: grid;
-  justify-items: center;
-  gap: 0.75rem;
-  padding: 2rem 1rem;
-  color: var(--perfil-suave);
-  text-align: center;
-}
-
-@media (max-width: 680px) {
-  .perfil-item {
-    grid-template-columns: 56px 1fr auto;
+@media (max-width: 767.98px) {
+  .perfil-page {
+    padding-right: 12px;
+    padding-left: 12px;
+    background-attachment: scroll;
   }
 
-  .perfil-item__imagen {
-    width: 56px;
-    height: 56px;
+  .perfil-card { grid-template-columns: 1fr; border-radius: 25px; }
+
+  .perfil-panel-izq {
+    padding: 26px 18px 20px;
+    border-right: 0;
+    border-bottom: 1px solid rgba(125, 137, 85, 0.22);
   }
 
-  .perfil-cantidad,
-  .perfil-item__subtotal {
-    grid-column: 2;
+  .perfil-avatar--grande { width: 92px; height: 92px; font-size: 1.7rem; }
+
+  /* MENÚ MÓVIL: botones en una fila que se desplaza hacia los costados. */
+  .perfil-nav {
+    display: flex;
+    overflow-x: auto;
+    margin-top: 18px;
+    padding-bottom: 4px;
   }
 
-  .perfil-item__subtotal {
-    text-align: left;
+  .perfil-nav button { width: auto; white-space: nowrap; }
+  .perfil-estado { display: none; }
+  .perfil-panel-der { padding: 22px 18px 28px; }
+
+  .perfil-datos,
+  .perfil-form-fila { grid-template-columns: 1fr; }
+
+  .perfil-form-foto { flex-direction: column; align-items: stretch; }
+  .perfil-form-foto .perfil-avatar { align-self: center; }
+
+  .perfil-acciones .perfil-btn { flex: 1 1 auto; }
+}
+
+@media (max-width: 420px) {
+  .perfil-cabecera .perfil-nota { display: none; }
+  .perfil-guardado-fila { flex-wrap: wrap; }
+  .perfil-btn-quitar { margin-left: 60px; }
+}
+
+/* ACCESIBILIDAD: sin animaciones si el sistema pide reducir movimiento. */
+@media (prefers-reduced-motion: reduce) {
+  .perfil-page *,
+  .perfil-page *::before,
+  .perfil-page *::after {
+    animation: none !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
   }
 }

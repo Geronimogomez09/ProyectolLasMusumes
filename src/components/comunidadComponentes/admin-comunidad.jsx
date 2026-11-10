@@ -14,6 +14,10 @@ import {
 
 import "../../styles/AdminComunidad.css";
 
+// Índice: Moderación de publicaciones y denuncias.
+// ----------------- Moderación de publicaciones y denuncias -----------------
+// Recibe publicaciones y la acción para volver a Comunidad. Si el perfil tiene permiso, escucha denuncias y cuentas, y permite moderar contenido o suspender cuentas; al desmontarse, retira las escuchas.
+
 /**
  * Panel de moderación de Comunidad.
  *

@@ -2,6 +2,10 @@ import { Link } from "react-router-dom";
 import "../styles/variables.css";
 import "../styles/Footer.css";
 
+// Índice: Pie de página.
+// ----------------- Pie de página -----------------
+// Presenta los enlaces y datos generales al final de las páginas. No recibe propiedades; calcula el año actual y devuelve el pie de página común del sitio.
+
 function Footer() {
     const anioActual = new Date().getFullYear();
     

@@ -1,6 +1,10 @@
 import ListaComentarios from '../comunidadComponentes/lista-comentarios';
 import '../../styles/tarjeta-version.css';
 
+// Índice: Tarjeta de versión.
+// ----------------- Tarjeta de versión -----------------
+// Recibe los datos de una versión y las acciones disponibles. Presenta sus cambios y, cuando corresponde, permite abrir las opciones de administración.
+
 const SECCIONES = [
   { campo: 'nuevasFunciones', titulo: 'Nuevas funciones', icono: '🆕' },
   { campo: 'cambios', titulo: 'Cambios', icono: '🔄' },

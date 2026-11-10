@@ -1,0 +1,1 @@
+// Índice: página de producto pendiente de implementación.

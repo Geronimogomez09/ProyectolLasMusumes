@@ -1,11 +1,42 @@
+/* VARIABLES GLOBALES (styles/variables.css): colores, tipografías y fuentes de Minecraft
+   que usan todas las páginas. Se carga desde header.jsx y Footer.jsx.
+   Debe coincidir con la sección "Variables globales" de styles/index.css. */
+
+/* FUENTES MINECRAFT: Minecraft.ttf (texto) y MinecraftV.ttf (títulos).
+   Los archivos están en public/fonts/, no en src/assets/. */
+@font-face {
+    font-family: "MinecraftSeven";
+    src: url("/fonts/Minecraft.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Minecrafttitulo";
+    src: url("/fonts/MinecraftV.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
 :root {
     --verde: #1db53c;
     --verde-hover: #00a521;
-    --verde-claro: #67ff6767;
+
+    /* VERDE CLARO: color sólido. Es el valor que ya usaban index.css, historia.css y botonAdmin.css. */
+    --verde-claro: #dcefdc;
+
+    /* VERDE CLARO TRANSLÚCIDO: el valor anterior de variables.css (usado por header.css). */
+    --verde-claro-translucido: #67ff6767;
+
     --marron: #7a573a;
     --fondo: #e9e9e9;
-    --texto: #111111;;
+    --texto: #111111;
     --blanco: #fffdf9;
+
+    /* FUENTE LOGO: tipografía del logo WIKI-CRAFT y de los títulos con estilo Minecraft. */
+    --fuente-logo: "Minecrafttitulo", "MinecraftSeven", "Segoe UI", sans-serif;
 }
 
 body {

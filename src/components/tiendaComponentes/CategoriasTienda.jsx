@@ -1,5 +1,9 @@
 import { categorias } from "../../data/productos";
 
+// Índice: Categorías de productos.
+// ----------------- Categorías de productos -----------------
+// Recibe la categoría activa y la acción para cambiarla. Presenta los filtros que permiten explorar productos por categoría.
+
 // Relaciona el valor interno de cada categoría con el ícono que usa la interfaz.
 const iconosCategoria = {
     Ropa: "/iconos/categoria-ropa.png",

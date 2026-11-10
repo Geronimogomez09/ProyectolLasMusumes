@@ -4,6 +4,10 @@ import { tienePermiso } from "../utils/permisos";
 
 import "../styles/botonAdmin.css";
 
+// Índice: Botón de administración.
+// ----------------- Botón de administración -----------------
+// Muestra un acceso de administración solo cuando el perfil tiene permiso para esa sección. Recibe el nombre de la sección y su destino; al activarlo, permite navegar a la herramienta correspondiente.
+
 export default function BotonAdmin({
     activo = false,
     alAlternar,

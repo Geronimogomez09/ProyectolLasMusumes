@@ -12,6 +12,7 @@ import BotonAdmin from '../components/botonAdmin';
 import { useAuth } from "../context/AuthContext";
 import { tienePermiso } from "../utils/permisos";
 import DetalleProducto from "../components/tiendaComponentes/DetalleProducto";
+import useGuardados from "../hooks/useGuardados";
 
 import {
     productosIniciales,
@@ -33,7 +34,23 @@ import {
 
 import "../styles/tienda.css";
 
-// Contenido inicial del carrusel; Firestore puede reemplazar estos valores en ejecución.
+// ÍNDICE GENERAL
+// 1. Banners predeterminados y conversión de imágenes
+// 2. Carrusel público de la tienda
+// 3. Administración de banners
+// 4. Recuperación de datos locales para la migración inicial
+// 5. Sesión, permisos y estado global de la tienda
+// 6. Sincronización de productos y banners con Firestore
+// 7. Producto seleccionado desde la URL
+// 8. Filtros, búsqueda, detalle y carrito
+// 9. Administración de productos y restauración del catálogo
+
+// 1. BANNERS PREDETERMINADOS
+// Este array funciona como catálogo inicial del carrusel. Se utiliza solamente cuando
+// Firestore todavía no tiene banners o durante una migración desde una versión local.
+// Una vez que existen documentos remotos, la interfaz usa esos documentos y no modifica
+// estos valores. Cada objeto describe el texto visible, la imagen y, opcionalmente, el
+// producto que debe abrirse al pulsar su botón.
 const slidesBanner = [
     {
         subtitulo: "NUEVA COLECCIÓN",
@@ -58,13 +75,24 @@ const slidesBanner = [
     }
 ];
 
-// Normaliza una ruta local o una URL para mostrarla en el formulario de administración.
+// CONVERTIR IMAGEN EN URL: el formulario de administración necesita una URL absoluta
+// para mostrar una previsualización coherente. new URL resuelve una ruta relativa con
+// respecto al origen actual (protocolo, dominio y puerto). Si no hay imagen devuelve
+// una cadena vacía; de ese modo el atributo src no recibe el texto "undefined".
 function imagenComoUrl(imagen) {
     return imagen ? new URL(imagen, window.location.origin).href : "";
 }
 
 function BannerTienda({ irProductos, abrirProducto, slidesBanner, productos }) {
-    // Las copias del primer y último banner permiten simular un carrusel infinito.
+    // 2. CARRUSEL PÚBLICO
+    // Recibe los banners ya disponibles y tres acciones del componente Tienda. irProductos
+    // desplaza al catálogo; abrirProducto cambia el hash de la URL para abrir un detalle;
+    // productos permite comprobar si el producto referido por un banner aún existe.
+    //
+    // slidesCarrusel agrega dos copias: la última al inicio y la primera al final. El
+    // usuario ve esas copias durante una transición, y después el estado salta sin
+    // animación al banner real equivalente. Así parece que el carrusel es infinito sin
+    // requerir duplicar documentos en Firestore.
     const [slideActual, setSlideActual] = useState(1);
     const [transicionActiva, setTransicionActiva] = useState(true);
     const slidesCarrusel = [
@@ -73,8 +101,8 @@ function BannerTienda({ irProductos, abrirProducto, slidesBanner, productos }) {
         slidesBanner[0]
     ];
 
-    // Avanza automáticamente y limpia el temporizador al desmontar el carrusel.
-    // Si cambia la sesión y se pierde el permiso, se cierra el panel de administración.
+    // El intervalo avanza cada cinco segundos. La limpieza evita que un temporizador
+    // continúe intentando actualizar estado si el carrusel ya fue desmontado.
     useEffect(() => {
         const interval = setInterval(() => {
             setSlideActual((prev) => prev + 1);
@@ -83,8 +111,9 @@ function BannerTienda({ irProductos, abrirProducto, slidesBanner, productos }) {
         return () => clearInterval(interval);
     }, []);
 
-    // Reactiva la animación después de reubicar el índice entre copias y banners reales.
-    // Escucha actualizaciones de Firestore e inicializa datos si la tienda está vacía.
+    // Después de un salto técnico se desactiva transicionActiva. Dos animation frames
+    // permiten que el navegador aplique primero la posición nueva y recién después
+    // reactive la transición CSS; sin esta espera se podría animar el salto visible.
     useEffect(() => {
         if (transicionActiva) {
             return undefined;
@@ -97,8 +126,9 @@ function BannerTienda({ irProductos, abrirProducto, slidesBanner, productos }) {
         return () => cancelAnimationFrame(frame);
     }, [transicionActiva]);
 
-    // Recoloca el índice al llegar a uno de los extremos clonados del carrusel.
-    // Sincroniza el producto de detalle con el hash para soportar enlaces e historial del navegador.
+    // Al llegar a una copia extrema espera la duración visual de la transición y se
+    // recoloca en el banner real. La condición evita crear temporizadores cuando el
+    // índice está dentro del rango normal.
     useEffect(() => {
         if (slideActual !== 0 && slideActual !== slidesBanner.length + 1) {
             return undefined;
@@ -112,15 +142,18 @@ function BannerTienda({ irProductos, abrirProducto, slidesBanner, productos }) {
         return () => clearTimeout(timeout);
     }, [slideActual, slidesBanner.length]);
 
+    // moverSlide recibe -1 o 1. Math.max/Math.min mantiene el índice dentro del intervalo
+    // que incluye ambas copias, por eso un clic rápido no puede producir un índice inválido.
     function moverSlide(direccion) {
-        // Limita el movimiento al intervalo que incluye las copias de ambos extremos.
         setSlideActual((actual) =>
             Math.min(slidesBanner.length + 1, Math.max(0, actual + direccion))
         );
     }
 
+    // finalizarTransicion trata el mismo borde como respaldo del temporizador anterior.
+    // event.target === event.currentTarget distingue la transición de la pista de las
+    // transiciones que puedan emitir sus elementos hijos.
     function finalizarTransicion(event) {
-        // Solo procesa el fin de transición de la pista, no el de elementos internos.
         if (event.target !== event.currentTarget) {
             return;
         }
@@ -474,7 +507,13 @@ function AdministrarBanners({
     );
 }
 
-// Lee los productos locales para usarlos como valores iniciales al migrar la tienda.
+// 4. LEER PRODUCTOS LOCALES PARA LA MIGRACIÓN
+// Antes de usar Firestore, una versión anterior guardaba el catálogo en localStorage.
+// Esta función intenta recuperar ese respaldo y devolverlo como datos iniciales. JSON
+// puede fallar si el navegador conserva un texto inválido: catch registra el problema y
+// deja que la función continúe con un array vacío. Si no hay respaldo, usa los productos
+// predeterminados importados. El caso especial de la remera conserva la compatibilidad
+// con guardados antiguos que no tenían campos de imagen.
 function cargarProductos() {
 
     const guardados =
@@ -520,7 +559,10 @@ function cargarProductos() {
     return productosIniciales;
 }
 
-// Carga los banners locales y completa los que falten durante la migración inicial.
+// LEER BANNERS LOCALES: aplica el mismo principio a los banners y agrega solo los
+// predeterminados que no existan todavía. La marca bannersTiendaDefaultsRestaurados
+// impide repetir esta fusión en futuras cargas. Esta función no se ejecuta en cada
+// renderizado: se entrega a la inicialización de Firestore cuando corresponde.
 function cargarBanners() {
     const guardados = localStorage.getItem("bannersTienda");
     const migracionRealizada = localStorage.getItem("bannersTiendaDefaultsRestaurados");
@@ -559,10 +601,13 @@ function cargarBanners() {
 }
 
 export default function Tienda() {
-
-    // El permiso define el acceso al panel y a las operaciones administrativas.
+    // 5. COMPONENTE PRINCIPAL Y ESTADO COMPARTIDO
+    // Tienda reúne catálogo, filtros, detalle y carrito para que todos trabajen sobre
+    // el mismo conjunto de productos. perfil decide el acceso administrativo; los
+    // elementos guardados son una preferencia personal y no cambian el catálogo global.
     const { perfil } = useAuth();
     const puedeAdministrar = tienePermiso(perfil, "tienda");
+    const guardadosProductos = useGuardados("producto");
 
     const [productos, setProductos] = useState([]);
     const [banners, setBanners] = useState([]);
@@ -577,7 +622,11 @@ export default function Tienda() {
 
     const modoAdmin = administradorAbierto && puedeAdministrar;
 
-    // Estado compartido entre catálogo, detalle, búsqueda, filtros y carrito.
+    // productos y banners comienzan vacíos hasta que las suscripciones respondan.
+    // restaurandoTienda bloquea acciones repetidas durante una restauración. El modo
+    // administrador exige dos condiciones: que la persona lo haya abierto y que aún
+    // posea permiso. carrito guarda cantidades elegidas; búsqueda/categoría construyen
+    // la vista derivada del catálogo; productoDetalleId conecta el hash con el modal.
     const [carrito, setCarrito] =
         useState([]);
 
@@ -598,8 +647,11 @@ export default function Tienda() {
         useState(null);
 
 
-    // Firebase es la fuente principal de productos y banners.
-    // Los datos locales/iniciales se migran solamente si Firestore está vacío.
+    // 6. SINCRONIZACIÓN CON FIRESTORE
+    // escucharProductos y escucharHeroes notifican cada cambio remoto y entregan sus
+    // canceladores. Solo un administrador intenta inicializar una base vacía: así una
+    // visita pública jamás crea datos. Al salir o cambiar el permiso, la limpieza cancela
+    // ambas escuchas. Los posibles errores se registran para no ocultar el fallo de red.
     useEffect(() => {
         const cancelarProductos = escucharProductos(
             setProductos,
@@ -623,11 +675,10 @@ export default function Tienda() {
     }, [puedeAdministrar]);
 
 
-    /*
-    ==========================================
-    DETECTAR PRODUCTO DE LA URL
-    ==========================================
-    */
+    // 7. PRODUCTO SOLICITADO EN LA URL
+    // El hash #producto=<id> permite abrir y compartir un detalle sin añadir otra ruta.
+    // leerHash se ejecuta una vez y ante cada hashchange. Si el hash no coincide, deja
+    // productoDetalleId en null. La limpieza elimina el listener global al desmontar.
 
     useEffect(() => {
 
@@ -676,13 +727,8 @@ export default function Tienda() {
     }, []);
 
 
-    /*
-    ==========================================
-    PRODUCTO ACTUAL
-    ==========================================
-    */
-
-    // Busca el registro correspondiente al identificador de producto de la URL.
+    // productoDetalle busca el objeto completo para pasar al componente de detalle.
+    // String normaliza IDs numéricos y de texto; || null representa que no se encontró.
     const productoDetalle =
         productos.find(
             (producto) =>
@@ -690,13 +736,11 @@ export default function Tienda() {
         ) || null;
 
 
-    /*
-    ==========================================
-    FILTRAR PRODUCTOS
-    ==========================================
-    */
-
-    // Lista para la grilla: excluye productos inactivos y aplica la categoría seleccionada.
+    // 8. FILTRAR, BUSCAR Y MOSTRAR PRODUCTOS
+    // useMemo calcula la grilla solo cuando cambian sus datos de entrada. Primero excluye
+    // productos inactivos. Luego aplica la categoría y el texto de búsqueda según las
+    // condiciones siguientes. Cada filter produce un array nuevo, de manera que productos
+    // sigue siendo la copia fiel recibida desde Firestore.
     const productosFiltrados =
         useMemo(() => {
 
@@ -1108,6 +1152,8 @@ export default function Tienda() {
                                     <TarjetaProducto
                                         key={producto.id}
                                         producto={producto}
+                                        guardado={guardadosProductos.estaGuardado(producto.id)}
+                                        alAlternarGuardado={() => guardadosProductos.alternar(producto.id)}
                                         abrirProducto={
                                             abrirProducto
                                         }
@@ -1203,6 +1249,8 @@ export default function Tienda() {
                         producto={productoDetalle}
                         productos={productos}
                         carrito={carrito}
+                        guardado={guardadosProductos.estaGuardado(productoDetalle?.id)}
+                        alAlternarGuardado={() => guardadosProductos.alternar(productoDetalle?.id)}
                         volverProductos={
                             volverProductos
                         }

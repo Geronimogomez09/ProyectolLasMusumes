@@ -1,6 +1,10 @@
 import { useState, useEffect } from 'react';
 import '../../styles/agregar-version.css';
 
+// Índice: Crear versión y registro de cambios.
+// ----------------- Crear versión y registro de cambios -----------------
+// Recibe los datos iniciales y las acciones para guardar o cerrar. Permite completar la información de una versión y transforma listas de texto en datos listos para enviar.
+
 const EDICIONES = ['Java', 'Bedrock'];
 
 const IMAGEN_POR_DEFECTO = '../public/fondos/fondo2.png';

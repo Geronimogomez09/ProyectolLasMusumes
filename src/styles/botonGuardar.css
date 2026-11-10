@@ -1,0 +1,89 @@
+/* BOTON GUARDAR (botonGuardar.css): estilos del botón de guardar publicaciones y de
+   favorito en productos. Las clases empiezan con "boton-guardar" para no chocar con
+   las de otras secciones. */
+
+/* BASE: botón redondeado con borde verde suave. */
+.boton-guardar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-width: 34px;
+    min-height: 34px;
+    padding: 0 10px;
+    border: 1px solid #cfe3cf;
+    border-radius: 999px;
+    background: #fff;
+    color: #4a6b4e;
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition:
+        background-color 200ms ease,
+        border-color 200ms ease,
+        color 200ms ease,
+        transform 200ms ease;
+}
+
+.boton-guardar:hover {
+    border-color: #69b779;
+    background: #f0fbf0;
+    transform: translateY(-1px);
+}
+
+.boton-guardar:focus-visible {
+    outline: 2px solid #36a852;
+    outline-offset: 3px;
+}
+
+.boton-guardar__icono {
+    font-size: 1.1rem;
+    line-height: 1;
+}
+
+/* ESTADO GUARDADO: se usan dos clases juntas para ganarle a los estilos de botones
+   que ya tiene la fila de acciones de Comunidad. */
+.boton-guardar.boton-guardar--activo {
+    border-color: #69b779;
+    background: #edf7eb;
+    color: #1d7a35;
+}
+
+/* El corazón guardado se pinta de rojo. */
+.boton-guardar.boton-guardar--corazon.boton-guardar--activo {
+    border-color: #e8a0a0;
+    background: #fff0f0;
+    color: #c62828;
+}
+
+/* VARIANTE FLOTANTE: círculo pegado en la esquina superior derecha de una tarjeta.
+   La tarjeta tiene que tener la clase "guardar-padre". */
+.guardar-padre {
+    position: relative;
+}
+
+.boton-guardar.boton-guardar--flotante {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 2;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.18);
+}
+
+/* VARIANTE ANCHO: ocupa todo el ancho, debajo del botón de agregar al carrito. */
+.boton-guardar.boton-guardar--ancho {
+    width: 100%;
+    min-height: 44px;
+    margin-top: 10px;
+    border-radius: 5px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .boton-guardar {
+        transition: none;
+    }
+}

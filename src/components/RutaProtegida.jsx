@@ -1,12 +1,17 @@
 
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { tienePermiso } from "../utils/permisos";
+import { esSuperAdmin, tienePermiso } from "../utils/permisos";
+
+// Índice: Protección de rutas.
+// ----------------- Protección de rutas -----------------
+// Comprueba la sesión y los permisos antes de mostrar una página. Recibe el contenido y las reglas de acceso; devuelve ese contenido o redirige al usuario según su perfil.
 
 function RutaProtegida({
     children,
     permiso = null,
-    soloAdmin = false
+    soloAdmin = false,
+    soloSuperAdmin = false
 }) {
     const { usuario, perfil, cargando } = useAuth();
 
@@ -44,6 +49,11 @@ function RutaProtegida({
                 </section>
             </main>
         );
+    }
+
+    // RUTA SOLO SUPERADMIN: páginas como /admin/usuarios. Quien no es superadmin vuelve al inicio.
+    if (soloSuperAdmin && !esSuperAdmin(perfil)) {
+        return <Navigate to="/" replace />;
     }
 
     // Compatibilidad con rutas antiguas.

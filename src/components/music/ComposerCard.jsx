@@ -1,6 +1,10 @@
 
 import React from "react";
 
+// Índice: Tarjeta de compositor.
+// ----------------- Tarjeta de compositor -----------------
+// Recibe los datos de un compositor y presenta su información como parte del catálogo musical.
+
 function ComposerCard({
   composer,
   onOpen,

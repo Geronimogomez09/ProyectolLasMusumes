@@ -1,3 +1,7 @@
+// Índice: Formulario para crear una publicación.
+// ----------------- Formulario para crear una publicación -----------------
+// Recibe los datos del usuario, las categorías y la acción para publicar. Reúne el contenido del post y lo entrega al componente de Comunidad para guardarlo.
+
 // components/comunidadComponentes/nuevo-post.jsx
 import { useState } from 'react';
 
