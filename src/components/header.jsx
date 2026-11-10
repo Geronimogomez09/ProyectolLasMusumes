@@ -342,7 +342,7 @@ function Header() {
 
                                             <li>
                                                 <Link
-                                                    to="/"
+                                                    to="/tienda"
                                                     className="profile-menu-item"
                                                     onClick={cerrarMenus}
                                                 >
