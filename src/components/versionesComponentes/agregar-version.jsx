@@ -1,9 +1,14 @@
 import { useState, useEffect } from 'react';
 import '../../styles/agregar-version.css';
+import { resolverImagenVersion } from '../../utils/imagenesVersion';
+
+// Índice: Crear versión y registro de cambios.
+// ----------------- Crear versión y registro de cambios -----------------
+// Recibe los datos iniciales y las acciones para guardar o cerrar. Permite completar la información de una versión y transforma listas de texto en datos listos para enviar.
 
 const EDICIONES = ['Java', 'Bedrock'];
 
-const IMAGEN_POR_DEFECTO = '../public/fondos/fondo2.png';
+const IMAGEN_POR_DEFECTO = '/fondos/fondo2.png';
 
 const FORM_VACIO = {
   numero: '',
@@ -81,15 +86,9 @@ function AgregarVersion({ onAgregar, versionAEditar, onActualizar, onCancelarEdi
     }));
   }
 
-  function handleImagen(e) {
-    const archivo = e.target.files[0];
-    if (!archivo) return;
-    if (!archivo.type.startsWith('image/')) {
-      setError('El archivo seleccionado no es una imagen.');
-      return;
-    }
-    setError('');
-    setVistaPrevia(URL.createObjectURL(archivo));
+  function handleImagenUrl(e) {
+    const url = e.target.value.trim();
+    setVistaPrevia(url);
   }
 
   function cerrar() {
@@ -102,7 +101,7 @@ function AgregarVersion({ onAgregar, versionAEditar, onActualizar, onCancelarEdi
     }
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
 
     if (!form.numero.trim() || !form.nombre.trim() || !form.fecha || !form.descripcion.trim()) {
@@ -114,13 +113,18 @@ function AgregarVersion({ onAgregar, versionAEditar, onActualizar, onCancelarEdi
       return;
     }
 
+    const imagenIngresada = vistaPrevia.trim();
+    const imagenGuardada = imagenIngresada
+      ? resolverImagenVersion(imagenIngresada)
+      : versionAEditar?.imagen || IMAGEN_POR_DEFECTO;
+
     const datosVersion = {
       numero: form.numero.trim(),
       nombre: form.nombre.trim(),
       edicion: form.edicion,
       fecha: form.fecha,
       fechaLegible: formatearFecha(form.fecha),
-      imagen: vistaPrevia || versionAEditar?.imagen || IMAGEN_POR_DEFECTO,
+      imagen: imagenGuardada,
       descripcion: form.descripcion.trim(),
       nuevasFunciones: aLista(form.nuevasFunciones),
       correcciones: aLista(form.correcciones),
@@ -208,11 +212,16 @@ function AgregarVersion({ onAgregar, versionAEditar, onActualizar, onCancelarEdi
       </label>
 
       <label className="agregar-version-campo">
-        Imagen
-        <input type="file" accept="image/*" onChange={handleImagen} />
+        Imagen (URL o ruta interna opcional)
+        <input
+          type="text"
+          placeholder="/fondos/imagen.png, src/assets/imagen.png o https://..."
+          value={vistaPrevia}
+          onChange={handleImagenUrl}
+        />
       </label>
       {vistaPrevia && (
-        <img src={vistaPrevia} alt="Vista previa" className="agregar-version-preview" />
+        <img src={resolverImagenVersion(vistaPrevia)} alt="Vista previa" className="agregar-version-preview" />
       )}
 
       <p className="agregar-version-ayuda">

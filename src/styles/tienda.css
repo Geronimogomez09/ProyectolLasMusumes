@@ -16,7 +16,7 @@
 }
 
 /* =========================================
-   GENERAL
+   BASE: fuentes, reinicio de estilos y fondos principales
 ========================================= */
 
 * {
@@ -57,7 +57,7 @@ button {
 
 
 /* =========================================
-   CONTROLES FIJOS
+   CONTROLES FIJOS: buscador, resultados y acceso al carrito
 ========================================= */
 
 .controles-tienda {
@@ -267,7 +267,7 @@ button {
 
 
 /* =========================================
-   BANNER
+   BANNER: carrusel, contenido, flechas y decoración
 ========================================= */
 @keyframes tienda-entrada {
   from {
@@ -456,6 +456,20 @@ button {
     background-size: cover;
 }
 
+.tienda-promo__imagen-link {
+    position: absolute;
+    inset: 0 0 0 48%;
+    z-index: 0;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+}
+
+.tienda-promo__imagen-link:focus-visible {
+    outline: 3px solid #fff;
+    outline-offset: -8px;
+}
+
 .tienda-promo__contenido {
     position: relative;
     z-index: 1;
@@ -581,7 +595,7 @@ button {
 }
 
 /* =========================================
-   TITULO PRODUCTOS
+   CATÁLOGO: fondo y título de la grilla de productos
 ========================================= */
 
 .tienda-catalogo {
@@ -614,7 +628,7 @@ button {
 
 
 /* =========================================
-   CATEGORIAS
+   CATEGORÍAS: botones de filtro y estado activo
 ========================================= */
 
 .categorias {
@@ -678,7 +692,7 @@ button {
 
 
 /* =========================================
-   PRODUCTOS
+   PRODUCTOS: grilla, tarjetas, precios y estados de stock
 ========================================= */
 
 .productos {
@@ -885,7 +899,7 @@ button {
 
 
 /* =========================================
-   ADMINISTRADOR
+   ADMINISTRADOR: formulario, campos y acciones de producto
 ========================================= */
 
 .admin {
@@ -917,6 +931,41 @@ button {
 .tienda-administrador .admin {
     width: 100%;
     margin: 0;
+}
+
+.acciones-productos-predeterminados {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.restaurar-tienda-btn {
+    justify-self: start;
+    padding: 10px 16px;
+    border: 1px solid #8a5a16;
+    border-radius: 6px;
+    background: #fff8e8;
+    color: #69430f;
+    font-weight: 700;
+}
+
+.restaurar-tienda-btn:hover:not(:disabled) {
+    background: #ffefc9;
+}
+
+.restaurar-tienda-btn-secundario {
+    border-color: #315a82;
+    background: #edf5fc;
+    color: #234363;
+}
+
+.restaurar-tienda-btn-secundario:hover:not(:disabled) {
+    background: #dcecf9;
+}
+
+.restaurar-tienda-btn:disabled {
+    cursor: wait;
+    opacity: 0.7;
 }
 
 .admin-banners {
@@ -1240,6 +1289,49 @@ button {
     font-size: 14px;
 }
 
+.admin-talles-stock {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.admin-talle-campo {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 5px;
+    font-size: 13px;
+}
+
+.admin-talle-campo input {
+    width: 100%;
+    min-width: 0;
+}
+
+.detalle-talle {
+    display: grid;
+    max-width: 320px;
+    gap: 7px;
+    margin-bottom: 20px;
+}
+
+.detalle-talle label {
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.detalle-talle select {
+    padding: 10px 12px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background: #fff;
+    font: inherit;
+}
+
+.detalle-talle small {
+    color: #666;
+}
+
 .admin-imagenes-grid {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -1341,7 +1433,7 @@ button {
 
 
 /* =========================================
-   LISTA ADMIN
+   LISTA ADMIN: registros y acciones disponibles por producto
 ========================================= */
 
 .lista-admin {
@@ -1423,7 +1515,7 @@ button {
 
 
 /* =========================================
-   CARRITO
+   CARRITO: panel lateral, unidades, total y botones
 ========================================= */
 
 .carrito {
@@ -1556,7 +1648,7 @@ button {
 
 
 /* =========================================
-   DETALLE DEL PRODUCTO
+   DETALLE: galería, compra, stock y beneficios del producto
 ========================================= */
 
 @keyframes detalle-entrada {
@@ -2037,7 +2129,7 @@ button {
 
 
 /* =========================================
-   INFORMACIÓN EXTRA
+   DETALLE: tabla de atributos adicionales
 ========================================= */
 
 .detalle-extra {
@@ -2103,7 +2195,7 @@ button {
 
 
 /* =========================================
-   RELACIONADOS
+   RELACIONADOS: carrusel de sugerencias y controles
 ========================================= */
 
 .detalle-relacionados {
@@ -2252,7 +2344,7 @@ button {
 
 
 /* =========================================
-   RESPONSIVE
+   RESPONSIVE: adapta grillas, detalle, banners y paneles por ancho
 ========================================= */
 
 @media (max-width: 950px) {
@@ -2371,6 +2463,10 @@ button {
 
     .admin-imagenes-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .admin-talles-stock {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
     }
 
 
@@ -2540,7 +2636,7 @@ button {
 
 
 /* ==============================
-   VENTANA DE PAGO
+   COMPRA: pantalla, pasos, formularios, resumen y confirmación
 ============================== */
 
 .pago-overlay {

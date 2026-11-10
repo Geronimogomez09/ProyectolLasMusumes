@@ -1,6 +1,10 @@
 import { useState, useRef } from 'react';
 import { EMOJIS_MINECRAFT } from './emojis-minecraft';
-import './comentario-form.css';
+import '../../styles/comentario-form.css';
+
+// Índice: Formulario para comentar.
+// ----------------- Formulario para comentar -----------------
+// Recibe la acción que envía el comentario y un texto gu?a opcional. Devuelve el comentario escrito al componente padre y conserva el borrador mientras se edita.
 
 // Formulario reutilizable para escribir un comentario. No sabe nada del post
 // al que pertenece: recibe onEnviar y devuelve { texto } cuando el usuario

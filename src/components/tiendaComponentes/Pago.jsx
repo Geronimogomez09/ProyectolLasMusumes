@@ -3,11 +3,17 @@ import { useState } from "react";
 import MinecraftIcon from "./MinecraftIcon";
 import "../../styles/tienda.css";
 
+// Índice: Datos de entrega y pago.
+// ----------------- Datos de entrega y pago -----------------
+// Recibe el carrito y las acciones para cerrar el pago o vaciarlo. Guía el formulario de entrega, la elección del medio de pago y la confirmaci?n del pedido.
+
+// Flujo de compra de demostración: datos de entrega, elección de pago y confirmación.
 export default function Pago({
     carrito,
     cerrarPago,
     vaciarCarrito
 }) {
+    // El paso controla qué formulario se presenta y el medio seleccionado.
     const [paso, setPaso] = useState(1);
     const [metodoPago, setMetodoPago] = useState("tarjeta");
     const [pedidoId, setPedidoId] = useState("");
@@ -26,6 +32,7 @@ export default function Pago({
         cvv: ""
     });
 
+    // El carrito contiene una entrada por unidad; el envío se suma una sola vez.
     const totalProductos = carrito.reduce(
         (suma, producto) => suma + Number(producto.precio || 0),
         0
@@ -34,6 +41,7 @@ export default function Pago({
     const envio = 3500;
     const totalFinal = totalProductos + envio;
 
+    // Aplica formato monetario argentino a importes del resumen y botones.
     const formatoPrecio = (precio) =>
         Number(precio).toLocaleString("es-AR", {
             style: "currency",
@@ -41,11 +49,13 @@ export default function Pago({
             maximumFractionDigits: 0
         });
 
+    // Actualiza el dato de entrega nombrado por el campo editado.
     function cambiarDato(evento) {
         const { name, value } = evento.target;
         setDatos((actual) => ({ ...actual, [name]: value }));
     }
 
+    // Filtra y da formato a los campos de tarjeta antes de guardarlos en el estado.
     function cambiarTarjeta(evento) {
         const { name, value } = evento.target;
 
@@ -78,17 +88,20 @@ export default function Pago({
         setTarjeta((actual) => ({ ...actual, [name]: value }));
     }
 
+    // La validación HTML del formulario se completa antes de pasar al medio de pago.
     function continuarDatos(evento) {
         evento.preventDefault();
         setPaso(2);
     }
 
+    // Valida los datos de tarjeta para la demostración y registra el pedido en los otros medios.
     function confirmarCompra() {
         if (metodoPago === "tarjeta") {
             const numero = tarjeta.numero.replace(/\s/g, "");
 
             if (numero.length !== 16) {
                 alert("Ingresá un número de tarjeta de 16 dígitos.");
+                // No se procesa ni se cobra la tarjeta: esta pantalla es solo una demostración.
                 return;
             }
 
@@ -115,6 +128,7 @@ export default function Pago({
         setPaso(3);
     }
 
+    // Vacía el carrito y cierra el flujo cuando se termina la confirmación.
     function finalizarCompra() {
         vaciarCarrito();
         cerrarPago();
@@ -124,6 +138,7 @@ export default function Pago({
 
     return (
         <div className="pago-overlay">
+            {/* Pantalla superpuesta que guía el proceso en tres pasos. */}
             <div className="pago-pagina">
                 <header className="pago-header">
                     <button
@@ -165,6 +180,7 @@ export default function Pago({
                             </p>
                         </div>
 
+                        {/* Indicador visual del paso activo y de las etapas ya completadas. */}
                         <div className="pago-pasos">
                             {pasos.map((nombre, index) => {
                                 const numero = index + 1;
@@ -192,6 +208,7 @@ export default function Pago({
                             })}
                         </div>
 
+                        {/* Paso 1: datos personales y dirección de entrega. */}
                         {paso === 1 && (
                             <form
                                 className="pago-panel"
@@ -290,6 +307,7 @@ export default function Pago({
                             </form>
                         )}
 
+                        {/* Paso 2: medio de pago y datos de tarjeta solo en modo demostración. */}
                         {paso === 2 && (
                             <div className="pago-panel">
                                 <h2>Seleccioná un medio de pago</h2>
@@ -510,6 +528,7 @@ export default function Pago({
                             </div>
                         )}
 
+                        {/* Paso 3: confirmación local; el identificador no representa un cobro real. */}
                         {paso === 3 && (
                             <div className="pago-panel pago-exito">
                                 <div className="pago-exito-icono">
@@ -559,6 +578,7 @@ export default function Pago({
                         )}
                     </div>
 
+                    {/* Resumen persistente con productos, subtotal, envío y total del pedido. */}
                     <aside className="pago-lateral">
                         <div className="pago-resumen">
                             <h2>
@@ -592,6 +612,9 @@ export default function Pago({
                                         </div>
                                         <div className="pago-producto-info">
                                             <strong>{producto.nombre}</strong>
+                                            {producto.talle && (
+                                                <small>Talle: {producto.talle}</small>
+                                            )}
                                             <small>1 unidad</small>
                                         </div>
                                         <strong>

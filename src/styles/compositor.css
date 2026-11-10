@@ -202,3 +202,243 @@
 .composer-page span {
   font-family: inherit;
 }
+/* =========================================
+   RGB SUTIL — BANNER DEL COMPOSITOR
+   ========================================= */
+
+.composer-header {
+  position: relative;
+  border: 1px solid rgba(130, 190, 145, 0.35);
+  animation: composer-rgb 7s ease-in-out infinite;
+}
+
+@keyframes composer-rgb {
+  0%, 100% {
+    border-color: rgba(80, 145, 95, 0.35);
+    box-shadow:
+      0 20px 55px #0004,
+      0 0 12px rgba(65, 130, 80, 0.08);
+  }
+
+  50% {
+    border-color: rgba(170, 235, 185, 0.65);
+    box-shadow:
+      0 20px 55px #0004,
+      0 0 22px rgba(100, 200, 130, 0.18);
+  }
+}
+
+/* =========================================
+   BOTÓN SEGUIR
+   ========================================= */
+
+.composer-follow-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
+  margin-top: 16px;
+  padding: 12px 25px;
+
+  color: #c7f5d5;
+  background: linear-gradient(145deg, #17251b, #101a13);
+  border: 1px solid rgba(150, 195, 160, 0.22);
+  border-radius: 50px;
+
+  font-family: "MinecraftSeven", "Segoe UI", sans-serif !important;
+  font-size: 0.9rem;
+  cursor: pointer;
+
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+
+  transition:
+    background 0.35s ease,
+    border-color 0.35s ease,
+    box-shadow 0.35s ease,
+    transform 0.35s ease;
+}
+
+.composer-follow-icon {
+  width: 27px;
+  height: 27px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  filter: brightness(0.5) saturate(0.65);
+  opacity: 0.7;
+  transition: filter 0.3s ease, opacity 0.3s ease, transform 0.3s ease;
+}
+
+.composer-follow-button:hover {
+  background: linear-gradient(145deg, #294832, #1b3021);
+  border-color: rgba(170, 230, 185, 0.45);
+  box-shadow: 0 0 16px rgba(90, 170, 110, 0.15);
+  transform: translateY(-3px);
+}
+
+.composer-follow-button:hover .composer-follow-icon {
+  transform: rotate(12deg) scale(1.08);
+}
+
+.composer-follow-button.active {
+  color: #e4ffeb;
+  background: linear-gradient(145deg, #294832, #1b3021);
+  border-color: rgba(170, 230, 185, 0.45);
+}
+
+.composer-follow-button.active .composer-follow-icon {
+  filter: brightness(1.15) saturate(1.2)
+    drop-shadow(0 0 5px rgba(90, 220, 130, 0.65));
+  opacity: 1;
+}
+
+.composer-follow-button:active {
+  transform: scale(0.97);
+}
+/* =========================================
+   TARJETAS DE CANCIONES — RGB BOSQUE
+   ========================================= */
+
+.composer-songs button {
+  position: relative;
+  border: 1px solid rgba(105, 175, 120, 0.35);
+  background: linear-gradient(
+    135deg,
+    #19271e,
+    #111b15,
+    #1b2d21
+  );
+
+  animation: song-card-rgb 6s ease-in-out infinite;
+
+  transition:
+    transform 0.35s ease,
+    background 0.35s ease,
+    border-color 0.35s ease,
+    box-shadow 0.35s ease;
+}
+
+@keyframes song-card-rgb {
+  0%, 100% {
+    border-color: rgba(85, 155, 100, 0.3);
+    box-shadow: 0 0 8px rgba(65, 145, 85, 0.08);
+  }
+
+  50% {
+    border-color: rgba(155, 225, 165, 0.65);
+    box-shadow:
+      0 0 12px rgba(80, 180, 105, 0.2),
+      0 0 25px rgba(65, 145, 85, 0.1);
+  }
+}
+
+.composer-songs button:hover {
+  background: linear-gradient(
+    135deg,
+    #294832,
+    #1a3021,
+    #294832
+  );
+
+  border-color: rgba(185, 245, 195, 0.8);
+
+  box-shadow:
+    0 0 15px rgba(100, 210, 125, 0.25),
+    0 0 30px rgba(70, 165, 95, 0.15);
+
+  transform: translateY(-5px);
+}
+
+.composer-songs button img {
+  transition:
+    transform 0.35s ease,
+    box-shadow 0.35s ease;
+}
+
+.composer-songs button:hover img {
+  transform: scale(1.045);
+  box-shadow: 0 0 12px rgba(125, 220, 145, 0.25);
+}
+/* =========================================
+   ÁLBUMES — RGB BOSQUE
+   ========================================= */
+
+.composer-albums button {
+  position: relative;
+  background: linear-gradient(
+    145deg,
+    #19271e,
+    #111b15,
+    #1b2d21
+  );
+  border: 1px solid rgba(105, 175, 120, 0.35);
+
+  animation: album-card-rgb 6s ease-in-out infinite;
+
+  transition:
+    transform 0.35s ease,
+    background 0.35s ease,
+    border-color 0.35s ease,
+    box-shadow 0.35s ease;
+}
+
+@keyframes album-card-rgb {
+  0%, 100% {
+    border-color: rgba(85, 155, 100, 0.3);
+    box-shadow: 0 0 8px rgba(65, 145, 85, 0.08);
+  }
+
+  50% {
+    border-color: rgba(155, 225, 165, 0.65);
+    box-shadow:
+      0 0 12px rgba(80, 180, 105, 0.2),
+      0 0 25px rgba(65, 145, 85, 0.1);
+  }
+}
+
+.composer-albums button:hover {
+  background: linear-gradient(
+    135deg,
+    #294832,
+    #1a3021,
+    #294832
+  );
+
+  border-color: rgba(185, 245, 195, 0.8);
+
+  box-shadow:
+    0 0 15px rgba(100, 210, 125, 0.25),
+    0 0 30px rgba(70, 165, 95, 0.15);
+
+  transform: translateY(-5px);
+}
+
+.composer-albums button img {
+  transition:
+    transform 0.35s ease,
+    box-shadow 0.35s ease;
+}
+
+.composer-albums button:hover img {
+  transform: scale(1.035);
+  box-shadow: 0 0 14px rgba(125, 220, 145, 0.25);
+}
+
+/* =========================================
+   TÍTULOS DE SECCIÓN E ICONOS
+   ========================================= */
+
+.composer-section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: "MinecraftSeven", "Segoe UI", sans-serif;
+}
+
+.composer-section-title .music-category-icon {
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}

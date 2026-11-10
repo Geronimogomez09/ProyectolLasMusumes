@@ -1,5 +1,9 @@
 import React from "react";
 
+// Índice: Canciones destacadas.
+// ----------------- Canciones destacadas -----------------
+// Recibe canciones y compositores, relaciona cada canción con su autor y muestra las reproducciones. Devuelve una selección visual de canciones para descubrir.
+
 function FeaturedSongs({
   songs,
   composers,
@@ -9,13 +13,17 @@ function FeaturedSongs({
     <aside className="featured-ranking">
       {songs.map((song, index) => {
         const composer = composers.find(
-          (item) => item.id === song.composerId
+          (item) =>
+            Number(item.id) === Number(song.composerId)
         );
+
+        const reproducciones = song.reproducciones ?? 0;
 
         return (
           <button
             className="featured-song"
             key={song.id}
+            type="button"
             onClick={() => onPlay(song)}
           >
             <span className="featured-position">
@@ -29,15 +37,26 @@ function FeaturedSongs({
 
             <span className="featured-text">
               <strong>{song.title}</strong>
-              <small>{composer?.name}</small>
+              <small>
+                {composer?.name || "Compositor desconocido"}
+              </small>
             </span>
 
             <span className="featured-duration">
-              {song.duration}
+              {reproducciones}{" "}
+              {reproducciones === 1
+                ? "reproducción"
+                : "reproducciones"}
             </span>
           </button>
         );
       })}
+
+      {songs.length === 0 && (
+        <p className="songs-empty">
+          Todavía no hay canciones en el ranking.
+        </p>
+      )}
     </aside>
   );
 }

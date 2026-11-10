@@ -2,6 +2,10 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useMusic } from "../../context/MusicContext";
 
+// Índice: Reproducci?n de canción.
+// ----------------- Reproducci?n de canción -----------------
+// Recibe la canción y los controles de reproducción disponibles. Coordina el elemento de audio, el avance, el volumen y la repetición, y comparte el estado de bloqueo con el contexto musical.
+
 function PlayerIcon({ name, className = "" }) {
   const common = {
     className: `player-icon ${className}`.trim(),

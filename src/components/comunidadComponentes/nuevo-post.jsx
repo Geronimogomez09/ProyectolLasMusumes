@@ -1,18 +1,17 @@
+// Índice: Formulario para crear una publicación.
+// ----------------- Formulario para crear una publicación -----------------
+// Recibe los datos del usuario, las categorías y la acción para publicar. Reúne el contenido del post y lo entrega al componente de Comunidad para guardarlo.
+
 // components/comunidadComponentes/nuevo-post.jsx
-import { useState, useRef } from 'react';
+import { useState } from 'react';
+import AvatarComunidad from './avatar-comunidad';
 
 function NuevoPost({ usuario, categorias, onPublicar }) {
   const [texto, setTexto] = useState('');
   const [etiqueta, setEtiqueta] = useState('');
   const [mostrarSelectorEtiqueta, setMostrarSelectorEtiqueta] = useState(false);
-  const [imagenPreview, setImagenPreview] = useState(null);
+  const [imagen, setImagen] = useState('');
   const [error, setError] = useState('');
-  const inputImagenRef = useRef(null);
-
-  function handleImagenSeleccionada(e) {
-    const archivo = e.target.files[0];
-    if (archivo) setImagenPreview(URL.createObjectURL(archivo));
-  }
 
   function handlePublicar() {
     if (!texto.trim()) {
@@ -24,11 +23,11 @@ function NuevoPost({ usuario, categorias, onPublicar }) {
       return;
     }
 
-    onPublicar({ contenido: texto.trim(), categoria: etiqueta, imagen: imagenPreview });
+    onPublicar({ contenido: texto.trim(), categoria: etiqueta, imagen: imagen.trim() });
 
     setTexto('');
     setEtiqueta('');
-    setImagenPreview(null);
+    setImagen('');
     setMostrarSelectorEtiqueta(false);
     setError('');
   }
@@ -36,7 +35,11 @@ function NuevoPost({ usuario, categorias, onPublicar }) {
   return (
     <section className="nuevo-post cascada-item">
       <div className="nuevo-post__fila">
-        <div className="avatar avatar--propio">{usuario.inicial}</div>
+        <AvatarComunidad
+          className="avatar avatar--propio"
+          foto={usuario.foto}
+          nombre={usuario.nombre}
+        />
         <textarea
           className="nuevo-post__texto"
           placeholder="¿Que vas a escribir hoy?"
@@ -46,16 +49,10 @@ function NuevoPost({ usuario, categorias, onPublicar }) {
         />
       </div>
 
-      {imagenPreview && (
+      {imagen.trim() && (
         <div className="nuevo-post__preview">
-          <img src={imagenPreview} alt="Vista previa de la imagen a publicar" />
-          <button
-            className="nuevo-post__quitar-imagen"
-            onClick={() => setImagenPreview(null)}
-            aria-label="Quitar imagen"
-          >
-            ×
-          </button>
+          <img src={imagen.trim()} alt="Vista previa de la imagen a publicar" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+          <button className="nuevo-post__quitar-imagen" onClick={() => setImagen('')} aria-label="Quitar imagen">×</button>
         </div>
       )}
 
@@ -88,19 +85,13 @@ function NuevoPost({ usuario, categorias, onPublicar }) {
             )}
           </div>
 
-          <button
-            className="btn-imagen"
-            onClick={() => inputImagenRef.current.click()}
-            aria-label="Adjuntar imagen"
-          >
-            🖼
-          </button>
           <input
-            type="file"
-            accept="image/*"
-            ref={inputImagenRef}
-            onChange={handleImagenSeleccionada}
-            hidden
+            className="nuevo-post__url-imagen"
+            type="url"
+            placeholder="URL de imagen (opcional)"
+            value={imagen}
+            onChange={(e) => setImagen(e.target.value)}
+            aria-label="URL de imagen"
           />
         </div>
 

@@ -1,5 +1,9 @@
 import { useState } from 'react';
-import './denuncia-modal.css';
+import '../../styles/denuncia-modal.css';
+
+// Índice: Formulario para denunciar contenido.
+// ----------------- Formulario para denunciar contenido -----------------
+// Recibe acciones para confirmar o cancelar y el tipo de contenido denunciado. Recoge el motivo y entrega la decisión al componente que abrió la ventana.
 
 const MOTIVOS_DENUNCIA = [
   'Spam o publicidad',
